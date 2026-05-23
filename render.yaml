@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: agricomplete-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd agricomplete-hub/backend && pip install -r requirements.txt
+    startCommand: cd agricomplete-hub/backend && python app.py
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///agricomplete.db
+      - key: JWT_SECRET_KEY
+        value: 5tK9xL2pN8vM4wJ6hG3tY7uO1aP9bS2d
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "False"
