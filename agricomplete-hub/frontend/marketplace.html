@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace — AgriComplete Hub</title>
+  <meta name="description" content="Buy and sell farm produce directly. Connect farmers with buyers on AgriComplete Hub Marketplace.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><h2><span class="brand-icon">🌾</span> AgriComplete</h2><p>Smart Farming Platform</p></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main Menu</div>
+      <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
+      <a href="disease-detection.html" class="nav-item"><i class="fas fa-leaf"></i><span>Disease Detection</span></a>
+      <a href="market-prices.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Market Prices</span><span class="nav-badge">Live</span></a>
+      <a href="marketplace.html" class="nav-item active"><i class="fas fa-store"></i><span>Marketplace</span></a>
+      <div class="nav-section-title">Tools</div>
+      <a href="resource-management.html" class="nav-item"><i class="fas fa-recycle"></i><span data-i18n="nav_resources">Resource Management</span></a>
+      <div class="nav-section-title">Account</div>
+      <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span data-i18n="nav_profile">My Profile</span></a>
+      <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="nav_logout">Logout</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-profile"><div class="user-avatar">RS</div><div class="user-info"><h4>Rajesh Singh</h4></div></div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <h3><i class="fas fa-store" style="color:var(--color-primary);margin-right:8px;"></i> Farmer Marketplace</h3>
+          <p>Buy & sell directly — no middlemen</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openListingModal()">
+          <i class="fas fa-plus"></i> List Your Crop
+        </button>
+        <div class="lang-selector">
+          <i class="fas fa-globe"></i>
+          <select onchange="changeLanguage(this.value)">
+            <option value="en">EN</option>
+            <option value="hi">हि</option>
+            <option value="mr">म</option>
+            <option value="pa">ਪ</option>
+            <option value="ta">த</option>
+            <option value="te">తె</option>
+          </select>
+        </div>
+        <button class="btn-icon notification-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Filters -->
+      <div class="card fade-in" style="margin-bottom:var(--space-xl);padding:var(--space-md);">
+        <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;align-items:center;">
+          <span style="font-weight:600;font-size:.88rem;"><i class="fas fa-filter" style="margin-right:6px;"></i>Filters:</span>
+          <select class="input-field" style="width:auto;padding:8px 14px;font-size:.82rem;">
+            <option>All Categories</option>
+            <option>Grains & Cereals</option>
+            <option>Pulses</option>
+            <option>Vegetables</option>
+            <option>Fruits</option>
+            <option>Spices</option>
+            <option>Oilseeds</option>
+          </select>
+          <select class="input-field" style="width:auto;padding:8px 14px;font-size:.82rem;">
+            <option>All Locations</option>
+            <option>Maharashtra</option>
+            <option>Punjab</option>
+            <option>UP</option>
+            <option>MP</option>
+            <option>Rajasthan</option>
+          </select>
+          <select class="input-field" style="width:auto;padding:8px 14px;font-size:.82rem;">
+            <option>Sort: Latest</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+            <option>Nearest First</option>
+          </select>
+          <span id="marketplaceCount" style="margin-left:auto;font-size:.82rem;color:var(--text-muted);">Showing 8 listings</span>
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="grid-4 fade-in delay-1" id="productGrid" data-base-count="8" style="margin-bottom:var(--space-xl);">
+        <!-- Product 1 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF8E1,#FFF3E0);">
+            <span style="font-size:4rem;">🌾</span>
+            <div class="product-tag">Organic</div>
+          </div>
+          <div class="product-body">
+            <h4>Quality Wheat</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Pune, MH</span>
+              <span><i class="fas fa-weight-hanging"></i> 50 qtl</span>
+            </div>
+            <div class="product-price">₹2,450/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Rajesh S. · 2h ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 2 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);">
+            <span style="font-size:4rem;">🌾</span>
+            <div class="product-tag" style="background:var(--color-accent);">Verified</div>
+          </div>
+          <div class="product-body">
+            <h4>Basmati Rice</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Ludhiana, PB</span>
+              <span><i class="fas fa-weight-hanging"></i> 100 qtl</span>
+            </div>
+            <div class="product-price">₹3,800/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Gurpreet K. · 5h ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 3 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);">
+            <span style="font-size:4rem;">🫘</span>
+          </div>
+          <div class="product-body">
+            <h4>Soybean (Grade A)</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Indore, MP</span>
+              <span><i class="fas fa-weight-hanging"></i> 30 qtl</span>
+            </div>
+            <div class="product-price">₹4,200/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Mohan P. · 1d ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 4 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);">
+            <span style="font-size:4rem;">🧅</span>
+            <div class="product-tag" style="background:#F57F17;">Bulk Deal</div>
+          </div>
+          <div class="product-body">
+            <h4>Red Onion</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Nashik, MH</span>
+              <span><i class="fas fa-weight-hanging"></i> 200 qtl</span>
+            </div>
+            <div class="product-price">₹1,250/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Suresh D. · 2d ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 5 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);">
+            <span style="font-size:4rem;">🌿</span>
+          </div>
+          <div class="product-body">
+            <h4>Chickpea (Chana)</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Jaipur, RJ</span>
+              <span><i class="fas fa-weight-hanging"></i> 40 qtl</span>
+            </div>
+            <div class="product-price">₹5,100/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Ramesh V. · 3d ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 6 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF8E1,#FFECB3);">
+            <span style="font-size:4rem;">🌻</span>
+            <div class="product-tag">Fresh</div>
+          </div>
+          <div class="product-body">
+            <h4>Sunflower Seeds</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Bellary, KA</span>
+              <span><i class="fas fa-weight-hanging"></i> 20 qtl</span>
+            </div>
+            <div class="product-price">₹6,300/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Lakshmi N. · 4d ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 7 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFEBEE,#FFCDD2);">
+            <span style="font-size:4rem;">🌶️</span>
+          </div>
+          <div class="product-body">
+            <h4>Red Chilli (Teja)</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Guntur, AP</span>
+              <span><i class="fas fa-weight-hanging"></i> 15 qtl</span>
+            </div>
+            <div class="product-price">₹10,800/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Srinivas R. · 1w ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 8 -->
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#E0F2F1,#B2DFDB);">
+            <span style="font-size:4rem;">🥜</span>
+            <div class="product-tag" style="background:var(--color-accent);">Top Rated</div>
+          </div>
+          <div class="product-body">
+            <h4>Groundnut</h4>
+            <div class="product-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Rajkot, GJ</span>
+              <span><i class="fas fa-weight-hanging"></i> 60 qtl</span>
+            </div>
+            <div class="product-price">₹5,900/q</div>
+            <p style="font-size:.78rem;margin-top:4px;">Listed by Bharat M. · 5d ago</p>
+            <div class="product-actions">
+              <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
+              <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listing Modal -->
+  <div id="listingModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;">
+    <div class="card" style="width:100%;max-width:520px;max-height:90vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg);">
+        <h3><i class="fas fa-plus-circle" style="color:var(--color-primary);margin-right:8px;"></i>List Your Crop</h3>
+        <button onclick="closeListingModal()" style="font-size:1.3rem;color:var(--text-muted);"><i class="fas fa-times"></i></button>
+      </div>
+      <form class="auth-form" id="listingForm">
+        <div class="input-group">
+          <label>Crop Name</label>
+          <input class="input-field" id="listingCropName" type="text" placeholder="e.g. Wheat, Rice, Onion" required>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label>Quantity (quintals)</label>
+            <input class="input-field" id="listingQuantity" type="number" placeholder="e.g. 50" min="1" required>
+          </div>
+          <div class="input-group">
+            <label>Price (₹/quintal)</label>
+            <input class="input-field" id="listingPrice" type="number" placeholder="e.g. 2450" min="1" required>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Location</label>
+          <input class="input-field" id="listingLocation" type="text" placeholder="City, State" required>
+        </div>
+        <div class="input-group">
+          <label>Category</label>
+          <select class="input-field" id="listingCategory" required>
+            <option value="">Select category</option>
+            <option>Grains & Cereals</option>
+            <option>Pulses</option>
+            <option>Vegetables</option>
+            <option>Fruits</option>
+            <option>Spices</option>
+            <option>Oilseeds</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Description (optional)</label>
+          <textarea class="input-field" id="listingDescription" rows="3" placeholder="Quality details, delivery terms, etc."></textarea>
+        </div>
+        <div class="input-group">
+          <label>Upload Photos (optional)</label>
+          <input class="input-field" type="file" accept="image/*" multiple>
+        </div>
+        <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;">
+          <i class="fas fa-check"></i> Submit Listing
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Chatbot -->
+  <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()"><i class="fas fa-comment-dots"></i></button>
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header">
+      <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-robot" style="font-size:1.2rem;"></i><div><h4>Krishi AI Assistant</h4><span style="font-size:.72rem;opacity:.8;">Marketplace help</span></div></div>
+      <button class="close-chat" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chatbot-body" id="chatbotBody"><div class="chat-msg bot">Namaste! 🙏 Need help listing crops or finding buyers? Ask me!</div></div>
+    <div class="chatbot-input">
+      <input type="text" id="chatInput" placeholder="Ask about marketplace..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — AgriComplete Hub</title>
+  <meta name="description" content="Manage your farmer profile and farm details on AgriComplete Hub.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><h2><span class="brand-icon">🌾</span> AgriComplete</h2><p>Smart Farming Platform</p></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main Menu</div>
+      <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
+      <a href="disease-detection.html" class="nav-item"><i class="fas fa-leaf"></i><span>Disease Detection</span></a>
+      <a href="market-prices.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Market Prices</span><span class="nav-badge">Live</span></a>
+      <a href="marketplace.html" class="nav-item"><i class="fas fa-store"></i><span>Marketplace</span></a>
+      <div class="nav-section-title">Tools</div>
+      <a href="resource-management.html" class="nav-item"><i class="fas fa-recycle"></i><span data-i18n="nav_resources">Resource Management</span></a>
+      <div class="nav-section-title">Account</div>
+      <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span data-i18n="nav_profile">My Profile</span></a>
+      <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="nav_logout">Logout</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-profile"><div class="user-avatar">RS</div><div class="user-info"><h4>Rajesh Singh</h4></div></div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left"><div><h3><i class="fas fa-user-circle" style="color:var(--color-primary);margin-right:8px;"></i> My Profile</h3><p>Manage your account and farm details</p></div></div>
+      <div class="topbar-right">
+        <div class="lang-selector"><i class="fas fa-globe"></i><select onchange="changeLanguage(this.value)"><option value="en">EN</option><option value="hi">हि</option><option value="mr">म</option></select></div>
+        <button class="btn-icon notification-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Profile Header -->
+      <div class="profile-header fade-in" style="margin-bottom:var(--space-xl);">
+        <div class="profile-avatar">RS</div>
+        <div class="profile-details" style="flex:1;">
+          <h2>Rajesh Singh</h2>
+          <p style="color:var(--text-secondary);">Wheat & Vegetable Farmer • Pune, Maharashtra</p>
+          <div style="display:flex;gap:var(--space-md);margin-top:var(--space-md);flex-wrap:wrap;">
+            <span class="badge"><i class="fas fa-check-circle"></i> Verified Farmer</span>
+            <span class="badge badge-info"><i class="fas fa-calendar"></i> Joined Jan 2025</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="document.querySelector('.auth-form').scrollIntoView({behavior: 'smooth'})"><i class="fas fa-edit"></i> Edit Profile</button>
+      </div>
+
+      <!-- Profile Stats -->
+      <div class="grid-4 fade-in delay-1" style="margin-bottom:var(--space-xl);">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-seedling"></i></div>
+          <div><div class="stat-label">Active Crops</div><div class="stat-value">12</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-exchange-alt"></i></div>
+          <div><div class="stat-label">Total Trades</div><div class="stat-value">47</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div>
+          <div><div class="stat-label">Revenue</div><div class="stat-value">₹4.2L</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-star"></i></div>
+          <div><div class="stat-label">Rating</div><div class="stat-value">4.8 ⭐</div></div>
+        </div>
+      </div>
+
+      <div class="grid-sidebar fade-in delay-2" style="margin-bottom:var(--space-xl);">
+        <!-- Personal Info -->
+        <div class="card">
+          <h4 style="margin-bottom:var(--space-lg);"><i class="fas fa-user" style="color:var(--color-primary);margin-right:8px;"></i> Personal Information</h4>
+          <form class="auth-form">
+            <div class="input-row">
+              <div class="input-group"><label>First Name</label><input class="input-field" id="profileFirstName" type="text" value="Rajesh"></div>
+              <div class="input-group"><label>Last Name</label><input class="input-field" id="profileLastName" type="text" value="Singh"></div>
+            </div>
+            <div class="input-group"><label>Email</label><input class="input-field" id="profileEmail" type="email" value="rajesh.singh@mail.com"></div>
+            <div class="input-group"><label>Phone</label><input class="input-field" id="profilePhone" type="tel" value="+91 98765 43210"></div>
+            <div class="input-row">
+              <div class="input-group"><label>State</label><select class="input-field" id="profileState"><option selected>Maharashtra</option><option>Punjab</option><option>UP</option></select></div>
+              <div class="input-group"><label>District</label><input class="input-field" id="profileDistrict" type="text" value="Pune"></div>
+            </div>
+            <div class="input-group"><label>Village / Area</label><input class="input-field" id="profileVillage" type="text" value="Dehu Phata, Pimpri-Chinchwad"></div>
+            <button class="btn btn-primary" type="button" onclick="saveProfile()" style="width:100%;justify-content:center;"><i class="fas fa-save"></i> Save Changes</button>
+          </form>
+        </div>
+
+        <!-- Farm Details -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
+          <div class="card">
+            <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-tractor" style="color:var(--color-accent);margin-right:8px;"></i> Farm Details</h4>
+            <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
+                <span style="font-size:.88rem;">Total Farm Area</span>
+                <strong>12 Acres</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
+                <span style="font-size:.88rem;">Soil Type</span>
+                <strong>Black Cotton</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
+                <span style="font-size:.88rem;">Irrigation Source</span>
+                <strong>Borewell + Canal</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
+                <span style="font-size:.88rem;">Primary Crops</span>
+                <strong>Wheat, Chickpea, Potato</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
+                <span style="font-size:.88rem;">Farming Type</span>
+                <strong>Mixed (Traditional + Semi-organic)</strong>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-history" style="color:var(--color-secondary);margin-right:8px;"></i> Recent Activity</h4>
+            <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
+              <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border-light);">
+                <i class="fas fa-leaf" style="color:var(--color-primary);width:20px;"></i>
+                <span>Disease scan — Tomato leaf</span>
+                <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">2 days ago</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border-light);">
+                <i class="fas fa-store" style="color:var(--color-accent);width:20px;"></i>
+                <span>Listed 50 qtl Wheat on Marketplace</span>
+                <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">3 days ago</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border-light);">
+                <i class="fas fa-chart-bar" style="color:var(--color-secondary);width:20px;"></i>
+                <span>Checked wheat prices at Pune mandi</span>
+                <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">4 days ago</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;">
+                <i class="fas fa-phone" style="color:#1565C0;width:20px;"></i>
+                <span>Contacted buyer — Anand Traders</span>
+                <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">1 week ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot -->
+  <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()"><i class="fas fa-comment-dots"></i></button>
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header">
+      <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-robot" style="font-size:1.2rem;"></i><div><h4>Krishi AI Assistant</h4><span style="font-size:.72rem;opacity:.8;">Account help</span></div></div>
+      <button class="close-chat" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chatbot-body" id="chatbotBody"><div class="chat-msg bot">Namaste! 🙏 Need help with your profile? Ask me!</div></div>
+    <div class="chatbot-input">
+      <input type="text" id="chatInput" placeholder="Ask about your account..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
