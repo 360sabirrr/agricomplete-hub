@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — AgriComplete Hub</title>
+  <meta name="description" content="Your personalized smart farming dashboard with weather, crop recommendations, and alerts.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+  <!-- Sidebar Toggle (mobile) -->
+  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <h2><span class="brand-icon">🌾</span> AgriComplete</h2>
+      <p>Smart Farming Platform</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main Menu</div>
+      <a href="dashboard.html" class="nav-item active">
+        <i class="fas fa-th-large"></i>
+        <span data-i18n="nav_dashboard">Dashboard</span>
+      </a>
+      <a href="disease-detection.html" class="nav-item">
+        <i class="fas fa-leaf"></i>
+        <span data-i18n="nav_disease">Disease Detection</span>
+      </a>
+      <a href="market-prices.html" class="nav-item">
+        <i class="fas fa-chart-bar"></i>
+        <span data-i18n="nav_market">Market Prices</span>
+        <span class="nav-badge">Live</span>
+      </a>
+      <a href="marketplace.html" class="nav-item">
+        <i class="fas fa-store"></i>
+        <span data-i18n="nav_marketplace">Marketplace</span>
+      </a>
+
+      <div class="nav-section-title">Tools</div>
+      <a href="resource-management.html" class="nav-item"><i class="fas fa-recycle"></i><span data-i18n="nav_resources">Resource Management</span></a>
+
+      <div class="nav-section-title">Account</div>
+      <a href="profile.html" class="nav-item">
+        <i class="fas fa-user-circle"></i>
+        <span data-i18n="nav_profile">My Profile</span>
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-cog"></i>
+        <span data-i18n="nav_settings">Settings</span>
+      </a>
+      <a href="#" class="nav-item" onclick="handleLogout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span data-i18n="nav_logout">Logout</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">RS</div>
+        <div class="user-info">
+          <h4>Rajesh Singh</h4>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <div class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <h3 data-i18n="dash_welcome">Welcome back, Rajesh! 👋</h3>
+          <p id="dashDate"></p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="lang-selector">
+          <i class="fas fa-globe"></i>
+          <select onchange="changeLanguage(this.value)">
+            <option value="en">EN</option>
+            <option value="hi">हि</option>
+            <option value="mr">म</option>
+            <option value="pa">ਪ</option>
+            <option value="ta">த</option>
+            <option value="te">తె</option>
+          </select>
+        </div>
+        <button class="btn-icon notification-btn">
+          <i class="fas fa-bell"></i>
+          <div class="notif-dot"></div>
+        </button>
+        <button class="btn-icon">
+          <i class="fas fa-question-circle"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+
+      <!-- Stat Cards -->
+      <div class="grid-4 fade-in" style="margin-bottom:var(--space-xl);">
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-seedling"></i></div>
+          <div>
+            <div class="stat-label" data-i18n="stat_active_crops">Active Crops</div>
+            <div class="stat-value">12</div>
+            <div class="stat-change up">↑ 3 new this season</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-tint"></i></div>
+          <div>
+            <div class="stat-label" data-i18n="stat_water">Water Usage</div>
+            <div class="stat-value">2,450L</div>
+            <div class="stat-change down">↓ 12% vs last week</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div>
+          <div>
+            <div class="stat-label" data-i18n="stat_revenue">Est. Revenue</div>
+            <div class="stat-value">₹1.8L</div>
+            <div class="stat-change up">↑ 8% growth</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-exclamation-triangle"></i></div>
+          <div>
+            <div class="stat-label" data-i18n="stat_alerts">Active Alerts</div>
+            <div class="stat-value">3</div>
+            <div class="stat-change" style="color:var(--color-secondary);">⚠ 1 urgent</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weather + Crop Rec -->
+      <div class="fade-in delay-1" style="margin-bottom:var(--space-xl);">
+        <!-- Weather Widget (Full Width) -->
+        <div class="weather-widget" id="weatherWidget" style="grid-column: 1 / -1;">
+
+      <!-- Chart + Alerts -->
+      <div class="grid-sidebar fade-in delay-2" style="margin-bottom:var(--space-xl);">
+        <!-- Price Trend Chart -->
+        <div class="chart-container">
+          <div class="chart-header">
+            <h4><i class="fas fa-chart-line" style="color:var(--color-primary);margin-right:8px;"></i> <span data-i18n="price_trend">Crop Price Trends (₹/quintal)</span></h4>
+            <div class="chart-filters">
+              <button class="chart-filter active">Week</button>
+              <button class="chart-filter">Month</button>
+              <button class="chart-filter">Year</button>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="chart-bar-group">
+              <div class="chart-bar" style="height:65%;">
+                <span class="bar-value">₹2,100</span>
+                <span class="bar-label">Mon</span>
+              </div>
+              <div class="chart-bar" style="height:72%;">
+                <span class="bar-value">₹2,250</span>
+                <span class="bar-label">Tue</span>
+              </div>
+              <div class="chart-bar" style="height:60%;">
+                <span class="bar-value">₹1,980</span>
+                <span class="bar-label">Wed</span>
+              </div>
+              <div class="chart-bar" style="height:80%;">
+                <span class="bar-value">₹2,420</span>
+                <span class="bar-label">Thu</span>
+              </div>
+              <div class="chart-bar" style="height:90%;">
+                <span class="bar-value">₹2,650</span>
+                <span class="bar-label">Fri</span>
+              </div>
+              <div class="chart-bar" style="height:75%;background:linear-gradient(180deg, var(--color-secondary-light), var(--color-secondary));">
+                <span class="bar-value">₹2,340</span>
+                <span class="bar-label">Sat</span>
+              </div>
+              <div class="chart-bar" style="height:85%;background:linear-gradient(180deg, var(--color-accent-light), var(--color-accent));">
+                <span class="bar-value">₹2,510</span>
+                <span class="bar-label">Sun</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts -->
+        <div class="card" style="display:flex;flex-direction:column;gap:var(--space-md);">
+          <h4><i class="fas fa-bell" style="color:var(--color-secondary);margin-right:8px;"></i> <span data-i18n="recent_alerts">Recent Alerts</span></h4>
+          <div style="padding:12px;background:#FFF8E1;border-radius:var(--radius-sm);border-left:4px solid #F57F17;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="badge badge-warning"><i class="fas fa-cloud-showers-heavy"></i> Weather</span>
+              <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">2h ago</span>
+            </div>
+            <p style="font-size:.85rem;color:var(--text-primary);">Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.</p>
+          </div>
+          <div style="padding:12px;background:#FFEBEE;border-radius:var(--radius-sm);border-left:4px solid #C62828;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="badge badge-danger"><i class="fas fa-bug"></i> Disease</span>
+              <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">5h ago</span>
+            </div>
+            <p style="font-size:.85rem;color:var(--text-primary);">Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.</p>
+          </div>
+          <div style="padding:12px;background:#E8F5E9;border-radius:var(--radius-sm);border-left:4px solid var(--color-primary);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="badge"><i class="fas fa-chart-line"></i> Market</span>
+              <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">1d ago</span>
+            </div>
+            <p style="font-size:.85rem;color:var(--text-primary);">Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.</p>
+          </div>
+          <div style="padding:12px;background:#E3F2FD;border-radius:var(--radius-sm);border-left:4px solid #1565C0;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <span class="badge badge-info"><i class="fas fa-tint"></i> Water</span>
+              <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">1d ago</span>
+            </div>
+            <p style="font-size:.85rem;color:var(--text-primary);">Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Water & Fertilizer Management -->
+      <div class="grid-2 fade-in delay-3 water-fertilizer-section" style="margin-bottom:var(--space-xl);">
+        <!-- Water Usage -->
+        <div class="card">
+          <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-tint" style="color:#1565C0;margin-right:8px;"></i> <span data-i18n="water_mgmt">Water Management</span></h4>
+          <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;">
+                <span>Field A — Wheat</span>
+                <span style="font-weight:600;color:var(--color-primary);">78%</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:78%;"></div></div>
+              <p style="font-size:.75rem;margin-top:4px;color:var(--text-primary);">Soil moisture: Optimal level</p>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;">
+                <span>Field B — Chickpea</span>
+                <span style="font-weight:600;color:#E65100;">42%</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:42%;background:linear-gradient(90deg,#E65100,#FF8F00);"></div></div>
+              <p style="font-size:.75rem;margin-top:4px;color:var(--text-primary);">⚠ Needs irrigation within 24h</p>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;">
+                <span>Field C — Potato</span>
+                <span style="font-weight:600;color:var(--color-primary);">65%</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:65%;"></div></div>
+              <p style="font-size:.75rem;margin-top:4px;color:var(--text-primary);">Adequate level. Next irrigation: 3 days</p>
+            </div>
+          </div>
+        </div>
+        <!-- Fertilizer Planner -->
+        <div class="card">
+          <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-flask" style="color:#6A1B9A;margin-right:8px;"></i> <span data-i18n="fert_plan">Fertilizer Schedule</span></h4>
+          <table class="data-table" style="font-size:.88rem;">
+            <thead>
+              <tr>
+                <th>Crop</th>
+                <th>Fertilizer</th>
+                <th>Qty</th>
+                <th>Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>🌾 Wheat</td>
+                <td>Urea (N)</td>
+                <td>50 kg/acre</td>
+                <td><span class="badge badge-warning">Tomorrow</span></td>
+              </tr>
+              <tr>
+                <td>🌿 Chickpea</td>
+                <td>DAP (P)</td>
+                <td>30 kg/acre</td>
+                <td><span class="badge badge-info">In 5 days</span></td>
+              </tr>
+              <tr>
+                <td>🥔 Potato</td>
+                <td>MOP (K)</td>
+                <td>25 kg/acre</td>
+                <td><span class="badge">In 10 days</span></td>
+              </tr>
+              <tr>
+                <td>🌻 Mustard</td>
+                <td>Sulphur</td>
+                <td>15 kg/acre</td>
+                <td><span class="badge">In 14 days</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="grid-3 fade-in delay-4" style="margin-bottom:var(--space-xl);">
+        <a href="disease-detection.html" class="card card-gradient" style="display:flex;align-items:center;gap:var(--space-md);">
+          <i class="fas fa-leaf" style="font-size:2rem;"></i>
+          <div>
+            <h4>Disease Detection</h4>
+            <p>Scan your crop leaves now</p>
+          </div>
+          <i class="fas fa-arrow-right" style="margin-left:auto;font-size:1.2rem;"></i>
+        </a>
+        <a href="market-prices.html" class="card" style="display:flex;align-items:center;gap:var(--space-md);background:linear-gradient(135deg,#E65100,#FF8F00);color:#fff;border:none;">
+          <i class="fas fa-chart-bar" style="font-size:2rem;"></i>
+          <div>
+            <h4 style="color:#fff;">Market Prices</h4>
+            <p style="color:rgba(255,255,255,.8);">Live mandi rates</p>
+          </div>
+          <i class="fas fa-arrow-right" style="margin-left:auto;font-size:1.2rem;"></i>
+        </a>
+        <a href="marketplace.html" class="card" style="display:flex;align-items:center;gap:var(--space-md);background:linear-gradient(135deg,#1565C0,#0D47A1);color:#fff;border:none;">
+          <i class="fas fa-store" style="font-size:2rem;"></i>
+          <div>
+            <h4 style="color:#fff;">Marketplace</h4>
+            <p style="color:rgba(255,255,255,.8);">Sell your produce</p>
+          </div>
+          <i class="fas fa-arrow-right" style="margin-left:auto;font-size:1.2rem;"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Chatbot FAB -->
+  <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()">
+    <i class="fas fa-comment-dots"></i>
+  </button>
+  <div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-robot" style="font-size:1.2rem;"></i>
+        <div>
+          <h4 data-i18n="chat_title">Krishi AI Assistant</h4>
+          <span style="font-size:.72rem;opacity:.8;">Ask me anything about farming</span>
+        </div>
+      </div>
+      <button class="close-chat" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chatbot-body" id="chatbotBody">
+      <div class="chat-msg bot">Namaste! 🙏 I'm your Krishi AI assistant. How can I help you today?</div>
+    </div>
+    <div class="chatbot-input">
+      <input type="text" id="chatInput" placeholder="Type your question..." onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // Set date
+    document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    // Fetch weather on load
+    fetchWeather();
+  </script>
+</body>
+</html>

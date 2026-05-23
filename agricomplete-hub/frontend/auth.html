@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — AgriComplete Hub</title>
+  <meta name="description" content="Login or sign up to AgriComplete Hub — your smart farming platform.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="auth-page">
+    <!-- Left Visual -->
+    <div class="auth-visual">
+      <div class="auth-visual-content fade-in">
+        <div style="font-size:3rem;margin-bottom:var(--space-md);">🌾</div>
+        <h2>Welcome to<br>AgriComplete Hub</h2>
+        <p>The smartest way to manage your farm. AI-powered insights, market access, and weather intelligence — all in one place.</p>
+        <div class="auth-features">
+          <div class="auth-feature">
+            <i class="fas fa-leaf"></i>
+            <span>AI Disease Detection in Seconds</span>
+          </div>
+          <div class="auth-feature">
+            <i class="fas fa-chart-line"></i>
+            <span>Live Mandi Prices from 500+ Markets</span>
+          </div>
+          <div class="auth-feature">
+            <i class="fas fa-cloud-sun"></i>
+            <span>Hyper-local Weather Forecasts</span>
+          </div>
+          <div class="auth-feature">
+            <i class="fas fa-store"></i>
+            <span>Direct Farmer-to-Buyer Marketplace</span>
+          </div>
+          <div class="auth-feature">
+            <i class="fas fa-robot"></i>
+            <span>AI Chatbot in Your Language</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Form -->
+    <div class="auth-form-side">
+      <div class="auth-form-box fade-in">
+        <!-- Language selector -->
+        <div style="display:flex;justify-content:flex-end;margin-bottom:var(--space-md);">
+          <div class="lang-selector">
+            <i class="fas fa-globe"></i>
+            <select onchange="changeLanguage(this.value)">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="mr">मराठी</option>
+              <option value="pa">ਪੰਜਾਬੀ</option>
+              <option value="ta">தமிழ்</option>
+              <option value="te">తెలుగు</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="loginTab" onclick="switchAuthTab('login')">Login</button>
+          <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">Register</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div id="loginForm">
+          <h2 data-i18n="login_title">Welcome Back! 👋</h2>
+          <p data-i18n="login_subtitle">Sign in to access your farm dashboard</p>
+          <form class="auth-form" onsubmit="handleLogin(event)">
+            <div class="input-group">
+              <label for="loginEmail"><i class="fas fa-envelope"></i> Email or Phone</label>
+              <input class="input-field" type="text" id="loginEmail" placeholder="Enter your email or phone" required>
+            </div>
+            <div class="input-group">
+              <label for="loginPassword"><i class="fas fa-lock"></i> Password</label>
+              <input class="input-field" type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <div class="auth-options">
+              <label><input type="checkbox" checked> Remember me</label>
+              <a href="#">Forgot password?</a>
+            </div>
+            <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;">
+              <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+          </form>
+        </div>
+
+        <!-- REGISTER FORM -->
+        <div id="registerForm" style="display:none;">
+          <h2 data-i18n="register_title">Create Account 🌱</h2>
+          <p data-i18n="register_subtitle">Start your smart farming journey today</p>
+          <form class="auth-form" onsubmit="handleRegister(event)">
+            <div class="input-row">
+              <div class="input-group">
+                <label for="regFirstName">First Name</label>
+                <input class="input-field" type="text" id="regFirstName" placeholder="First name" required>
+              </div>
+              <div class="input-group">
+                <label for="regLastName">Last Name</label>
+                <input class="input-field" type="text" id="regLastName" placeholder="Last name" required>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="regPhone"><i class="fas fa-phone"></i> Phone Number</label>
+              <input class="input-field" type="tel" id="regPhone" placeholder="+91 XXXXX XXXXX" required>
+            </div>
+            <div class="input-group">
+              <label for="regEmail"><i class="fas fa-envelope"></i> Email</label>
+              <input class="input-field" type="email" id="regEmail" placeholder="your@email.com" required>
+            </div>
+            <div class="input-group">
+              <label for="regState"><i class="fas fa-map-marker-alt"></i> State</label>
+              <select class="input-field" id="regState" required>
+                <option value="">Select your state</option>
+                <option>Maharashtra</option>
+                <option>Punjab</option>
+                <option>Uttar Pradesh</option>
+                <option>Bihar</option>
+                <option>Madhya Pradesh</option>
+                <option>Rajasthan</option>
+                <option>Tamil Nadu</option>
+                <option>Karnataka</option>
+                <option>Gujarat</option>
+                <option>Andhra Pradesh</option>
+                <option>Telangana</option>
+                <option>West Bengal</option>
+                <option>Haryana</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="regPassword"><i class="fas fa-lock"></i> Password</label>
+              <input class="input-field" type="password" id="regPassword" placeholder="Create a strong password" required>
+            </div>
+            <label style="font-size:.82rem;display:flex;align-items:flex-start;gap:8px;">
+              <input type="checkbox" required style="margin-top:3px;">
+              I agree to the <a href="#" style="color:var(--color-primary);font-weight:600;">Terms of Service</a> and <a href="#" style="color:var(--color-primary);font-weight:600;">Privacy Policy</a>
+            </label>
+            <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;">
+              <i class="fas fa-user-plus"></i> Create Account
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
