@@ -583,7 +583,18 @@ p  { color:var(--text-secondary); }
 .weather-temp { font-size:3.5rem; font-weight:800; font-family:var(--font-heading); line-height:1; }
 .weather-desc { font-size:.95rem; opacity:.85; margin-top:4px; }
 .weather-details { display:flex; gap:var(--space-lg); margin-top:var(--space-md); }
-.weather-detail { display:flex; align-items:center; gap:6px; font-size:.85rem; opacity:.8; }
+.weather-detail { display:flex; align-items:center; gap:6px; font-size:.85rem; opacity:.9; }
+.weather-detail strong {
+  color: #FFFFFF;
+  font-weight: 800;
+}
+#wAQI {
+  color: #FFFFFF !important;
+  background: rgba(255,255,255,.16);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: var(--radius-full);
+  padding: 2px 8px;
+}
 .weather-forecast {
   display:flex; gap:var(--space-md); margin-top:var(--space-lg);
   padding-top:var(--space-md);

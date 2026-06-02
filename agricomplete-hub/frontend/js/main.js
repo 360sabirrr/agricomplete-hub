@@ -795,7 +795,7 @@ function createMarketplaceCardHtml(listing) {
           <span><i class="fas fa-weight-hanging"></i> ${quantity} qtl</span>
         </div>
         <div class="product-price">?${safePrice}/q</div>
-        <p style="font-size:.78rem;margin-top:4px;">Listed by ${seller} � ${timeAgo}</p>
+        <p style="font-size:.78rem;margin-top:4px;">Listed by ${seller} - ${timeAgo}</p>
         <div class="product-actions">
           <a href="#" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</a>
           <a href="#" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</a>
@@ -1231,7 +1231,40 @@ async function handleRegister(e) {
 
 
 // ============ WEATHER API ============
-const WEATHER_API_KEY = 'a60d42f8b01a463cb54202802262205';
+async function fetchJson(url) {
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data?.msg || data?.message || data?.error?.message || 'Weather fetch failed');
+  }
+  return data;
+}
+
+function getWeatherIconClass(text) {
+  const condText = String(text || '').toLowerCase();
+  if (condText.includes('clear') || condText.includes('sun')) return 'fas fa-sun';
+  if (condText.includes('rain') || condText.includes('drizzle')) return 'fas fa-cloud-rain';
+  if (condText.includes('cloud') || condText.includes('overcast')) return 'fas fa-cloud';
+  if (condText.includes('thunder') || condText.includes('storm')) return 'fas fa-bolt';
+  if (condText.includes('snow')) return 'fas fa-snowflake';
+  if (condText.includes('fog') || condText.includes('mist') || condText.includes('haze')) return 'fas fa-smog';
+  return 'fas fa-cloud-sun';
+}
+
+function getAqiLabel(aqiValue) {
+  if (!aqiValue) return 'N/A';
+  if (aqiValue === 1) return 'Good';
+  if (aqiValue === 2) return 'Fair';
+  if (aqiValue === 3) return 'Bad';
+  return 'Dangerous';
+}
+
+function formatWeatherNumber(value, decimals, suffix) {
+  if (value === null || value === undefined || value === '') return '--';
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue)) return '--';
+  return `${numberValue.toFixed(decimals)} ${suffix}`;
+}
 
 async function fetchWeather() {
   const cityInput = document.getElementById('weatherCityInput');
@@ -1239,16 +1272,23 @@ async function fetchWeather() {
   if (!city) return;
 
   try {
-    const res = await fetch(
-      `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(city)}&aqi=yes`
-    );
-    if (!res.ok) throw new Error('Weather fetch failed');
-    const data = await res.json();
+    const backendData = await fetchJson(`${API_URL}/weather/current?city=${encodeURIComponent(city)}`);
+    const weatherData = {
+      provider: backendData.provider,
+      location: backendData.location || city,
+      temperature: backendData.temperature,
+      condition: backendData.condition || 'Weather unavailable',
+      humidity: backendData.humidity,
+      wind_kph: backendData.wind_kph,
+      visibility_km: backendData.visibility_km,
+      pressure_mb: backendData.pressure_mb,
+      aqiText: getAqiLabel(backendData.aqi),
+      forecast: backendData.forecast || []
+    };
 
-    // Current
-    const c = data.current;
-    const loc = data.location;
-    
+    const conditionText = weatherData.condition;
+    const tempC = Number(weatherData.temperature);
+
     const tempEl = document.getElementById('weatherTemp');
     const descEl = document.getElementById('weatherDesc');
     const locEl = document.getElementById('weatherLocation');
@@ -1258,43 +1298,27 @@ async function fetchWeather() {
     const pressEl = document.getElementById('wPressure');
     const iconEl = document.getElementById('weatherIcon');
 
-    if (tempEl) tempEl.textContent = `${Math.round(c.temp_c)}°C`;
-    if (descEl) descEl.textContent = c.condition.text;
-    if (locEl) locEl.textContent = `${loc.name}, ${loc.region}`;
-    if (humEl) humEl.textContent = `${c.humidity}%`;
-    if (windEl) windEl.textContent = `${c.wind_kph} km/h`;
-    if (visEl) visEl.textContent = `${c.vis_km} km`;
-    if (pressEl) pressEl.textContent = `${c.pressure_mb} mb`;
+    if (tempEl) tempEl.textContent = `${Math.round(tempC)}\u00B0C`;
+    if (descEl) descEl.textContent = conditionText.replace(/\b\w/g, c => c.toUpperCase());
+    if (locEl) locEl.textContent = weatherData.location;
+    if (humEl) humEl.textContent = `${weatherData.humidity ?? '--'}%`;
+    if (windEl) windEl.textContent = formatWeatherNumber(weatherData.wind_kph, 1, 'km/h');
+    if (visEl) visEl.textContent = formatWeatherNumber(weatherData.visibility_km, 1, 'km');
+    if (pressEl) pressEl.textContent = `${weatherData.pressure_mb ?? '--'} mb`;
+    if (iconEl) iconEl.innerHTML = `<i class="${getWeatherIconClass(conditionText)}"></i>`;
 
-    // AQI
     const aqiEl = document.getElementById('wAQI');
-    if (aqiEl && c.air_quality) {
-      const aqiValue = Math.round(c.air_quality['us-epa-index']);
-      const aqiLevels = ["Good", "Moderate", "Unhealthy (SG)", "Unhealthy", "Very Unhealthy", "Hazardous"];
-      aqiEl.textContent = `${aqiValue} (${aqiLevels[aqiValue-1] || 'Unknown'})`;
-      aqiEl.style.color = aqiValue <= 2 ? 'var(--color-primary)' : (aqiValue <= 4 ? '#fbc02d' : '#e53935');
-    }
+    if (aqiEl) aqiEl.textContent = weatherData.aqiText || 'N/A';
 
-    // Weather icon mapping
-    const condText = c.condition.text.toLowerCase();
-    let iconClass = 'fas fa-cloud-sun';
-    if (condText.includes('sunny') || condText.includes('clear')) iconClass = 'fas fa-sun';
-    else if (condText.includes('rain') || condText.includes('drizzle')) iconClass = 'fas fa-cloud-rain';
-    else if (condText.includes('cloud') || condText.includes('overcast')) iconClass = 'fas fa-cloud';
-    else if (condText.includes('thunder') || condText.includes('storm')) iconClass = 'fas fa-bolt';
-    else if (condText.includes('snow')) iconClass = 'fas fa-snowflake';
-    else if (condText.includes('fog') || condText.includes('mist')) iconClass = 'fas fa-smog';
-    if (iconEl) iconEl.innerHTML = `<i class="${iconClass}"></i>`;
-
-    // Resource Management Advice
     const adviceEl = document.getElementById('irrigationAdvice');
     const adviceHintEl = document.getElementById('irrigationWeatherHint');
+    const condText = conditionText.toLowerCase();
     if (adviceEl && adviceHintEl) {
       if (condText.includes('rain') || condText.includes('drizzle')) {
         adviceHintEl.textContent = 'High Humidity / Rain';
         adviceHintEl.className = 'badge badge-info';
         adviceEl.textContent = 'Rain is detected or expected. Postpone irrigation to save resources and prevent over-saturation.';
-      } else if (c.temp_c > 32) {
+      } else if (tempC > 32) {
         adviceHintEl.textContent = 'High Heat Alert';
         adviceHintEl.className = 'badge badge-danger';
         adviceEl.textContent = 'High evaporation risk. Water heavily in early morning and check soil moisture for heat stress.';
@@ -1305,23 +1329,16 @@ async function fetchWeather() {
       }
     }
 
-    // Forecast
     const forecastEl = document.getElementById('weatherForecast');
-    if (forecastEl && data.forecast) {
-      const days = data.forecast.forecastday;
-      forecastEl.innerHTML = days.map((d, i) => {
-        const dayName = i === 0 ? 'Today' : new Date(d.date).toLocaleDateString('en-IN', { weekday: 'short' });
-        const dCond = d.day.condition.text.toLowerCase();
-        let dIcon = 'fas fa-cloud-sun';
-        if (dCond.includes('sunny') || dCond.includes('clear')) dIcon = 'fas fa-sun';
-        else if (dCond.includes('rain')) dIcon = 'fas fa-cloud-rain';
-        else if (dCond.includes('cloud') || dCond.includes('overcast')) dIcon = 'fas fa-cloud';
-        else if (dCond.includes('thunder')) dIcon = 'fas fa-bolt';
+    if (forecastEl && weatherData.forecast.length) {
+      forecastEl.innerHTML = weatherData.forecast.map((item, i) => {
+        const date = item.date || new Date().toISOString();
+        const dayName = i === 0 ? 'Today' : new Date(date).toLocaleDateString('en-IN', { weekday: 'short' });
         return `
           <div class="forecast-day">
             <div class="day">${dayName}</div>
-            <i class="${dIcon}"></i>
-            <div class="temp">${Math.round(d.day.avgtemp_c)}°C</div>
+            <i class="${getWeatherIconClass(item.condition)}"></i>
+            <div class="temp">${Math.round(item.temp)}\u00B0C</div>
           </div>
         `;
       }).join('');
@@ -1329,10 +1346,23 @@ async function fetchWeather() {
   } catch (err) {
     console.error('Weather error:', err);
     const tempEl = document.getElementById('weatherTemp');
+    const descEl = document.getElementById('weatherDesc');
+    const humEl = document.getElementById('wHumidity');
+    const windEl = document.getElementById('wWind');
+    const visEl = document.getElementById('wVisibility');
+    const pressEl = document.getElementById('wPressure');
+    const aqiEl = document.getElementById('wAQI');
+    const forecastEl = document.getElementById('weatherForecast');
     if (tempEl) tempEl.textContent = 'N/A';
+    if (descEl) descEl.textContent = err.message || 'Weather data unavailable';
+    if (humEl) humEl.textContent = '--';
+    if (windEl) windEl.textContent = '--';
+    if (visEl) visEl.textContent = '--';
+    if (pressEl) pressEl.textContent = '--';
+    if (aqiEl) aqiEl.textContent = '--';
+    if (forecastEl) forecastEl.innerHTML = '';
   }
 }
-
 
 // ============ DISEASE DETECTION ============
 function previewLeafImage(event) {
@@ -1588,4 +1618,3 @@ window.handleLogout = function() {
   localStorage.removeItem('agri_user');
   window.location.href = 'index.html';
 };
-

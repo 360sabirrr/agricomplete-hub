@@ -131,17 +131,17 @@ Create a `.env` file in the root or backend folder.
 ```env
 SECRET_KEY=your_secret_key
 DATABASE_URL=postgresql://username:password@localhost:5432/agricompletehub
-WEATHER_API_KEY=your_weatherapi_key
+WEATHERAPI_KEY=your_weatherapi_key
 FLASK_ENV=development
 ```
 
-## Weather API ( Temporary ) 
+## Weather API
 
-This project uses WeatherAPI to show weather forecasts and alerts.
+This project uses WeatherAPI through the backend weather route for all dashboard weather data. Set `WEATHERAPI_KEY` in the backend `.env` file, then restart Flask.
 
 Example endpoint:
 ```bash
-https://api.weatherapi.com/v1/forecast.json?key=YOUR_API_KEY&q=London&days=1&aqi=no&alerts=no
+http://localhost:5000/api/weather/current?city=Pune
 ```
 
 Weather data is used for:
