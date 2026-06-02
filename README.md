@@ -46,8 +46,8 @@ This project focuses on practical agricultural support:
 
 ### Smart Agriculture Features
 - Crop recommendation based on inputs like location, season, irrigation type, and crop history
-- Weather alerts using WeatherAPI
-- Plant disease prediction UI for future ML integration
+- Weather alerts through the Flask backend weather route
+- Plant disease prediction flow prepared for future ML model integration
 - Live mandi price display
 - Direct farmer-to-buyer marketplace
 - Water and fertilizer usage guidance
@@ -66,8 +66,10 @@ This project focuses on practical agricultural support:
 ### Database
 - PostgreSQL
 
-### API
-- WeatherAPI
+### APIs
+- WeatherAPI.com for weather when `WEATHERAPI_KEY` is configured
+- OpenWeatherMap for AQI/weather fallback when `OPENWEATHER_API_KEY` is configured
+- Open-Meteo as a no-key weather fallback without AQI
 
 ### Planned ML Module
 - Crop disease prediction model using a real-world dataset
@@ -129,15 +131,22 @@ python app.py
 Create a `.env` file in the root or backend folder.
 
 ```env
-SECRET_KEY=your_secret_key
-DATABASE_URL=postgresql://username:password@localhost:5432/agricompletehub
+JWT_SECRET_KEY=your_secret_key
+DATABASE_URL=postgresql+psycopg2://username:password@localhost:5432/agricompletehub
 WEATHERAPI_KEY=your_weatherapi_key
+OPENWEATHER_API_KEY=your_openweathermap_key
 FLASK_ENV=development
+FLASK_DEBUG=True
 ```
 
 ## Weather API
 
-This project uses WeatherAPI through the backend weather route for all dashboard weather data. Set `WEATHERAPI_KEY` in the backend `.env` file, then restart Flask.
+This project uses the backend weather route for dashboard weather data. The frontend should call the backend, not a weather provider directly.
+
+Provider order:
+- WeatherAPI.com when `WEATHERAPI_KEY` is valid
+- OpenWeatherMap when `OPENWEATHER_API_KEY` is valid, including AQI
+- Open-Meteo fallback when no key works, but AQI may be unavailable
 
 Example endpoint:
 ```bash
@@ -150,13 +159,36 @@ Weather data is used for:
 - temperature updates
 - humidity details
 - wind warnings
+- AQI labels: Good, Fair, Bad, Dangerous
+
+## Deployment Notes
+
+Render backend start command:
+```bash
+cd agricomplete-hub/backend && gunicorn app:app
+```
+
+Set these Render environment variables:
+```env
+DATABASE_URL=your_render_postgresql_external_or_internal_url
+JWT_SECRET_KEY=generate_a_long_secret
+WEATHERAPI_KEY=optional_weatherapi_key
+OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
+FLASK_ENV=production
+FLASK_DEBUG=False
+```
+
+The frontend API URL is deployment-aware in `frontend/js/main.js`:
+- local browser uses `http://localhost:5000/api`
+- deployed frontend uses `https://agricomplete-backend.onrender.com/api`
+- you can override it with `window.AGRICOMPLETE_API_URL` or a `<meta name="api-url">` tag
 
 ## Backend
 
-The backend will be built with Flask and will handle:
+The backend is built with Flask and handles:
 - weather data requests
 - crop recommendation logic
-- disease prediction API integration
+- disease prediction API integration placeholder
 - login and profile data
 - marketplace listings
 - chatbot responses
@@ -176,6 +208,7 @@ PostgreSQL will be used to store:
 
 ## Future Improvements
 
+- Train and deploy the crop disease prediction model
 - Better chatbot with AI responses
 - Buyer and farmer chat system
 - Map-based nearby buyer discovery

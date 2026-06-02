@@ -575,12 +575,6 @@ function syncStoredUserUI() {
 }
 
 
-function handleLogout() {
-  // Clear any local storage if needed
-  localStorage.removeItem('agri_user');
-  window.location.href = 'index.html';
-}
-
 // ============ PROFILE ============
 function setInputValue(id, value) {
   const el = document.getElementById(id);
@@ -1156,7 +1150,24 @@ function switchAuthTab(tab) {
   }
 }
 
-const API_URL = 'http://localhost:5000/api';
+function normalizeApiUrl(url) {
+  const cleanUrl = String(url || '').replace(/\/+$/, '');
+  return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+}
+
+const API_URL = (() => {
+  const configuredUrl =
+    window.AGRICOMPLETE_API_URL ||
+    document.querySelector('meta[name="api-url"]')?.content;
+  if (configuredUrl) return normalizeApiUrl(configuredUrl);
+
+  const localHosts = ['', 'localhost', '127.0.0.1'];
+  if (localHosts.includes(window.location.hostname)) {
+    return 'http://localhost:5000/api';
+  }
+
+  return 'https://agricomplete-backend.onrender.com/api';
+})();
 
 // API Helper
 async function apiFetch(endpoint, options = {}) {
@@ -1397,52 +1408,16 @@ function resetUpload() {
   if (placeholder) placeholder.style.display = 'block';
 }
 
-function analyzeDisease() {
+function renderDiseaseResult(disease) {
   const result = document.getElementById('diagnosisResult');
   const placeholder = document.getElementById('diagnosisPlaceholder');
   const info = document.getElementById('diseaseInfo');
   const badge = document.getElementById('resultBadge');
-  
-  // Simulate AI analysis
-  const diseases = [
-    {
-      name: "Late Blight (Phytophthora infestans)",
-      confidence: 92,
-      severity: "High",
-      badgeClass: "badge-danger",
-      description: "Fungal disease causing dark, water-soaked lesions on leaves that rapidly spread in humid conditions.",
-      symptoms: ["Dark brown/black lesions on leaves", "White fuzzy growth on leaf undersides", "Rapid wilting and decay"],
-      treatment: ["Apply Mancozeb 75% WP @ 2.5g/L", "Remove and destroy infected plants", "Improve air circulation between rows", "Avoid overhead irrigation"],
-      prevention: ["Use disease-resistant varieties", "Maintain proper spacing", "Apply preventive fungicide before rainy season"]
-    },
-    {
-      name: "Powdery Mildew (Erysiphe spp.)",
-      confidence: 87,
-      severity: "Medium",
-      badgeClass: "badge-warning",
-      description: "White powdery coating on leaf surfaces caused by fungal infection, reducing photosynthesis.",
-      symptoms: ["White powdery spots on upper leaf surface", "Yellowing and curling of leaves", "Stunted growth"],
-      treatment: ["Spray Sulphur 80% WP @ 3g/L", "Apply Karathane at 1ml/L", "Neem oil spray as organic alternative"],
-      prevention: ["Avoid overcrowding plants", "Ensure good air circulation", "Water at the base, not overhead"]
-    },
-    {
-      name: "Bacterial Leaf Blight",
-      confidence: 78,
-      severity: "Medium",
-      badgeClass: "badge-warning",
-      description: "Bacterial infection causing yellowish-green lesions that turn white or gray.",
-      symptoms: ["Water-soaked yellow lesions", "Lesions enlarge and turn grayish white", "Leaf margins dry out"],
-      treatment: ["Apply Streptocycline 100ppm", "Copper oxychloride spray", "Remove severely infected leaves"],
-      prevention: ["Use certified disease-free seeds", "Balanced nitrogen fertilization", "Proper field drainage"]
-    }
-  ];
-
-  const disease = diseases[Math.floor(Math.random() * diseases.length)];
 
   if (placeholder) placeholder.style.display = 'none';
   if (result) result.style.display = 'block';
   if (badge) {
-    badge.className = `badge ${disease.badgeClass}`;
+    badge.className = `badge ${disease.badgeClass || 'badge-info'}`;
     badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${disease.severity} Severity`;
   }
   
@@ -1475,6 +1450,71 @@ function analyzeDisease() {
         ${disease.prevention.map(p => `<li style="margin-bottom:4px;list-style:disc;">${p}</li>`).join('')}
       </ul>
     `;
+  }
+}
+
+async function analyzeDisease() {
+  const input = document.getElementById('leafInput');
+  const result = document.getElementById('diagnosisResult');
+  const placeholder = document.getElementById('diagnosisPlaceholder');
+  const info = document.getElementById('diseaseInfo');
+  const badge = document.getElementById('resultBadge');
+
+  if (!input?.files?.length) {
+    alert('Please upload a leaf image first.');
+    return;
+  }
+
+  if (placeholder) placeholder.style.display = 'none';
+  if (result) result.style.display = 'block';
+  if (badge) {
+    badge.className = 'badge badge-info';
+    badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking model';
+  }
+  if (info) {
+    info.innerHTML = '<p style="font-size:.9rem;">Uploading image to disease prediction API...</p>';
+  }
+
+  const formData = new FormData();
+  formData.append('image', input.files[0]);
+
+  try {
+    const res = await fetch(`${API_URL}/disease/predict`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.msg || 'Disease prediction failed');
+    }
+
+    renderDiseaseResult({
+      name: data.name || data.disease || 'Detected Disease',
+      confidence: data.confidence || 0,
+      severity: data.severity || 'Unknown',
+      badgeClass: data.badgeClass || 'badge-info',
+      description: data.description || 'The model returned a prediction without detailed notes.',
+      symptoms: data.symptoms || [],
+      treatment: data.treatment || [],
+      prevention: data.prevention || []
+    });
+  } catch (err) {
+    if (badge) {
+      badge.className = 'badge badge-warning';
+      badge.innerHTML = '<i class="fas fa-info-circle"></i> Model Not Ready';
+    }
+    if (info) {
+      info.innerHTML = `
+        <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">Disease model is not deployed yet</h3>
+        <p style="font-size:.9rem;margin-bottom:var(--space-md);">
+          ${escapeHtml(err.message || 'Train and deploy the crop disease model before using real predictions.')}
+        </p>
+        <p style="font-size:.85rem;color:var(--text-secondary);">
+          After training, connect the exported model inside the backend <code>/api/disease/predict</code> route.
+        </p>
+      `;
+    }
   }
 }
 

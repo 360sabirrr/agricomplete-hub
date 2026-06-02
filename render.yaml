@@ -5,12 +5,16 @@ services:
     region: oregon
     plan: free
     buildCommand: cd agricomplete-hub/backend && pip install -r requirements.txt
-    startCommand: cd agricomplete-hub/backend && python app.py
+    startCommand: cd agricomplete-hub/backend && gunicorn app:app
     envVars:
       - key: DATABASE_URL
-        value: sqlite:///agricomplete.db
+        sync: false
       - key: JWT_SECRET_KEY
-        value: 5tK9xL2pN8vM4wJ6hG3tY7uO1aP9bS2d
+        generateValue: true
+      - key: WEATHERAPI_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG
