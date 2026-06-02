@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration
-database_url = os.getenv('DATABASE_URL', 'sqlite:///agricomplete.db')
+database_url = (os.getenv('DATABASE_URL') or 'sqlite:///agricomplete.db').strip().strip('"').strip("'")
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
