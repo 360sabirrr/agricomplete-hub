@@ -3930,6 +3930,15 @@ async function generateAssistantResponse(message) {
  const command = getAssistantCommand(message);
  if (command) return command;
 
+ try {
+ const llmAnswer = await buildLlmAssistantAnswer(message);
+ if (llmAnswer) return llmAnswer;
+ } catch (err) {
+ console.warn('Gemini assistant unavailable, using local fallback:', err);
+ }
+
+ const text = normalizeAssistantText(message);
+
  const weatherIntent = await detectAssistantWeatherIntent(message);
  if (weatherIntent.isWeather) {
  return { text: await buildWeatherAnswer(message, weatherIntent), source: 'weather' };
@@ -3944,7 +3953,6 @@ async function generateAssistantResponse(message) {
  const personalAnswer = buildPersonalAssistantAnswer(message);
  if (personalAnswer) return { text: personalAnswer, source: 'local' };
 
- const text = normalizeAssistantText(message);
  if (includesAny(text, ['not responding', 'no response', 'not working', 'stuck'])) {
  return { text: buildGeneralAnswer(message), source: 'local' };
  }
@@ -3956,13 +3964,6 @@ async function generateAssistantResponse(message) {
  const matched = assistantKnowledge.find(item =>
  item.keys.some(key => assistantTopicKeyMatches(text, key))
  );
-
- try {
- const llmAnswer = await buildLlmAssistantAnswer(message);
- if (llmAnswer) return llmAnswer;
- } catch (err) {
- console.warn('LLM assistant unavailable, using local fallback:', err);
- }
 
  if (matched) return { text: matched.answer, source: 'local' };
  const offlineTopicAnswer = getAssistantOfflineTopicAnswer(text);
