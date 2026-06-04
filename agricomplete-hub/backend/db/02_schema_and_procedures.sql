@@ -9,10 +9,15 @@ CREATE TABLE IF NOT EXISTS "user" (
   password_hash VARCHAR(128) NOT NULL,
   first_name VARCHAR(50),
   last_name VARCHAR(50),
-  phone VARCHAR(20),
+  phone VARCHAR(20) UNIQUE,
   state VARCHAR(50),
   district VARCHAR(50),
   village VARCHAR(100),
+  total_area VARCHAR(50),
+  soil_type VARCHAR(75),
+  irrigation_source VARCHAR(100),
+  primary_crops VARCHAR(150),
+  farming_type VARCHAR(100),
   subscription VARCHAR(20) DEFAULT 'Basic',
   created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
@@ -33,6 +38,8 @@ CREATE TABLE IF NOT EXISTS market_listing (
   quantity VARCHAR(50) NOT NULL,
   seller_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
   location VARCHAR(100),
+  category VARCHAR(50),
+  image_data TEXT,
   created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );
 
@@ -60,7 +67,12 @@ CREATE OR REPLACE PROCEDURE sp_update_user_profile(
   p_phone VARCHAR(20),
   p_state VARCHAR(50),
   p_district VARCHAR(50),
-  p_village VARCHAR(100)
+  p_village VARCHAR(100),
+  p_total_area VARCHAR(50),
+  p_soil_type VARCHAR(75),
+  p_irrigation_source VARCHAR(100),
+  p_primary_crops VARCHAR(150),
+  p_farming_type VARCHAR(100)
 )
 LANGUAGE plpgsql
 AS $$
@@ -73,7 +85,12 @@ BEGIN
     phone = COALESCE(p_phone, phone),
     state = COALESCE(p_state, state),
     district = COALESCE(p_district, district),
-    village = COALESCE(p_village, village)
+    village = COALESCE(p_village, village),
+    total_area = COALESCE(p_total_area, total_area),
+    soil_type = COALESCE(p_soil_type, soil_type),
+    irrigation_source = COALESCE(p_irrigation_source, irrigation_source),
+    primary_crops = COALESCE(p_primary_crops, primary_crops),
+    farming_type = COALESCE(p_farming_type, farming_type)
   WHERE id = p_user_id;
 
   IF NOT FOUND THEN
@@ -112,4 +129,3 @@ BEGIN
   RETURN v_count;
 END;
 $$;
-

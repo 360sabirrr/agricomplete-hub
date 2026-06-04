@@ -1,205 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgriComplete Hub — Smart Farming Made Simple</title>
-  <meta name="description" content="AgriComplete Hub is an AI-powered agriculture platform helping farmers with crop recommendation, weather alerts, disease detection, market prices, and direct buyer connections.">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>AgriComplete Hub - Smart Farming Made Simple</title>
+ <meta name="description" content="AgriComplete Hub is an AI-powered agriculture platform helping farmers with crop recommendations, weather alerts, disease detection, market prices, and direct buyer connections.">
+ <link rel="stylesheet" href="css/style.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
-  <!-- ============ NAVIGATION ============ -->
-  <nav class="landing-nav" id="landingNav">
-    <div class="container">
-      <a href="index.html" class="logo">
-        <span class="logo-icon">🌾</span>
-        AgriComplete Hub
-      </a>
-      <div class="landing-links" id="navLinks">
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#testimonials">Testimonials</a>
-        <a href="#contact">Contact</a>
-        <div class="lang-selector">
-          <i class="fas fa-globe"></i>
-          <select id="langSelectorLanding" onchange="changeLanguage(this.value)">
-            <option value="en">English</option>
-            <option value="hi">हिन्दी</option>
-            <option value="mr">मराठी</option>
-            <option value="pa">ਪੰਜਾਬੀ</option>
-            <option value="ta">தமிழ்</option>
-            <option value="te">తెలుగు</option>
-          </select>
-        </div>
-        <a href="auth.html" class="btn btn-accent btn-sm">Get Started</a>
-      </div>
-      <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
-        <i class="fas fa-bars"></i>
-      </button>
-    </div>
-  </nav>
+ <!-- ============ NAVIGATION ============ -->
+ <nav class="landing-nav" id="landingNav">
+ <div class="container">
+ <a href="index.html" class="logo" aria-label="AgriComplete Hub home">
+ <span class="logo-icon"><i class="fas fa-seedling"></i></span>
+ AgriComplete Hub
+ </a>
+ <div class="landing-links" id="navLinks">
+ <a href="#features" data-i18n="nav_features">Features</a>
+ <a href="#how-it-works" data-i18n="nav_how_it_works">How It Works</a>
+ <a href="#testimonials" data-i18n="nav_stories">Stories</a>
+ <a href="#contact" data-i18n="nav_contact">Contact</a>
+ <div class="lang-selector">
+ <i class="fas fa-globe"></i>
+ <select id="langSelectorLanding" onchange="changeLanguage(this.value)" aria-label="Select language">
+ <option value="en">English</option>
+ <option value="hi">HI</option>
+ <option value="mr">MR</option>
+ <option value="pa">PA</option>
+ <option value="ta">TA</option>
+ <option value="te">TE</option>
+ </select>
+ </div>
+ <a href="auth.html" class="btn btn-accent btn-sm" data-i18n="get_started">Get Started</a>
+ </div>
+ <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" onclick="toggleMobileMenu()" aria-label="Open menu">
+ <i class="fas fa-bars"></i>
+ </button>
+ </div>
+ </nav>
 
-  <!-- ============ HERO ============ -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-content fade-in">
-        <div class="hero-badge">
-          <span class="dot"></span>
-          <span data-i18n="hero_badge">AI-Powered Agriculture Platform</span>
-        </div>
-        <h1 data-i18n="hero_title">Smart Farming <span>Made Simple</span></h1>
-        <p data-i18n="hero_desc">Empowering Indian farmers with AI-driven crop recommendations, real-time weather intelligence, plant disease detection, live mandi prices, and a direct marketplace — all in one platform.</p>
-        <div class="hero-actions fade-in delay-2">
-          <a href="auth.html" class="btn btn-primary btn-lg" data-i18n="get_started">Get Started Free</a>
-          <a href="#features" class="btn btn-secondary btn-lg" data-i18n="explore_features">Explore Features</a>
-        </div>
-      </div>
-    </div>
-  </section>
+ <!-- ============ HERO ============ -->
+ <section class="hero">
+ <div class="container">
+ <div class="hero-content fade-in">
+ <div class="hero-badge">
+ <span class="dot"></span>
+ <span data-i18n="hero_badge">AI-Powered Agriculture Platform</span>
+ </div>
+ <h1 data-i18n="hero_title">AgriComplete Hub for Smarter Farming</h1>
+ <p data-i18n="hero_desc">Empowering Indian farmers with AI-driven crop recommendations, real-time weather intelligence, plant disease detection, live mandi prices, and a direct marketplace - all in one platform.</p>
+ <div class="hero-actions fade-in delay-2">
+ <a href="auth.html" class="btn btn-primary btn-lg" data-i18n="get_started">Get Started Free</a>
+ <a href="#features" class="btn btn-secondary btn-lg" data-i18n="explore_features">Explore Features</a>
+ </div>
+ <div class="hero-stats fade-in delay-3" aria-label="Platform highlights">
+ <div class="hero-stat">
+ <h3>6</h3>
+ <p data-i18n="hero_stat_tools_text">Farm tools in one dashboard</p>
+ </div>
+ <div class="hero-stat">
+ <h3>24/7</h3>
+ <p data-i18n="hero_stat_ai_text">AI farming guidance</p>
+ </div>
+ <div class="hero-stat">
+ <h3>Live</h3>
+ <p data-i18n="hero_stat_live_text">Weather and mandi updates</p>
+ </div>
+ </div>
+ </div>
+ <div class="hero-visual fade-in delay-4" aria-hidden="true">
+ <div class="float-card">
+ <h4 data-i18n="float_weather_title">Weather Alert</h4>
+ <p data-i18n="float_weather_text">Rain expected tomorrow. Delay pesticide spray.</p>
+ </div>
+ <div class="float-card">
+ <h4 data-i18n="float_market_title">Market Signal</h4>
+ <p class="float-value">Rs. 2,450/q</p>
+ <p data-i18n="float_market_text">Wheat trend is up this week.</p>
+ </div>
+ <div class="float-card">
+ <h4 data-i18n="float_crop_title">Crop Health</h4>
+ <p data-i18n="float_crop_text">Leaf scan ready with treatment guidance.</p>
+ </div>
+ </div>
+ </div>
+ </section>
 
-  <!-- ============ FEATURES ============ -->
-  <section class="features-section" id="features">
-    <div class="container">
-      <div class="section-header fade-in">
-        <div class="section-badge">
-          <i class="fas fa-star"></i>
-          <span data-i18n="features_badge">Platform Features</span>
-        </div>
-        <h2 data-i18n="features_title">Everything a Farmer Needs,<br>In One Place</h2>
-        <p data-i18n="features_desc">From AI-powered disease detection to live market prices, AgriComplete Hub is your complete farming companion.</p>
-      </div>
-      <div class="grid-3" id="featureGrid">
-        <!-- Feature 1 -->
-        <div class="feature-card fade-in delay-1">
-          <div class="feature-icon" style="background:#E8F5E9;color:var(--color-primary);">
-            <i class="fas fa-seedling"></i>
-          </div>
-          <h4 data-i18n="f1_title">Crop Recommendation</h4>
-          <p data-i18n="f1_desc">Get AI-based suggestions for the best crops based on your soil type, location, and season.</p>
-        </div>
-        <!-- Feature 2 -->
-        <div class="feature-card fade-in delay-2">
-          <div class="feature-icon" style="background:#E3F2FD;color:#1565C0;">
-            <i class="fas fa-cloud-sun-rain"></i>
-          </div>
-          <h4 data-i18n="f2_title">Weather Intelligence</h4>
-          <p data-i18n="f2_desc">Real-time weather forecasts, storm alerts, and seasonal predictions for your farm location.</p>
-        </div>
-        <!-- Feature 3 -->
-        <div class="feature-card fade-in delay-3">
-          <div class="feature-icon" style="background:#FFF3E0;color:#E65100;">
-            <i class="fas fa-leaf"></i>
-          </div>
-          <h4 data-i18n="f3_title">Disease Detection</h4>
-          <p data-i18n="f3_desc">Upload a leaf photo and our AI identifies diseases instantly with treatment recommendations.</p>
-        </div>
-        <!-- Feature 4 -->
-        <div class="feature-card fade-in delay-1">
-          <div class="feature-icon" style="background:#FFF8E1;color:#F57F17;">
-            <i class="fas fa-chart-bar"></i>
-          </div>
-          <h4 data-i18n="f4_title">Live Mandi Prices</h4>
-          <p data-i18n="f4_desc">Track real-time commodity prices from mandis across India. Never sell below market rate.</p>
-        </div>
-        <!-- Feature 5 -->
-        <div class="feature-card fade-in delay-2">
-          <div class="feature-icon" style="background:#E0F2F1;color:#00695C;">
-            <i class="fas fa-store"></i>
-          </div>
-          <h4 data-i18n="f5_title">Farmer Marketplace</h4>
-          <p data-i18n="f5_desc">Sell directly to buyers. Skip middlemen and get fair prices for your produce.</p>
-        </div>
-        <!-- Feature 6 -->
-        <div class="feature-card fade-in delay-3">
-          <div class="feature-icon" style="background:#F3E5F5;color:#6A1B9A;">
-            <i class="fas fa-robot"></i>
-          </div>
-          <h4 data-i18n="f6_title">AI Farming Assistant</h4>
-          <p data-i18n="f6_desc">Chat with our AI bot in your language for instant farming advice, tips, and guidance.</p>
-        </div>
-      </div>
-  </section>
+ <!-- ============ FEATURES ============ -->
+ <section class="features-section" id="features">
+ <div class="container">
+ <div class="section-header fade-in">
+ <div class="section-badge">
+ <i class="fas fa-star"></i>
+ <span data-i18n="features_badge">Platform Features</span>
+ </div>
+ <h2 data-i18n="features_title">Everything a Farmer Needs, In One Place</h2>
+ <p data-i18n="features_desc">From AI-powered disease detection to live market prices, AgriComplete Hub is your complete farming companion.</p>
+ </div>
+ <div class="grid-3" id="featureGrid">
+ <div class="feature-card fade-in delay-1">
+ <div class="feature-icon green"><i class="fas fa-seedling"></i></div>
+ <h4 data-i18n="f1_title">Crop Recommendation</h4>
+ <p data-i18n="f1_desc">Get AI-based suggestions for the best crops based on your soil type, location, and season.</p>
+ </div>
+ <div class="feature-card fade-in delay-2">
+ <div class="feature-icon blue"><i class="fas fa-cloud-sun-rain"></i></div>
+ <h4 data-i18n="f2_title">Weather Intelligence</h4>
+ <p data-i18n="f2_desc">Real-time weather forecasts, storm alerts, and seasonal predictions for your farm location.</p>
+ </div>
+ <div class="feature-card fade-in delay-3">
+ <div class="feature-icon orange"><i class="fas fa-leaf"></i></div>
+ <h4 data-i18n="f3_title">Disease Detection</h4>
+ <p data-i18n="f3_desc">Upload a leaf photo and our AI identifies diseases instantly with treatment recommendations.</p>
+ </div>
+ <div class="feature-card fade-in delay-1">
+ <div class="feature-icon yellow"><i class="fas fa-chart-bar"></i></div>
+ <h4 data-i18n="f4_title">Live Mandi Prices</h4>
+ <p data-i18n="f4_desc">Track real-time commodity prices from mandis across India. Never sell below market rate.</p>
+ </div>
+ <div class="feature-card fade-in delay-2">
+ <div class="feature-icon teal"><i class="fas fa-store"></i></div>
+ <h4 data-i18n="f5_title">Farmer Marketplace</h4>
+ <p data-i18n="f5_desc">Sell directly to buyers. Skip middlemen and get fair prices for your produce.</p>
+ </div>
+ <div class="feature-card fade-in delay-3">
+ <div class="feature-icon purple"><i class="fas fa-robot"></i></div>
+ <h4 data-i18n="f6_title">AI Farming Assistant</h4>
+ <p data-i18n="f6_desc">Chat with our AI bot in your language for instant farming advice, tips, and guidance.</p>
+ </div>
+ </div>
+ </div>
+ </section>
 
-  <!-- ============ HOW IT WORKS ============ -->
-  <section id="how-it-works" style="padding:var(--space-3xl) 0;background:var(--bg-card);">
-    <div class="container">
-      <div class="section-header fade-in">
-        <div class="section-badge">
-          <i class="fas fa-route"></i>
-          <span data-i18n="hiw_badge">How It Works</span>
-        </div>
-        <h2 data-i18n="hiw_title">Start Farming Smarter in 3 Steps</h2>
-        <p data-i18n="hiw_desc">Getting started is as easy as planting a seed.</p>
-      </div>
-      <div class="grid-3">
-        <div class="card text-center fade-in delay-1" style="border-top:4px solid var(--color-primary);">
-          <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--color-primary),var(--color-accent));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:800;margin:0 auto var(--space-md);font-family:var(--font-heading);">1</div>
-          <h4 data-i18n="step1_title">Create Your Profile</h4>
-          <p data-i18n="step1_desc">Sign up with your farm details — location, soil type, and crops you grow.</p>
-        </div>
-        <div class="card text-center fade-in delay-2" style="border-top:4px solid var(--color-secondary);">
-          <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--color-secondary),var(--color-secondary-light));border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-primary);font-size:1.5rem;font-weight:800;margin:0 auto var(--space-md);font-family:var(--font-heading);">2</div>
-          <h4 data-i18n="step2_title">Get Smart Insights</h4>
-          <p data-i18n="step2_desc">Receive AI-powered crop recommendations, weather alerts, and disease analysis.</p>
-        </div>
-        <div class="card text-center fade-in delay-3" style="border-top:4px solid var(--color-accent);">
-          <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--color-accent),var(--color-accent-light));border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:800;margin:0 auto var(--space-md);font-family:var(--font-heading);">3</div>
-          <h4 data-i18n="step3_title">Grow & Sell</h4>
-          <p data-i18n="step3_desc">Maximize your yield and sell directly to buyers at the best prices.</p>
-        </div>
-      </div>
-  </section>
+ <!-- ============ HOW IT WORKS ============ -->
+ <section class="landing-section section-light" id="how-it-works">
+ <div class="container">
+ <div class="section-header fade-in">
+ <div class="section-badge">
+ <i class="fas fa-route"></i>
+ <span data-i18n="hiw_badge">How It Works</span>
+ </div>
+ <h2 data-i18n="hiw_title">Start Farming Smarter in 3 Steps</h2>
+ <p data-i18n="hiw_desc">Getting started is as easy as planting a seed.</p>
+ </div>
+ <div class="how-steps">
+ <div class="step-card fade-in delay-1">
+ <span class="step-number">1</span>
+ <h4 data-i18n="step1_title">Create Your Profile</h4>
+ <p data-i18n="step1_desc">Sign up with your farm details - location, soil type, and crops you grow.</p>
+ </div>
+ <div class="step-card fade-in delay-2">
+ <span class="step-number">2</span>
+ <h4 data-i18n="step2_title">Get Smart Insights</h4>
+ <p data-i18n="step2_desc">Receive AI-powered crop recommendations, weather alerts, and disease analysis.</p>
+ </div>
+ <div class="step-card fade-in delay-3">
+ <span class="step-number">3</span>
+ <h4 data-i18n="step3_title">Grow & Sell</h4>
+ <p data-i18n="step3_desc">Maximize your yield and sell directly to buyers at the best prices.</p>
+ </div>
+ </div>
+ </div>
+ </section>
 
-  <!-- ============ FOOTER ============ -->
-  <footer class="landing-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <h3 style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:1.3rem;">🌾</span> AgriComplete Hub
-          </h3>
-          <p style="margin-top:var(--space-sm);" data-i18n="footer_desc">Empowering Indian farmers with AI-driven insights, weather intelligence, and direct market access. Built for the future of agriculture.</p>
-          <div style="display:flex;gap:var(--space-md);margin-top:var(--space-lg);">
-            <a href="#" class="btn-icon" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="btn-icon" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="btn-icon" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="btn-icon" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);"><i class="fab fa-youtube"></i></a>
-          </div>
-        </div>
-        <div class="footer-links">
-          <h4>Platform</h4>
-          <a href="dashboard.html">Dashboard</a>
-          <a href="disease-detection.html">Disease Detection</a>
-          <a href="market-prices.html">Market Prices</a>
-          <a href="marketplace.html">Marketplace</a>
-        </div>
-        <div class="footer-links">
-          <h4>Resources</h4>
-          <a href="#">Farming Guides</a>
-          <a href="#">Blog</a>
-          <a href="#">API Docs</a>
-          <a href="#">Support</a>
-        </div>
-        <div class="footer-links">
-          <h4>Company</h4>
-          <a href="#">About Us</a>
-          <a href="#">Careers</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 AgriComplete Hub. Made with ❤️ for Indian Farmers.</p>
-        <p>
-          <a href="#" style="color:var(--color-secondary);">Privacy</a> · 
-          <a href="#" style="color:var(--color-secondary);">Terms</a> ·
-          <a href="#" style="color:var(--color-secondary);">Contact</a>
-        </p>
-      </div>
-    </div>
-  </footer>
-  <script src="js/main.js"></script>
+ <!-- ============ TESTIMONIALS ============ -->
+ <section class="landing-section testimonials-section" id="testimonials">
+ <div class="container">
+ <div class="section-header fade-in">
+ <div class="section-badge">
+ <i class="fas fa-comments"></i>
+ <span data-i18n="test_badge">Farmer Stories</span>
+ </div>
+ <h2 data-i18n="test_title">Trusted by Farmers Across India</h2>
+ <p data-i18n="testimonials_desc">Built around practical field decisions: what to grow, when to irrigate, when to treat, and where to sell.</p>
+ </div>
+ <div class="grid-3">
+ <article class="testimonial-card fade-in delay-1">
+ <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+ <p data-i18n="testimonial_1_quote">Weather alerts helped me plan irrigation and avoid spraying before rain. The dashboard is simple enough to use on my phone.</p>
+ <h4>Rajesh Patil</h4>
+ <span data-i18n="testimonial_1_role">Wheat farmer, Maharashtra</span>
+ </article>
+ <article class="testimonial-card fade-in delay-2">
+ <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+ <p data-i18n="testimonial_2_quote">I checked nearby mandi rates before selling onions and had better confidence while talking to buyers.</p>
+ <h4>Harpreet Kaur</h4>
+ <span data-i18n="testimonial_2_role">Vegetable grower, Punjab</span>
+ </article>
+ <article class="testimonial-card fade-in delay-3">
+ <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+ <p data-i18n="testimonial_3_quote">The disease photo flow gives quick next steps. It saves time when crop symptoms start spreading.</p>
+ <h4>S. Kumar</h4>
+ <span data-i18n="testimonial_3_role">Paddy farmer, Tamil Nadu</span>
+ </article>
+ </div>
+ </div>
+ </section>
+
+ <!-- ============ CONTACT / CTA ============ -->
+ <section class="cta-section" id="contact">
+ <div class="container">
+ <div class="cta-box fade-in">
+ <div class="section-badge cta-badge">
+ <i class="fas fa-headset"></i>
+ <span data-i18n="cta_badge">Farmer Support</span>
+ </div>
+ <h2 data-i18n="cta_title">Ready to Transform Your Farming?</h2>
+ <p data-i18n="cta_desc">Join thousands of Indian farmers who are already using AgriComplete Hub to grow smarter, earn better, and farm sustainably.</p>
+ <div class="cta-actions">
+ <a href="auth.html" class="btn btn-accent btn-lg" data-i18n="cta_btn1">Create Free Account</a>
+ <a href="dashboard.html" class="btn btn-secondary btn-lg" data-i18n="cta_btn2">View Demo Dashboard</a>
+ </div>
+ <div class="contact-list" aria-label="Contact options">
+ <span><i class="fas fa-envelope"></i> <span data-i18n="contact_email">support@agricomplete.example</span></span>
+ <span><i class="fas fa-phone"></i> <span data-i18n="contact_phone">+91 90000 00000</span></span>
+ <span><i class="fas fa-location-dot"></i> <span data-i18n="contact_location">Built for Indian farmers</span></span>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <!-- ============ FOOTER ============ -->
+ <footer class="landing-footer">
+ <div class="container">
+ <div class="footer-grid">
+ <div class="footer-brand">
+ <h3>
+ <span><i class="fas fa-seedling"></i></span> AgriComplete Hub
+ </h3>
+ <p data-i18n="footer_desc">Empowering Indian farmers with AI-driven insights, weather intelligence, and direct market access. Built for the future of agriculture.</p>
+ <div class="footer-socials">
+ <a href="#" class="btn-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+ <a href="#" class="btn-icon" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+ <a href="#" class="btn-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+ <a href="#" class="btn-icon" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+ </div>
+ </div>
+ <div class="footer-links">
+ <h4 data-i18n="footer_platform">Platform</h4>
+ <a href="dashboard.html" data-i18n="nav_dashboard">Dashboard</a>
+ <a href="disease-detection.html" data-i18n="nav_disease">Disease Detection</a>
+ <a href="market-prices.html" data-i18n="nav_market">Market Prices</a>
+ <a href="marketplace.html" data-i18n="nav_marketplace">Marketplace</a>
+ </div>
+ <div class="footer-links">
+ <h4 data-i18n="footer_resources">Resources</h4>
+ <a href="#features" data-i18n="nav_features">Features</a>
+ <a href="#how-it-works" data-i18n="nav_how_it_works">How It Works</a>
+ <a href="#testimonials" data-i18n="footer_stories">Farmer Stories</a>
+ <a href="#contact" data-i18n="footer_support">Support</a>
+ </div>
+ <div class="footer-links">
+ <h4 data-i18n="footer_company">Company</h4>
+ <a href="#contact" data-i18n="footer_about">About</a>
+ <a href="#contact" data-i18n="nav_contact">Contact</a>
+ <a href="#contact" data-i18n="footer_privacy">Privacy Policy</a>
+ <a href="#contact" data-i18n="footer_terms">Terms of Service</a>
+ </div>
+ </div>
+ <div class="footer-bottom">
+ <p data-i18n="footer_copyright">&copy; 2026 AgriComplete Hub. Made for Indian farmers.</p>
+ <p>
+ <a href="#contact" data-i18n="footer_privacy_short">Privacy</a>
+ <a href="#contact" data-i18n="footer_terms_short">Terms</a>
+ <a href="#contact" data-i18n="nav_contact">Contact</a>
+ </p>
+ </div>
+ </div>
+ </footer>
+
+ <script src="js/main.js?v=gemini-llm-20260604"></script>
 </body>
 </html>

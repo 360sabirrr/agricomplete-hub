@@ -8,10 +8,15 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
-    phone = db.Column(db.String(20))
+    phone = db.Column(db.String(20), unique=True)
     state = db.Column(db.String(50))
     district = db.Column(db.String(50))
     village = db.Column(db.String(100))
+    total_area = db.Column(db.String(50))
+    soil_type = db.Column(db.String(75))
+    irrigation_source = db.Column(db.String(100))
+    primary_crops = db.Column(db.String(150))
+    farming_type = db.Column(db.String(100))
     subscription = db.Column(db.String(20), default='Basic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -36,6 +41,8 @@ class MarketListing(db.Model):
     quantity = db.Column(db.String(50), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     location = db.Column(db.String(100))
+    category = db.Column(db.String(50))
+    image_data = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class FarmAlert(db.Model):
