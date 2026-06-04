@@ -2180,23 +2180,39 @@ function normalizeApiUrl(url) {
  return cleanUrl.endsWith('/api')? cleanUrl: `${cleanUrl}/api`;
 }
 
+const LOCAL_API_HOSTS = ['', 'localhost', '127.0.0.1', '::1'];
+const DEFAULT_RENDER_API_URL = 'https://agricomplete-backend.onrender.com/api';
+
 const API_URL = (() => {
  const configuredUrl =
  window.AGRICOMPLETE_API_URL ||
  document.querySelector('meta[name="api-url"]')?.content;
  if (configuredUrl) return normalizeApiUrl(configuredUrl);
 
- const localHosts = ['', 'localhost', '127.0.0.1', '::1'];
- if (localHosts.includes(window.location.hostname)) {
+ if (LOCAL_API_HOSTS.includes(window.location.hostname)) {
  return 'http://localhost:5000/api';
  }
 
  return `${window.location.origin}/api`;
 })();
 
+const API_BASE_URLS = (() => {
+ const urls = [API_URL];
+ const isLocal = LOCAL_API_HOSTS.includes(window.location.hostname);
+ if (!isLocal && API_URL !== DEFAULT_RENDER_API_URL) {
+ urls.push(DEFAULT_RENDER_API_URL);
+ }
+ return urls;
+})();
+
 // API Helper
 function isAuthExpiredMessage(message) {
  return /token has expired|expired token|signature has expired|missing authorization/i.test(String(message || ''));
+}
+
+function isLikelyHtmlResponse(contentType, data) {
+ const body = String(data?.msg || '');
+ return contentType.includes('text/html') || /^\s*(<!doctype html|<html)/i.test(body);
 }
 
 function clearExpiredSession(message = 'Your session expired. Please log in again.') {
@@ -2211,15 +2227,26 @@ async function apiFetch(endpoint, options = {}) {
  const headers = {
  'Content-Type': 'application/json',...(token && { 'Authorization': `Bearer ${token}` }),...options.headers
  };
- 
+
+ let lastError = null;
+ for (let index = 0; index < API_BASE_URLS.length; index += 1) {
+ const baseUrl = API_BASE_URLS[index];
  try {
- const res = await fetch(`${API_URL}${endpoint}`, {...options, headers });
+ const res = await fetch(`${baseUrl}${endpoint}`, {...options, headers });
  const contentType = res.headers.get('content-type') || '';
  const data = contentType.includes('application/json')? await res.json(): { msg: (await res.text()) || `API Error: ${res.status}` };
- 
+
+ if (index < API_BASE_URLS.length - 1 && isLikelyHtmlResponse(contentType, data)) {
+ console.warn(`API response from ${baseUrl} was HTML, retrying backend fallback.`);
+ continue;
+ }
+
  if (!res.ok) {
  const errorMsg = data.msg || data.message || `API Error: ${res.status}`;
  console.error(`API Error (${endpoint}):`, res.status, data);
+ if (index < API_BASE_URLS.length - 1 && (res.status === 404 || isLikelyHtmlResponse(contentType, data))) {
+ continue;
+ }
  if (res.status === 401 && isAuthExpiredMessage(errorMsg)) {
  clearExpiredSession();
  throw { msg: 'Session expired. Please log in again.', status: res.status, data };
@@ -2236,11 +2263,18 @@ async function apiFetch(endpoint, options = {}) {
  if (err?.name === 'AbortError') {
  throw { msg: 'Request timed out. Please try again.', timeout: true };
  }
+ lastError = err;
+ if (err instanceof TypeError && index < API_BASE_URLS.length - 1) {
+ continue;
+ }
  if (err instanceof TypeError) {
- throw { msg: `Cannot connect to backend at ${API_URL}. Please ensure the server is running.` };
+ throw { msg: `Cannot connect to backend at ${baseUrl}. Please ensure the server is running.` };
  }
  throw err;
  }
+ }
+
+ throw lastError || { msg: 'API request failed. Please try again.' };
 }
 
 async function apiFetchWithTimeout(endpoint, options = {}, timeoutMs = 5000) {
