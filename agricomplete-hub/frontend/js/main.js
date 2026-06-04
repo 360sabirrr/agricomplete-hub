@@ -4736,7 +4736,7 @@ let assistantConversationHistory = [];
 const ASSISTANT_WEATHER_INTENT_TIMEOUT_MS = 1800;
 const ASSISTANT_WEATHER_TIMEOUT_MS = 6000;
 const ASSISTANT_MARKET_TIMEOUT_MS = 3500;
-const ASSISTANT_LLM_TIMEOUT_MS = 12000;
+const ASSISTANT_LLM_TIMEOUT_MS = 28000;
 
 function initChatbotAssistant() {
  const panel = document.getElementById('chatbotPanel');
@@ -5625,7 +5625,6 @@ async function buildLlmAssistantAnswer(message, history = assistantConversationH
  }, ASSISTANT_LLM_TIMEOUT_MS);
 
  const answer = String(data?.answer || '').trim();
- if (data?.source === 'fallback') return null;
  return answer? { text: answer, source: data.source || 'llm' }: null;
 }
 
@@ -5633,9 +5632,14 @@ async function generateAssistantResponse(message) {
  const command = getAssistantCommand(message);
  if (command) return command;
 
+ let llmFallbackAnswer = null;
  try {
  const llmAnswer = await buildLlmAssistantAnswer(message);
- if (llmAnswer) return llmAnswer;
+ if (llmAnswer?.source === 'fallback') {
+ llmFallbackAnswer = llmAnswer;
+ } else if (llmAnswer) {
+ return llmAnswer;
+ }
  } catch (err) {
  console.warn('Gemini assistant unavailable, using local fallback:', err);
  }
@@ -5671,6 +5675,7 @@ async function generateAssistantResponse(message) {
  if (matched) return { text: matched.answer, source: 'local' };
  const offlineTopicAnswer = getAssistantOfflineTopicAnswer(text);
  if (offlineTopicAnswer) return { text: offlineTopicAnswer, source: 'local' };
+ if (llmFallbackAnswer) return llmFallbackAnswer;
  return { text: buildGeneralAnswer(message), source: 'local' };
 }
 

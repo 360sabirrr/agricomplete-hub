@@ -11,6 +11,14 @@ services:
         sync: false
       - key: JWT_SECRET_KEY
         generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+      - key: GEMINI_FALLBACK_MODELS
+        value: gemini-2.0-flash,gemini-2.0-flash-lite
+      - key: GEMINI_TIMEOUT_SECONDS
+        value: "12"
       - key: WEATHERAPI_KEY
         sync: false
       - key: OPENWEATHER_API_KEY

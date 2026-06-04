@@ -11,9 +11,10 @@ assistant_bp = Blueprint('assistant', __name__)
 
 DEFAULT_MODEL = 'gpt-4o-mini'
 DEFAULT_API_URL = 'https://api.openai.com/v1/chat/completions'
-DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash-lite'
-DEFAULT_GEMINI_FALLBACK_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
+DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash'
+DEFAULT_GEMINI_FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite']
 DEFAULT_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
+DEFAULT_GEMINI_TIMEOUT_SECONDS = 12
 DEFAULT_OLLAMA_MODEL = 'llama3.2:3b'
 DEFAULT_OLLAMA_URL = 'http://127.0.0.1:11434/api/chat'
 DEFAULT_OLLAMA_TIMEOUT_SECONDS = 5
@@ -226,6 +227,14 @@ def _gemini_settings():
     return api_key, api_url, model
 
 
+def _gemini_timeout_seconds():
+    raw_value = os.getenv('GEMINI_TIMEOUT_SECONDS') or os.getenv('LLM_TIMEOUT_SECONDS')
+    try:
+        return max(4, min(float(raw_value or DEFAULT_GEMINI_TIMEOUT_SECONDS), 30))
+    except (TypeError, ValueError):
+        return DEFAULT_GEMINI_TIMEOUT_SECONDS
+
+
 def _gemini_model_candidates(primary_model):
     configured = os.getenv('GEMINI_FALLBACK_MODELS') or ''
     fallback_models = [item.strip() for item in configured.split(',') if item.strip()] or DEFAULT_GEMINI_FALLBACK_MODELS
@@ -255,6 +264,33 @@ def _gemini_history(history):
     return contents
 
 
+def _extract_gemini_text(data):
+    if not isinstance(data, dict):
+        return None, 'Gemini returned a non-JSON response.'
+
+    candidates = data.get('candidates')
+    if not isinstance(candidates, list) or not candidates:
+        feedback = data.get('promptFeedback') if isinstance(data.get('promptFeedback'), dict) else {}
+        block_reason = feedback.get('blockReason')
+        suffix = f' Block reason: {block_reason}.' if block_reason else ''
+        return None, f'Gemini returned no candidates.{suffix}'
+
+    candidate = candidates[0] if isinstance(candidates[0], dict) else {}
+    content = candidate.get('content') if isinstance(candidate.get('content'), dict) else {}
+    parts = content.get('parts') if isinstance(content.get('parts'), list) else []
+    answer = ''.join(
+        str(part.get('text', ''))
+        for part in parts
+        if isinstance(part, dict) and part.get('text')
+    ).strip()
+
+    if answer:
+        return answer, None
+
+    finish_reason = candidate.get('finishReason') or 'unknown'
+    return None, f'Gemini returned an empty response. Finish reason: {finish_reason}.'
+
+
 def _call_gemini_llm(message, history, api_key, api_url, model):
     payload = {
         'systemInstruction': {
@@ -280,7 +316,7 @@ def _call_gemini_llm(message, history, api_key, api_url, model):
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as response:
+        with urllib.request.urlopen(req, timeout=_gemini_timeout_seconds()) as response:
             data = json.loads(response.read().decode('utf-8'))
     except urllib.error.HTTPError as err:
         try:
@@ -292,16 +328,7 @@ def _call_gemini_llm(message, history, api_key, api_url, model):
     except Exception as err:
         return None, f'Gemini request failed: {err}'
 
-    try:
-        parts = data['candidates'][0]['content']['parts']
-        answer = ''.join(part.get('text', '') for part in parts).strip()
-    except (KeyError, IndexError, TypeError):
-        return None, 'Gemini returned an invalid response.'
-
-    if not answer:
-        return None, 'Gemini returned an empty response.'
-
-    return answer, None
+    return _extract_gemini_text(data)
 
 
 def _call_gemini_task(system_prompt, user_prompt, api_key, api_url, model, max_tokens=240):
@@ -328,10 +355,9 @@ def _call_gemini_task(system_prompt, user_prompt, api_key, api_url, model, max_t
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=20) as response:
+        with urllib.request.urlopen(req, timeout=_gemini_timeout_seconds()) as response:
             data = json.loads(response.read().decode('utf-8'))
-            parts = data['candidates'][0]['content']['parts']
-            return ''.join(part.get('text', '') for part in parts).strip(), None
+            return _extract_gemini_text(data)
     except urllib.error.HTTPError as err:
         try:
             error_body = json.loads(err.read().decode('utf-8'))

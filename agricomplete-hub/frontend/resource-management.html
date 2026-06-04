@@ -5,28 +5,27 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <meta name="api-url" content="https://agricomplete-backend.onrender.com/api">
  <title>Resource Management - AgriComplete Hub</title>
- <meta name="description" content="Guide for efficient use of water, fertilizers, and pesticides based on live data.">
- <link rel="stylesheet" href="css/style.css?v=price-controls-20260604">
+ <meta name="description" content="Weather-led water, fertilizer, and pesticide resource planning for smarter farm operations.">
+ <link rel="stylesheet" href="css/style.css?v=resource-management-20260605">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
- <!-- Sidebar -->
  <aside class="sidebar" id="sidebar">
  <div class="sidebar-brand"><h2><span class="brand-icon"><i class="fas fa-seedling"></i></span> AgriComplete</h2><p>Smart Farming Platform</p></div>
  <nav class="sidebar-nav">
  <div class="nav-section-title">Main Menu</div>
- <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
- <a href="disease-detection.html" class="nav-item"><i class="fas fa-leaf"></i><span>Disease Detection</span></a>
- <a href="market-prices.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Market Prices</span><span class="nav-badge">Live</span></a>
- <a href="marketplace.html" class="nav-item"><i class="fas fa-store"></i><span>Marketplace</span></a>
+ <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span data-i18n="nav_dashboard">Dashboard</span></a>
+ <a href="disease-detection.html" class="nav-item"><i class="fas fa-leaf"></i><span data-i18n="nav_disease">Disease Detection</span></a>
+ <a href="market-prices.html" class="nav-item"><i class="fas fa-chart-bar"></i><span data-i18n="nav_market">Market Prices</span><span class="nav-badge">Live</span></a>
+ <a href="marketplace.html" class="nav-item"><i class="fas fa-store"></i><span data-i18n="nav_marketplace">Marketplace</span></a>
  <div class="nav-section-title">Tools</div>
- <a href="resource-management.html" class="nav-item active"><i class="fas fa-biohazard"></i><span>Resource Management</span></a>
+ <a href="resource-management.html" class="nav-item active"><i class="fas fa-recycle"></i><span data-i18n="nav_resources">Resource Management</span></a>
  <div class="nav-section-title">Account</div>
- <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span>My Profile</span></a>
- <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+ <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span data-i18n="nav_profile">My Profile</span></a>
+ <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="nav_logout">Logout</span></a>
  </nav>
  <div class="sidebar-footer">
  <div class="user-profile"><div class="user-avatar">RS</div><div class="user-info"><h4>Rajesh Singh</h4></div></div>
@@ -37,8 +36,8 @@
  <div class="topbar">
  <div class="topbar-left">
  <div>
- <h3><i class="fas fa-recycle" style="color:var(--color-primary);margin-right:8px;"></i> Resource Management Guide</h3>
- <p>Optimize water, fertilizer, and pesticide usage</p>
+ <h3><i class="fas fa-recycle" style="color:var(--color-primary);margin-right:8px;"></i> <span data-i18n="resource_page_title" data-rm-i18n="resource_page_title">Resource Management</span></h3>
+ <p data-i18n="resource_page_subtitle" data-rm-i18n="resource_page_subtitle">Weather-led water, pesticide, and fertilizer planning</p>
  </div>
  </div>
  <div class="topbar-right">
@@ -52,127 +51,2179 @@
  </div>
  </div>
 
- <div class="page-content">
- <div class="grid-2 fade-in water-fertilizer-section">
- <!-- Smart Irrigation Section -->
- <div class="card">
- <h4 style="margin-bottom:var(--space-md);color:var(--color-accent);"><i class="fas fa-tint"></i> Smart Irrigation</h4>
- <div style="background:var(--bg-body);padding:var(--space-md);border-radius:var(--radius-md);margin-bottom:var(--space-md);">
- <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
- <span style="font-size:.9rem;font-weight:600;">Current Weather Status</span>
- <span class="badge badge-info" id="irrigationWeatherHint">Fetching...</span>
- </div>
- <p style="font-size:.85rem;color:var(--text-secondary);" id="irrigationAdvice">Loading live weather-based advice...</p>
- </div>
- <ul style="display:flex;flex-direction:column;gap:12px;">
- <li style="display:flex;gap:12px;">
- <i class="fas fa-clock" style="color:var(--color-primary);margin-top:4px;"></i>
+ <main class="page-content resource-dashboard">
+ <section class="resource-hero fade-in">
+ <div class="resource-hero-copy">
+ <span class="resource-kicker"><i class="fas fa-cloud-sun-rain"></i> <span data-rm-i18n="weather_command_center">Weather Command Center</span></span>
+ <h1 data-rm-i18n="hero_title">Plan every input from field conditions.</h1>
+ <p data-rm-i18n="hero_desc">Use live temperature, humidity, wind, and rain signals to decide when to irrigate, spray pesticides, and apply fertilizer.</p>
+ <div class="resource-hero-metrics" aria-label="Resource impact summary">
  <div>
- <strong>Best Time</strong>
- <p style="font-size:.82rem;">Irrigate during early morning (4 AM - 8 AM) or late evening to minimize evaporation losses.</p>
+ <strong id="rmWaterSaved">28%</strong>
+ <span data-rm-i18n="water_saving_target">water saving target</span>
  </div>
- </li>
- <li style="display:flex;gap:12px;">
- <i class="fas fa-cloud-showers-heavy" style="color:var(--color-primary);margin-top:4px;"></i>
  <div>
- <strong>Rainfall Guard</strong>
- <p style="font-size:.82rem;">If rain is expected within 24 hours, postpone irrigation to save water and prevent soil leaching.</p>
+ <strong id="rmInputProtection">High</strong>
+ <span data-rm-i18n="input_protection">input protection</span>
  </div>
- </li>
- </ul>
- </div>
-
- <!-- Fertilizer Optimization -->
- <div class="card">
- <h4 style="margin-bottom:var(--space-md);color:var(--color-primary);"><i class="fas fa-flask"></i> Fertilizer Optimization</h4>
- <div style="background:var(--bg-body);padding:var(--space-md);border-radius:var(--radius-md);margin-bottom:var(--space-md);">
- <p style="font-size:.85rem;font-weight:600;margin-bottom:4px;">Seasonal Nutrients</p>
- <p style="font-size:.82rem;color:var(--text-secondary);">Currently in Rabi season. Focusing on Nitrogen and Phosphorus for wheat/mustard growth.</p>
- </div>
- <ul style="display:flex;flex-direction:column;gap:12px;">
- <li style="display:flex;gap:12px;">
- <i class="fas fa-vial" style="color:var(--color-primary);margin-top:4px;"></i>
  <div>
- <strong>N-P-K Balancing</strong>
- <p style="font-size:.82rem;">Use soil test results to apply exact amounts of Nitrogen, Phosphorus, and Potassium. Avoid over-application.</p>
- </div>
- </li>
- <li style="display:flex;gap:12px;">
- <i class="fas fa-wind" style="color:var(--color-secondary);margin-top:4px;"></i>
- <div>
- <strong>Avoid Windy Days</strong>
- <p style="font-size:.82rem;">Don't use top-dressing or spray fertilizers when wind speed exceeds 15 km/h to prevent drift.</p>
- </div>
- </li>
- </ul>
- </div>
- </div>
-
- <div class="card fade-in delay-1" style="margin-top:var(--space-xl);">
- <h4 style="margin-bottom:var(--space-md);color:#D32F2F;"><i class="fas fa-shield-virus"></i> Pesticide & Safety Guide</h4>
- <div class="grid-3">
- <div style="padding:var(--space-md);background:rgba(211,47,47,0.05);border-radius:var(--radius-md);">
- <h5 style="margin-bottom:8px;"><i class="fas fa-cloud-sun"></i> Weather Condition</h5>
- <p style="font-size:.82rem;">Avoid spraying if temperatures are above 30 C or humidity is below 40% as it can cause crop burn.</p>
- </div>
- <div style="padding:var(--space-md);background:rgba(211,47,47,0.05);border-radius:var(--radius-md);">
- <h5 style="margin-bottom:8px;"><i class="fas fa-mask"></i> Personal Safety</h5>
- <p style="font-size:.82rem;">Always wear protective gear (mask, gloves, boots) and spray in the direction of the wind, never against it.</p>
- </div>
- <div style="padding:var(--space-md);background:rgba(211,47,47,0.05);border-radius:var(--radius-md);">
- <h5 style="margin-bottom:8px;"><i class="fas fa-headset"></i> Dosage Control</h5>
- <p style="font-size:.82rem;">Follow the recommended dosage on the label. High concentrations do NOT mean better results.</p>
+ <strong id="rmDecisionSpeed">3 min</strong>
+ <span data-rm-i18n="planning_cycle">planning cycle</span>
  </div>
  </div>
  </div>
 
- <!-- Resource Efficiency Calculator (Simulation) -->
- <div class="card fade-in delay-2" style="margin-top:var(--space-xl);background:linear-gradient(135deg,rgba(27,94,32,0.05),rgba(0,137,123,0.05));">
- <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md);">
- <h4><i class="fas fa-calculator" style="color:var(--color-primary);margin-right:8px;"></i> Resource Saving Estimator</h4>
- <span class="badge" style="background:var(--color-primary);color:#fff;">AI Assisted</span>
- </div>
- <div class="grid-3" style="text-align:center;">
+ <div class="resource-live-panel">
+ <div class="resource-live-head">
  <div>
- <div style="font-size:2rem;color:var(--color-accent);font-weight:800;">30%</div>
- <div style="font-size:.85rem;font-weight:600;">Water Saved</div>
- <p style="font-size:.75rem;">using weather sensors</p>
+ <span data-rm-i18n="live_weather">Live Weather</span>
+ <strong id="rmWeatherLocation">Pune</strong>
+ </div>
+ <button class="btn-icon" type="button" onclick="resourceUpdateWeather()" aria-label="Refresh weather"><i class="fas fa-sync-alt"></i></button>
+ </div>
+ <div class="resource-location-control">
+ <i class="fas fa-location-dot"></i>
+ <input id="weatherCityInput" type="text" value="Pune" aria-label="Weather city">
+ <button class="btn btn-accent btn-sm" type="button" onclick="resourceUpdateWeather()"><i class="fas fa-cloud-sun"></i> <span data-rm-i18n="update">Update</span></button>
+ </div>
+ <div class="resource-weather-main">
+ <div>
+ <div class="resource-temp" id="rmWeatherTemp">-- C</div>
+ <div class="resource-condition" id="rmWeatherCondition">Loading weather...</div>
+ </div>
+ <div class="resource-weather-icon" id="rmWeatherIcon"><i class="fas fa-cloud-sun"></i></div>
+ </div>
+ <div class="resource-weather-grid">
+ <div><span data-rm-i18n="humidity">Humidity</span><strong id="rmHumidity">--</strong></div>
+ <div><span data-rm-i18n="wind">Wind</span><strong id="rmWind">--</strong></div>
+ <div><span data-rm-i18n="pressure">Pressure</span><strong id="rmPressure">--</strong></div>
+ <div><span data-rm-i18n="aqi">AQI</span><strong id="rmAqi">--</strong></div>
+ </div>
+ <div class="resource-forecast" id="rmForecast" aria-label="Weather forecast"></div>
+ </div>
+ </section>
+
+ <section class="resource-control-panel fade-in delay-1" aria-label="Resource planning controls">
+ <div class="resource-panel-title">
+ <span class="resource-kicker"><i class="fas fa-sliders"></i> <span data-rm-i18n="farm_inputs">Farm Inputs</span></span>
+ <h2 data-rm-i18n="decision_settings">Decision settings</h2>
+ </div>
+ <div class="resource-form-grid">
+ <label class="resource-field">
+ <span><i class="fas fa-seedling"></i> <span data-rm-i18n="crop">Crop</span></span>
+ <select id="rmCrop" onchange="resourceRenderRecommendations()">
+ <option value="wheat" data-rm-i18n="crop_wheat">Wheat</option>
+ <option value="rice" data-rm-i18n="crop_rice">Rice</option>
+ <option value="cotton" data-rm-i18n="crop_cotton">Cotton</option>
+ <option value="potato" data-rm-i18n="crop_potato">Potato</option>
+ <option value="chickpea" data-rm-i18n="crop_chickpea">Chickpea</option>
+ <option value="mustard" data-rm-i18n="crop_mustard">Mustard</option>
+ <option value="onion" data-rm-i18n="crop_onion">Onion</option>
+ </select>
+ </label>
+ <label class="resource-field">
+ <span><i class="fas fa-layer-group"></i> <span data-rm-i18n="crop_stage">Crop stage</span></span>
+ <select id="rmStage" onchange="resourceRenderRecommendations()">
+ <option value="vegetative" data-rm-i18n="stage_vegetative">Vegetative growth</option>
+ <option value="sowing" data-rm-i18n="stage_sowing">Sowing or transplanting</option>
+ <option value="flowering" data-rm-i18n="stage_flowering">Flowering</option>
+ <option value="fruiting" data-rm-i18n="stage_fruiting">Fruiting or grain filling</option>
+ <option value="maturity" data-rm-i18n="stage_maturity">Maturity</option>
+ </select>
+ </label>
+ <label class="resource-field">
+ <span><i class="fas fa-mound"></i> <span data-rm-i18n="soil_type">Soil type</span></span>
+ <select id="rmSoil" onchange="resourceRenderRecommendations()">
+ <option value="loam" data-rm-i18n="soil_loam_short">Loam</option>
+ <option value="sandy" data-rm-i18n="soil_sandy_short">Sandy</option>
+ <option value="clay" data-rm-i18n="soil_clay_short">Clay</option>
+ </select>
+ </label>
+ <label class="resource-field">
+ <span><i class="fas fa-shower"></i> <span data-rm-i18n="irrigation_method">Irrigation method</span></span>
+ <select id="rmIrrigation" onchange="resourceRenderRecommendations()">
+ <option value="drip" data-rm-i18n="irrigation_drip">Drip</option>
+ <option value="sprinkler" data-rm-i18n="irrigation_sprinkler">Sprinkler</option>
+ <option value="flood" data-rm-i18n="irrigation_flood">Flood</option>
+ </select>
+ </label>
+ </div>
+ </section>
+
+ <section class="resource-priority-strip fade-in delay-1" id="rmPriorityStrip" data-state="neutral">
+ <div class="resource-priority-icon"><i class="fas fa-bolt"></i></div>
+ <div>
+ <h2 id="rmPriorityTitle" data-rm-i18n="preparing_recommendations">Preparing recommendations</h2>
+ <p id="rmPriorityText" data-rm-i18n="preparing_recommendations_desc">Weather and field inputs are being converted into resource actions.</p>
+ </div>
+ <span class="resource-chip" id="rmPriorityBadge" data-rm-i18n="loading">Loading</span>
+ </section>
+
+ <section class="resource-section resource-crop-rec fade-in delay-2" aria-label="Weather-based crop recommendation">
+ <div class="resource-panel-header">
+ <div>
+ <span class="resource-kicker"><i class="fas fa-seedling"></i> <span data-rm-i18n="crop_recommendation">Crop Recommendation</span></span>
+ <h2 data-rm-i18n="crop_rec_title">Best crops for this weather</h2>
+ </div>
+ <span class="resource-chip good" id="rmBestCropBadge" data-rm-i18n="top_weather_match">Top weather match</span>
+ </div>
+ <p class="resource-section-copy" data-rm-i18n="crop_rec_desc">Recommendations use current temperature, humidity, rain risk, soil type, and irrigation method.</p>
+ <div class="resource-crop-rec-layout">
+ <article class="resource-crop-best">
+ <div class="resource-crop-best-icon"><i class="fas fa-award"></i></div>
+ <div>
+ <span class="resource-chip good" id="rmBestCropScore">--</span>
+ <h3 id="rmBestCropName" data-rm-i18n="checking">Checking</h3>
+ <p id="rmBestCropReason" data-rm-i18n="recommendation_loading">Building weather-based crop recommendation...</p>
+ </div>
+ </article>
+ <div class="resource-crop-list" id="rmCropRecommendationList">
+ <div class="resource-crop-option">
+ <strong data-rm-i18n="checking">Checking</strong>
+ <span data-rm-i18n="recommendation_loading">Building weather-based crop recommendation...</span>
+ </div>
+ </div>
+ </div>
+ </section>
+
+ <section class="resource-decision-grid fade-in delay-2" aria-label="Weather-led resource recommendations">
+ <article class="resource-decision-card" id="rmWaterCard" data-state="neutral">
+ <div class="resource-card-head">
+ <div class="resource-decision-icon water"><i class="fas fa-tint"></i></div>
+ <span class="resource-chip" id="irrigationWeatherHint" data-rm-i18n="checking">Checking</span>
+ </div>
+ <h3 id="rmWaterTitle" data-rm-i18n="water_management">Water Management</h3>
+ <p id="irrigationAdvice" data-rm-i18n="loading_irrigation_advice">Loading live weather-based irrigation advice...</p>
+ <div class="resource-card-metrics">
+ <div><span data-rm-i18n="suggested_dose">Suggested dose</span><strong id="rmWaterDose">--</strong></div>
+ <div><span data-rm-i18n="best_timing">Best timing</span><strong id="rmWaterTiming">--</strong></div>
+ <div><span data-rm-i18n="method_focus">Method focus</span><strong id="rmWaterMethod">--</strong></div>
+ </div>
+ </article>
+
+ <article class="resource-decision-card" id="rmPesticideCard" data-state="neutral">
+ <div class="resource-card-head">
+ <div class="resource-decision-icon pesticide"><i class="fas fa-shield-virus"></i></div>
+ <span class="resource-chip" id="rmPesticideBadge" data-rm-i18n="checking">Checking</span>
+ </div>
+ <h3 id="rmPesticideTitle" data-rm-i18n="pesticide_planning">Pesticide Planning</h3>
+ <p id="rmPesticideAdvice" data-rm-i18n="pesticide_checking_advice">Checking rain, wind, heat, and humidity before recommending a spray window.</p>
+ <div class="resource-card-metrics">
+ <div><span data-rm-i18n="spray_window">Spray window</span><strong id="rmSprayWindow">--</strong></div>
+ <div><span data-rm-i18n="scout_focus">Scout focus</span><strong id="rmPestScout">--</strong></div>
+ <div><span data-rm-i18n="precaution">Precaution</span><strong id="rmPesticidePrecaution">--</strong></div>
+ </div>
+ </article>
+
+ <article class="resource-decision-card" id="rmFertilizerCard" data-state="neutral">
+ <div class="resource-card-head">
+ <div class="resource-decision-icon fertilizer"><i class="fas fa-flask"></i></div>
+ <span class="resource-chip" id="rmFertilizerBadge" data-rm-i18n="checking">Checking</span>
+ </div>
+ <h3 id="rmFertilizerTitle" data-rm-i18n="fertilizer_optimization">Fertilizer Optimization</h3>
+ <p id="rmFertilizerAdvice" data-rm-i18n="fertilizer_checking_advice">Checking leaching and heat stress risk before planning nutrient application.</p>
+ <div class="resource-card-metrics">
+ <div><span data-rm-i18n="nutrient_focus">Nutrient focus</span><strong id="rmFertDose">--</strong></div>
+ <div><span data-rm-i18n="application_timing">Application timing</span><strong id="rmFertTiming">--</strong></div>
+ <div><span data-rm-i18n="protection">Protection</span><strong id="rmFertProtection">--</strong></div>
+ </div>
+ </article>
+ </section>
+
+ <section class="resource-planning-grid fade-in delay-3">
+ <div class="resource-panel">
+ <div class="resource-panel-header">
+ <div>
+ <span class="resource-kicker"><i class="fas fa-list-check"></i> <span data-rm-i18n="action_plan">Action Plan</span></span>
+ <h2 data-rm-i18n="next_field_moves">Next field moves</h2>
+ </div>
+ <span class="resource-chip good" id="rmLastUpdated" data-rm-i18n="live">Live</span>
+ </div>
+ <ol class="resource-action-list" id="rmActionPlan">
+ <li data-rm-i18n="loading_resource_plan">Loading resource plan...</li>
+ </ol>
+ </div>
+
+ <div class="resource-panel">
+ <div class="resource-panel-header">
+ <div>
+ <span class="resource-kicker"><i class="fas fa-triangle-exclamation"></i> <span data-rm-i18n="risk_monitor">Risk Monitor</span></span>
+ <h2 data-rm-i18n="weather_checks">Weather checks</h2>
+ </div>
+ </div>
+ <div class="resource-risk-list" id="rmRiskList">
+ <div class="resource-risk-item"><span data-rm-i18n="rain_risk">Rain risk</span><strong data-rm-i18n="checking">Checking</strong></div>
+ <div class="resource-risk-item"><span data-rm-i18n="spray_drift">Spray drift</span><strong data-rm-i18n="checking">Checking</strong></div>
+ <div class="resource-risk-item"><span data-rm-i18n="disease_pressure">Disease pressure</span><strong data-rm-i18n="checking">Checking</strong></div>
+ <div class="resource-risk-item"><span data-rm-i18n="nutrient_leaching">Nutrient leaching</span><strong data-rm-i18n="checking">Checking</strong></div>
+ </div>
+ </div>
+ </section>
+
+ <section class="resource-section fade-in delay-4">
+ <div class="resource-panel-header">
+ <div>
+ <span class="resource-kicker"><i class="fas fa-calendar-days"></i> <span data-rm-i18n="schedule">Schedule</span></span>
+ <h2 data-rm-i18n="weather_adjusted_calendar">Weather-adjusted resource calendar</h2>
+ </div>
+ <span class="resource-chip" data-rm-i18n="three_day_plan">3-day plan</span>
+ </div>
+ <div class="resource-table-wrap">
+ <table class="resource-table">
+ <thead>
+ <tr>
+ <th data-rm-i18n="window">Window</th>
+ <th data-rm-i18n="water">Water</th>
+ <th data-rm-i18n="pesticide">Pesticide</th>
+ <th data-rm-i18n="fertilizer">Fertilizer</th>
+ </tr>
+ </thead>
+ <tbody id="rmScheduleBody">
+ <tr><td data-rm-i18n="today">Today</td><td data-rm-i18n="checking">Checking</td><td data-rm-i18n="checking">Checking</td><td data-rm-i18n="checking">Checking</td></tr>
+ </tbody>
+ </table>
+ </div>
+ </section>
+
+ <section class="resource-section fade-in delay-5">
+ <div class="resource-panel-header">
+ <div>
+ <span class="resource-kicker"><i class="fas fa-table-cells-large"></i> <span data-rm-i18n="decision_matrix">Decision Matrix</span></span>
+ <h2 data-rm-i18n="weather_rulebook">Weather rulebook</h2>
+ </div>
+ </div>
+ <div class="resource-matrix">
+ <div>
+ <i class="fas fa-cloud-rain"></i>
+ <h3 data-rm-i18n="matrix_rain_title">Rain or storm</h3>
+ <p data-rm-i18n="matrix_rain_desc">Pause irrigation, pesticide spray, and top dressing. Focus on drainage and runoff control.</p>
  </div>
  <div>
- <div style="font-size:2rem;color:var(--color-primary);font-weight:800;">15%</div>
- <div style="font-size:.85rem;font-weight:600;">Fertilizer Saved</div>
- <p style="font-size:.75rem;">using split application</p>
+ <i class="fas fa-wind"></i>
+ <h3 data-rm-i18n="matrix_wind_title">Wind above 15 km/h</h3>
+ <p data-rm-i18n="matrix_wind_desc">Hold pesticides and foliar fertilizers. Use low-drift nozzles only after wind settles.</p>
  </div>
  <div>
- <div style="font-size:2rem;color:var(--color-secondary);font-weight:800;">Rs.4,500</div>
- <div style="font-size:.85rem;font-weight:600;">Avg. Savings / Acre</div>
- <p style="font-size:.75rem;">per growing season</p>
+ <i class="fas fa-temperature-high"></i>
+ <h3 data-rm-i18n="matrix_heat_title">Heat above 32 C</h3>
+ <p data-rm-i18n="matrix_heat_desc">Irrigate before 8 AM. Avoid pesticide spray and split fertilizer to prevent stress.</p>
+ </div>
+ <div>
+ <i class="fas fa-droplet"></i>
+ <h3 data-rm-i18n="matrix_humidity_title">High humidity</h3>
+ <p data-rm-i18n="matrix_humidity_desc">Watch fungal pressure, improve airflow, and avoid overhead watering near evening.</p>
  </div>
  </div>
- </div>
- </div>
+ </section>
+ </main>
  </div>
 
  <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()"><i class="fas fa-comment-dots"></i></button>
  <div class="chatbot-panel" id="chatbotPanel">
  <div class="chatbot-header">
- <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-robot" style="font-size:1.2rem;"></i><div><h4>AgriMate</h4><span style="font-size:.72rem;opacity:.8;">Resource Expert</span></div></div>
+ <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-robot" style="font-size:1.2rem;"></i><div><h4>AgriMate</h4><span style="font-size:.72rem;opacity:.8;" data-rm-i18n="resource_expert">Resource Expert</span></div></div>
  <button class="close-chat" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
  </div>
- <div class="chatbot-body" id="chatbotBody"><div class="chat-msg bot">Namaste! I can guide you on saving water and using fertilizers effectively. Ask me "When should I irrigate today?"</div></div>
+ <div class="chatbot-body" id="chatbotBody"><div class="chat-msg bot" data-rm-i18n="chat_welcome_resource">Namaste! I can help you choose the right irrigation, pesticide, and fertilizer timing from current weather conditions.</div></div>
  <div class="chatbot-input">
- <input type="text" id="chatInput" placeholder="Ask about farming resources..." onkeydown="if(event.key==='Enter')sendChat()">
+ <input type="text" id="chatInput" placeholder="Ask about farming resources..." data-rm-placeholder="chat_placeholder_resource" onkeydown="if(event.key==='Enter')sendChat()">
  <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
  </div>
  </div>
 
  <script src="js/main.js?v=market-chart-20260604"></script>
  <script>
- // Fetch weather on load to update advice
+ const RESOURCE_I18N = {
+ en: {
+ resource_page_title: 'Resource Management',
+ resource_page_subtitle: 'Weather-led water, pesticide, and fertilizer planning',
+ weather_command_center: 'Weather Command Center',
+ hero_title: 'Plan every input from field conditions.',
+ hero_desc: 'Use live temperature, humidity, wind, and rain signals to decide when to irrigate, spray pesticides, and apply fertilizer.',
+ water_saving_target: 'water saving target',
+ input_protection: 'input protection',
+ planning_cycle: 'planning cycle',
+ live_weather: 'Live Weather',
+ update: 'Update',
+ humidity: 'Humidity',
+ wind: 'Wind',
+ pressure: 'Pressure',
+ aqi: 'AQI',
+ farm_inputs: 'Farm Inputs',
+ decision_settings: 'Decision settings',
+ crop: 'Crop',
+ crop_stage: 'Crop stage',
+ soil_type: 'Soil type',
+ irrigation_method: 'Irrigation method',
+ crop_wheat: 'Wheat',
+ crop_rice: 'Rice',
+ crop_cotton: 'Cotton',
+ crop_potato: 'Potato',
+ crop_chickpea: 'Chickpea',
+ crop_mustard: 'Mustard',
+ crop_onion: 'Onion',
+ stage_vegetative: 'vegetative growth',
+ stage_sowing: 'sowing or transplanting',
+ stage_flowering: 'flowering',
+ stage_fruiting: 'fruiting or grain filling',
+ stage_maturity: 'maturity',
+ soil_loam_short: 'Loam',
+ soil_sandy_short: 'Sandy',
+ soil_clay_short: 'Clay',
+ soil_loam: 'loam soil',
+ soil_sandy: 'sandy soil',
+ soil_clay: 'clay soil',
+ irrigation_drip: 'Drip',
+ irrigation_sprinkler: 'Sprinkler',
+ irrigation_flood: 'Flood',
+ preparing_recommendations: 'Preparing recommendations',
+ preparing_recommendations_desc: 'Weather and field inputs are being converted into resource actions.',
+ loading: 'Loading',
+ checking: 'Checking',
+ water_management: 'Water Management',
+ loading_irrigation_advice: 'Loading live weather-based irrigation advice...',
+ suggested_dose: 'Suggested dose',
+ best_timing: 'Best timing',
+ method_focus: 'Method focus',
+ pesticide_planning: 'Pesticide Planning',
+ pesticide_checking_advice: 'Checking rain, wind, heat, and humidity before recommending a spray window.',
+ spray_window: 'Spray window',
+ scout_focus: 'Scout focus',
+ precaution: 'Precaution',
+ fertilizer_optimization: 'Fertilizer Optimization',
+ fertilizer_checking_advice: 'Checking leaching and heat stress risk before planning nutrient application.',
+ nutrient_focus: 'Nutrient focus',
+ application_timing: 'Application timing',
+ protection: 'Protection',
+ action_plan: 'Action Plan',
+ next_field_moves: 'Next field moves',
+ loading_resource_plan: 'Loading resource plan...',
+ live: 'Live',
+ risk_monitor: 'Risk Monitor',
+ weather_checks: 'Weather checks',
+ rain_risk: 'Rain risk',
+ spray_drift: 'Spray drift',
+ disease_pressure: 'Disease pressure',
+ nutrient_leaching: 'Nutrient leaching',
+ schedule: 'Schedule',
+ weather_adjusted_calendar: 'Weather-adjusted resource calendar',
+ three_day_plan: '3-day plan',
+ window: 'Window',
+ water: 'Water',
+ pesticide: 'Pesticide',
+ fertilizer: 'Fertilizer',
+ today: 'Today',
+ next_24_hours: 'Next 24 hours',
+ next_3_days: 'Next 3 days',
+ decision_matrix: 'Decision Matrix',
+ weather_rulebook: 'Weather rulebook',
+ matrix_rain_title: 'Rain or storm',
+ matrix_rain_desc: 'Pause irrigation, pesticide spray, and top dressing. Focus on drainage and runoff control.',
+ matrix_wind_title: 'Wind above 15 km/h',
+ matrix_wind_desc: 'Hold pesticides and foliar fertilizers. Use low-drift nozzles only after wind settles.',
+ matrix_heat_title: 'Heat above 32 C',
+ matrix_heat_desc: 'Irrigate before 8 AM. Avoid pesticide spray and split fertilizer to prevent stress.',
+ matrix_humidity_title: 'High humidity',
+ matrix_humidity_desc: 'Watch fungal pressure, improve airflow, and avoid overhead watering near evening.',
+ resource_expert: 'Resource Expert',
+ chat_welcome_resource: 'Namaste! I can help you choose the right irrigation, pesticide, and fertilizer timing from current weather conditions.',
+ chat_placeholder_resource: 'Ask about farming resources...',
+ crop_at_stage: '{crop} at {stage}',
+ high: 'High',
+ medium: 'Medium',
+ low: 'Low',
+ normal: 'Normal',
+ critical: 'Critical',
+ go: 'Go',
+ caution: 'Caution',
+ hold_inputs: 'Hold inputs',
+ pause: 'Pause',
+ heat_stress: 'Heat stress',
+ optimal: 'Optimal',
+ no_spray: 'No spray',
+ drift_risk: 'Drift risk',
+ window_open: 'Window open',
+ leaching_risk: 'Leaching risk',
+ split_dose: 'Split dose',
+ planned: 'Planned',
+ closed: 'Closed',
+ after_wind_settles: 'After wind settles',
+ dawn_or_evening: 'Dawn or evening',
+ test_small_patch: 'Test small patch',
+ ppe_required: 'PPE required',
+ after_rain_clears: 'After rain clears',
+ keep_covered: 'Keep covered',
+ light_irrigation: 'Light irrigation',
+ cool_morning: 'Cool morning',
+ morning: 'Morning',
+ morning_or_evening: 'Morning or evening',
+ early_morning: '4 AM - 8 AM',
+ after_soil_check: 'After soil check',
+ drainage_first: 'Drainage first',
+ avoid_runoff: 'Avoid runoff',
+ low_drift_nozzle: 'Low-drift nozzle',
+ zero_mm_today: '0 mm today',
+ mm_value: '{value} mm',
+ mm_today: '{value} mm today',
+ water_pause_title: 'Pause irrigation',
+ water_pause_advice: '{cropStage}: rainfall risk is enough reason to hold irrigation today. Inspect drainage and avoid standing water around roots.',
+ water_heat_title: 'Early irrigation required',
+ water_heat_advice: '{cropStage}: evaporation risk is high. Apply water before 8 AM and avoid leaf wetting during peak heat.',
+ water_normal_title: 'Maintain planned irrigation',
+ water_normal_advice: '{cropStage}: apply a controlled cycle based on {soilNote}. Check soil moisture before repeating.',
+ pesticide_rain_title: 'Delay pesticide application',
+ pesticide_rain_advice: 'Rain or storm risk can wash chemicals away and reduce control. Resume only after leaves dry and label guidance is satisfied.',
+ pesticide_wind_title: 'Hold spray due to wind',
+ pesticide_wind_advice: 'Wind is above the safe operating range. Avoid pesticide and foliar fertilizer spray to prevent drift and uneven coverage.',
+ pesticide_heat_title: 'Use a cooler spray window',
+ pesticide_heat_advice: 'Heat or dry air can increase crop burn and evaporation. Spray only near dawn or late evening if pest threshold is crossed.',
+ pesticide_good_title: 'Spray window is suitable',
+ pesticide_good_advice: 'Weather is acceptable for targeted pesticide work. Confirm pest level first, use the label dose, and wear PPE.',
+ fertilizer_rain_title: 'Delay fertilizer application',
+ fertilizer_rain_advice: 'Avoid urea, DAP, and top dressing before rain. Apply after the field drains to reduce nutrient loss.',
+ fertilizer_heat_title: 'Apply nutrients in small doses',
+ fertilizer_heat_advice: 'Heat can stress roots and increase losses. Prefer fertigation or a split dose after light irrigation.',
+ fertilizer_good_title: 'Proceed with balanced feeding',
+ fertilizer_good_advice: '{crop}: prioritize {nutrient} based on soil test and current crop stage.',
+ priority_hold_title: 'Hold sprays and reduce water',
+ priority_hold_text: 'Rain risk is active. Protect fertilizer from leaching, check drainage, and delay pesticide spray until leaves dry.',
+ priority_caution_title: 'Use protected operation windows',
+ priority_caution_text: 'Weather stress is present. Prioritize early irrigation, avoid spray drift, and split fertilizer doses.',
+ priority_good_title: 'Conditions are workable',
+ priority_good_text: 'Weather is suitable for planned irrigation and nutrient operations. Spray only after pest threshold is confirmed.',
+ action_open_drainage: 'Open drainage channels and protect stored fertilizer, seed, and harvested produce from moisture.',
+ action_postpone_inputs: 'Postpone pesticide spray and top dressing until leaves are dry and the field is workable.',
+ action_scout_after_wet: 'Scout {crop} for {pest} after the wet spell because humidity can raise disease pressure.',
+ action_irrigate: 'Irrigate {crop} with about {dose} using {method} irrigation.',
+ action_heat_irrigation: 'Complete irrigation before 8 AM and keep fertilizer doses smaller.',
+ action_normal_window: 'Use the morning window for irrigation and nutrient application.',
+ action_delay_sprays: 'Delay all sprays until wind falls below 15 km/h.',
+ action_scout_before_spray: 'Scout for {pest} before any pesticide application.',
+ action_soil_note: 'Use {soilNote} because the selected field has {soil}.',
+ updated_time: 'Updated {time}',
+ check_drainage_soil: 'Check drainage and soil moisture',
+ review_soil_repeat: 'Review soil moisture before repeat cycle',
+ retry_after_wind: 'Retry after wind settles',
+ scout_edges: 'Scout field edges and leaf underside',
+ no_irrigation: 'No irrigation',
+ hold_spray: 'Hold spray',
+ only_dawn_evening: 'Only dawn/evening',
+ targeted_spray: 'Targeted spray if threshold crossed',
+ hold_top_dressing: 'Hold top dressing',
+ split_after_light_water: 'Split dose after light water',
+ monitor_pest: 'Monitor {pest}',
+ recheck_soil: 'Recheck soil test and crop color',
+ forecast: 'Forecast',
+ pending: 'Pending',
+ offline_planning_mode: 'Offline planning mode',
+ fetching_weather: 'Fetching live weather...',
+ offline_priority_text: 'Live weather is unavailable, so recommendations are using conservative default field conditions.',
+ nutrient_n_split: 'Nitrogen split dose',
+ nutrient_n_k: 'Nitrogen plus potassium',
+ nutrient_k_micro: 'Potassium and micronutrients',
+ nutrient_k_n: 'Potassium plus nitrogen',
+ nutrient_p_s: 'Phosphorus and sulphur',
+ nutrient_s_n: 'Sulphur plus nitrogen',
+ pest_rust_aphids: 'Rust and aphids',
+ pest_stem_blast: 'Stem borer and blast',
+ pest_cotton: 'Sucking pests and bollworm',
+ pest_blight_cutworm: 'Late blight and cutworm',
+ pest_pod_borer: 'Pod borer',
+ pest_aphids_white_rust: 'Aphids and white rust',
+ pest_thrips_blotch: 'Thrips and purple blotch',
+ water_focus_root_zone: 'Root-zone moisture',
+ water_focus_shallow: 'Shallow standing water',
+ water_focus_deep: 'Deep but spaced irrigation',
+ water_focus_even: 'Even moisture',
+ water_focus_light: 'Light protective irrigation',
+ water_focus_critical: 'Critical-stage irrigation',
+ water_focus_frequent: 'Frequent light irrigation',
+ fert_starter: 'Starter dose only',
+ fert_growth: 'Growth-stage split dose',
+ fert_balanced: 'Balanced low-stress feeding',
+ fert_quality: 'Quality-focused nutrition',
+ fert_reduce_n: 'Reduce late nitrogen',
+ soil_note_sandy: 'shorter, more frequent cycles',
+ soil_note_loam: 'standard cycle',
+ soil_note_clay: 'slower application to prevent runoff',
+ method_drip: 'keep emitters in root zone',
+ method_sprinkler: 'avoid windy hours',
+ method_flood: 'use bunds and drainage checks',
+ crop_recommendation: 'Crop Recommendation',
+ crop_rec_title: 'Best crops for this weather',
+ crop_rec_desc: 'Recommendations use current temperature, humidity, rain risk, soil type, and irrigation method.',
+ top_weather_match: 'Top weather match',
+ recommendation_loading: 'Building weather-based crop recommendation...',
+ best_crop_match: 'Best match',
+ good_crop_match: 'Good option',
+ fair_crop_match: 'Watch conditions',
+ suitability_score: '{score}% suitable',
+ crop_rec_reason: '{crop} fits the current {temp} C weather with {waterNeed} water demand.',
+ crop_rec_temp_good: 'Temperature fit',
+ crop_rec_temp_low: 'Too cool',
+ crop_rec_temp_high: 'Heat watch',
+ crop_rec_rain_good: 'Rain friendly',
+ crop_rec_rain_risk: 'Rain risk',
+ crop_rec_humidity_good: 'Humidity fit',
+ crop_rec_humidity_risk: 'Disease watch',
+ crop_rec_soil_good: 'Soil fit',
+ crop_rec_irrigation_good: 'Irrigation fit',
+ water_need_low: 'low',
+ water_need_medium: 'medium',
+ water_need_high: 'high',
+ use_crop: 'Use this crop'
+ }
+ };
+
+ RESOURCE_I18N.hi = {
+ resource_page_title: 'संसाधन प्रबंधन',
+ resource_page_subtitle: 'मौसम के आधार पर पानी, कीटनाशक और खाद योजना',
+ weather_command_center: 'मौसम कमांड सेंटर',
+ hero_title: 'हर इनपुट को खेत की स्थिति से प्लान करें।',
+ hero_desc: 'तापमान, नमी, हवा और बारिश के संकेतों से सिंचाई, कीटनाशक और खाद का सही समय तय करें।',
+ water_saving_target: 'पानी बचत लक्ष्य',
+ input_protection: 'इनपुट सुरक्षा',
+ planning_cycle: 'योजना चक्र',
+ live_weather: 'लाइव मौसम',
+ update: 'अपडेट',
+ humidity: 'नमी',
+ wind: 'हवा',
+ pressure: 'दबाव',
+ aqi: 'AQI',
+ farm_inputs: 'खेत इनपुट',
+ decision_settings: 'निर्णय सेटिंग',
+ crop: 'फसल',
+ crop_stage: 'फसल अवस्था',
+ soil_type: 'मिट्टी प्रकार',
+ irrigation_method: 'सिंचाई विधि',
+ crop_wheat: 'गेहूं',
+ crop_rice: 'धान',
+ crop_cotton: 'कपास',
+ crop_potato: 'आलू',
+ crop_chickpea: 'चना',
+ crop_mustard: 'सरसों',
+ crop_onion: 'प्याज',
+ stage_vegetative: 'वनस्पति वृद्धि',
+ stage_sowing: 'बुवाई या रोपाई',
+ stage_flowering: 'फूल अवस्था',
+ stage_fruiting: 'फल या दाना भरना',
+ stage_maturity: 'पकने की अवस्था',
+ soil_loam_short: 'दोमट',
+ soil_sandy_short: 'रेतीली',
+ soil_clay_short: 'चिकनी',
+ soil_loam: 'दोमट मिट्टी',
+ soil_sandy: 'रेतीली मिट्टी',
+ soil_clay: 'चिकनी मिट्टी',
+ irrigation_drip: 'ड्रिप',
+ irrigation_sprinkler: 'स्प्रिंकलर',
+ irrigation_flood: 'बाढ़ सिंचाई',
+ preparing_recommendations: 'सुझाव तैयार हो रहे हैं',
+ preparing_recommendations_desc: 'मौसम और खेत इनपुट को संसाधन कार्यों में बदला जा रहा है।',
+ loading: 'लोड हो रहा है',
+ checking: 'जांच जारी',
+ water_management: 'जल प्रबंधन',
+ loading_irrigation_advice: 'लाइव मौसम आधारित सिंचाई सलाह लोड हो रही है...',
+ suggested_dose: 'सुझाई मात्रा',
+ best_timing: 'सर्वोत्तम समय',
+ method_focus: 'विधि फोकस',
+ pesticide_planning: 'कीटनाशक योजना',
+ pesticide_checking_advice: 'स्प्रे विंडो बताने से पहले बारिश, हवा, गर्मी और नमी जांची जा रही है।',
+ spray_window: 'स्प्रे समय',
+ scout_focus: 'निरीक्षण फोकस',
+ precaution: 'सावधानी',
+ fertilizer_optimization: 'खाद अनुकूलन',
+ fertilizer_checking_advice: 'पोषक तत्व योजना से पहले लीचिंग और गर्मी तनाव की जांच हो रही है।',
+ nutrient_focus: 'पोषक फोकस',
+ application_timing: 'प्रयोग समय',
+ protection: 'सुरक्षा',
+ action_plan: 'कार्य योजना',
+ next_field_moves: 'अगले खेत कार्य',
+ loading_resource_plan: 'संसाधन योजना लोड हो रही है...',
+ live: 'लाइव',
+ risk_monitor: 'जोखिम मॉनिटर',
+ weather_checks: 'मौसम जांच',
+ rain_risk: 'बारिश जोखिम',
+ spray_drift: 'स्प्रे ड्रिफ्ट',
+ disease_pressure: 'रोग दबाव',
+ nutrient_leaching: 'पोषक लीचिंग',
+ schedule: 'शेड्यूल',
+ weather_adjusted_calendar: 'मौसम अनुसार संसाधन कैलेंडर',
+ three_day_plan: '3-दिन योजना',
+ window: 'समय',
+ water: 'पानी',
+ pesticide: 'कीटनाशक',
+ fertilizer: 'खाद',
+ today: 'आज',
+ next_24_hours: 'अगले 24 घंटे',
+ next_3_days: 'अगले 3 दिन',
+ decision_matrix: 'निर्णय मैट्रिक्स',
+ weather_rulebook: 'मौसम नियम',
+ matrix_rain_title: 'बारिश या तूफान',
+ matrix_rain_desc: 'सिंचाई, कीटनाशक स्प्रे और टॉप ड्रेसिंग रोकें। जल निकासी और बहाव नियंत्रण पर ध्यान दें।',
+ matrix_wind_title: 'हवा 15 किमी/घं से अधिक',
+ matrix_wind_desc: 'कीटनाशक और पत्तों वाली खाद रोकें। हवा शांत होने पर ही कम-ड्रिफ्ट नोजल इस्तेमाल करें।',
+ matrix_heat_title: 'गर्मी 32 C से अधिक',
+ matrix_heat_desc: 'सुबह 8 बजे से पहले सिंचाई करें। तनाव से बचने के लिए स्प्रे और भारी खाद से बचें।',
+ matrix_humidity_title: 'अधिक नमी',
+ matrix_humidity_desc: 'फफूंद जोखिम देखें, हवा का प्रवाह सुधारें और शाम को ऊपर से पानी न दें।',
+ resource_expert: 'संसाधन विशेषज्ञ',
+ chat_welcome_resource: 'नमस्ते! मैं मौजूदा मौसम से सही सिंचाई, कीटनाशक और खाद समय चुनने में मदद कर सकता हूं।',
+ chat_placeholder_resource: 'खेती संसाधनों के बारे में पूछें...',
+ crop_at_stage: '{crop} - {stage}',
+ high: 'अधिक',
+ medium: 'मध्यम',
+ low: 'कम',
+ normal: 'सामान्य',
+ critical: 'गंभीर',
+ go: 'करें',
+ caution: 'सावधानी',
+ hold_inputs: 'इनपुट रोकें',
+ pause: 'रोकें',
+ heat_stress: 'गर्मी तनाव',
+ optimal: 'उपयुक्त',
+ no_spray: 'स्प्रे नहीं',
+ drift_risk: 'ड्रिफ्ट जोखिम',
+ window_open: 'समय खुला',
+ leaching_risk: 'लीचिंग जोखिम',
+ split_dose: 'विभाजित मात्रा',
+ planned: 'योजना अनुसार',
+ closed: 'बंद',
+ after_wind_settles: 'हवा शांत होने के बाद',
+ dawn_or_evening: 'सुबह या शाम',
+ test_small_patch: 'छोटे हिस्से पर परीक्षण',
+ ppe_required: 'PPE जरूरी',
+ after_rain_clears: 'बारिश रुकने के बाद',
+ keep_covered: 'ढककर रखें',
+ light_irrigation: 'हल्की सिंचाई',
+ cool_morning: 'ठंडी सुबह',
+ morning: 'सुबह',
+ morning_or_evening: 'सुबह या शाम',
+ early_morning: 'सुबह 4 - 8 बजे',
+ after_soil_check: 'मिट्टी जांच के बाद',
+ drainage_first: 'पहले जल निकासी',
+ avoid_runoff: 'बहाव से बचें',
+ low_drift_nozzle: 'कम-ड्रिफ्ट नोजल',
+ zero_mm_today: 'आज 0 मिमी',
+ mm_value: '{value} मिमी',
+ mm_today: 'आज {value} मिमी',
+ water_pause_title: 'सिंचाई रोकें',
+ water_pause_advice: '{cropStage}: बारिश जोखिम के कारण आज सिंचाई रोकें। जल निकासी देखें और जड़ों के पास पानी जमा न होने दें।',
+ water_heat_title: 'सुबह जल्दी सिंचाई जरूरी',
+ water_heat_advice: '{cropStage}: वाष्पीकरण जोखिम अधिक है। सुबह 8 बजे से पहले पानी दें और तेज गर्मी में पत्ते न भिगोएं।',
+ water_normal_title: 'योजना अनुसार सिंचाई रखें',
+ water_normal_advice: '{cropStage}: {soilNote} के आधार पर नियंत्रित सिंचाई करें। दोहराने से पहले मिट्टी की नमी जांचें।',
+ pesticide_rain_title: 'कीटनाशक प्रयोग टालें',
+ pesticide_rain_advice: 'बारिश या तूफान रसायन धो सकता है। पत्ते सूखने और लेबल निर्देश पूरे होने के बाद ही स्प्रे करें।',
+ pesticide_wind_title: 'हवा के कारण स्प्रे रोकें',
+ pesticide_wind_advice: 'हवा सुरक्षित सीमा से अधिक है। ड्रिफ्ट और असमान कवरेज से बचने के लिए स्प्रे रोकें।',
+ pesticide_heat_title: 'ठंडे समय में स्प्रे करें',
+ pesticide_heat_advice: 'गर्मी या सूखी हवा फसल जलन बढ़ा सकती है। जरूरत हो तो सुबह या शाम स्प्रे करें।',
+ pesticide_good_title: 'स्प्रे समय उपयुक्त है',
+ pesticide_good_advice: 'मौसम लक्षित स्प्रे के लिए ठीक है। पहले कीट स्तर जांचें, लेबल मात्रा रखें और PPE पहनें।',
+ fertilizer_rain_title: 'खाद प्रयोग टालें',
+ fertilizer_rain_advice: 'बारिश से पहले यूरिया, DAP और टॉप ड्रेसिंग से बचें। खेत सूखने के बाद खाद दें।',
+ fertilizer_heat_title: 'छोटी मात्रा में पोषक दें',
+ fertilizer_heat_advice: 'गर्मी जड़ों पर तनाव डाल सकती है। हल्की सिंचाई के बाद फर्टिगेशन या विभाजित मात्रा दें।',
+ fertilizer_good_title: 'संतुलित पोषण दें',
+ fertilizer_good_advice: '{crop}: मिट्टी जांच और अवस्था के आधार पर {nutrient} को प्राथमिकता दें।',
+ priority_hold_title: 'स्प्रे रोकें और पानी कम करें',
+ priority_hold_text: 'बारिश जोखिम सक्रिय है। खाद को लीचिंग से बचाएं, जल निकासी देखें और पत्ते सूखने तक स्प्रे रोकें।',
+ priority_caution_title: 'सुरक्षित कार्य समय चुनें',
+ priority_caution_text: 'मौसम तनाव मौजूद है। सुबह सिंचाई, कम ड्रिफ्ट और विभाजित खाद मात्रा को प्राथमिकता दें।',
+ priority_good_title: 'स्थिति काम के योग्य है',
+ priority_good_text: 'सिंचाई और पोषण कार्य के लिए मौसम ठीक है। कीट सीमा तय होने के बाद ही स्प्रे करें।',
+ action_open_drainage: 'जल निकासी खोलें और खाद, बीज व कटाई उपज को नमी से बचाएं।',
+ action_postpone_inputs: 'पत्ते सूखने और खेत काम योग्य होने तक स्प्रे व टॉप ड्रेसिंग टालें।',
+ action_scout_after_wet: 'गीले मौसम के बाद {crop} में {pest} देखें क्योंकि नमी रोग दबाव बढ़ा सकती है।',
+ action_irrigate: '{crop} में {method} सिंचाई से लगभग {dose} पानी दें।',
+ action_heat_irrigation: 'सुबह 8 बजे से पहले सिंचाई पूरी करें और खाद मात्रा छोटी रखें।',
+ action_normal_window: 'सुबह का समय सिंचाई और पोषक प्रयोग के लिए इस्तेमाल करें।',
+ action_delay_sprays: 'हवा 15 किमी/घं से कम होने तक सभी स्प्रे रोकें।',
+ action_scout_before_spray: 'किसी भी स्प्रे से पहले {pest} की जांच करें।',
+ action_soil_note: '{soilNote} अपनाएं क्योंकि चुने खेत में {soil} है।',
+ updated_time: 'अपडेट {time}',
+ check_drainage_soil: 'जल निकासी और मिट्टी नमी जांचें',
+ review_soil_repeat: 'दोबारा चक्र से पहले मिट्टी नमी देखें',
+ retry_after_wind: 'हवा शांत होने पर फिर प्रयास करें',
+ scout_edges: 'खेत किनारों और पत्ती की निचली सतह देखें',
+ no_irrigation: 'सिंचाई नहीं',
+ hold_spray: 'स्प्रे रोकें',
+ only_dawn_evening: 'केवल सुबह/शाम',
+ targeted_spray: 'सीमा पार होने पर लक्षित स्प्रे',
+ hold_top_dressing: 'टॉप ड्रेसिंग रोकें',
+ split_after_light_water: 'हल्के पानी के बाद विभाजित मात्रा',
+ monitor_pest: '{pest} देखें',
+ recheck_soil: 'मिट्टी जांच और फसल रंग दोबारा देखें',
+ forecast: 'पूर्वानुमान',
+ pending: 'बाकी',
+ offline_planning_mode: 'ऑफलाइन योजना मोड',
+ fetching_weather: 'लाइव मौसम लाया जा रहा है...',
+ offline_priority_text: 'लाइव मौसम उपलब्ध नहीं है, इसलिए सुझाव सुरक्षित डिफॉल्ट स्थितियों पर आधारित हैं।',
+ nutrient_n_split: 'नाइट्रोजन विभाजित मात्रा',
+ nutrient_n_k: 'नाइट्रोजन और पोटाश',
+ nutrient_k_micro: 'पोटाश और सूक्ष्म पोषक',
+ nutrient_k_n: 'पोटाश और नाइट्रोजन',
+ nutrient_p_s: 'फास्फोरस और सल्फर',
+ nutrient_s_n: 'सल्फर और नाइट्रोजन',
+ pest_rust_aphids: 'रस्ट और एफिड',
+ pest_stem_blast: 'स्टेम बोरर और ब्लास्ट',
+ pest_cotton: 'रस चूसक कीट और बॉलवर्म',
+ pest_blight_cutworm: 'लेट ब्लाइट और कटवर्म',
+ pest_pod_borer: 'पॉड बोरर',
+ pest_aphids_white_rust: 'एफिड और व्हाइट रस्ट',
+ pest_thrips_blotch: 'थ्रिप्स और पर्पल ब्लॉच',
+ water_focus_root_zone: 'जड़ क्षेत्र नमी',
+ water_focus_shallow: 'हल्का खड़ा पानी',
+ water_focus_deep: 'गहरी लेकिन अंतर वाली सिंचाई',
+ water_focus_even: 'समान नमी',
+ water_focus_light: 'हल्की सुरक्षा सिंचाई',
+ water_focus_critical: 'महत्वपूर्ण अवस्था सिंचाई',
+ water_focus_frequent: 'बार-बार हल्की सिंचाई',
+ fert_starter: 'केवल स्टार्टर मात्रा',
+ fert_growth: 'वृद्धि अवस्था विभाजित मात्रा',
+ fert_balanced: 'संतुलित कम-तनाव पोषण',
+ fert_quality: 'गुणवत्ता केंद्रित पोषण',
+ fert_reduce_n: 'देर से नाइट्रोजन कम करें',
+ soil_note_sandy: 'छोटे और ज्यादा बार चक्र',
+ soil_note_loam: 'सामान्य चक्र',
+ soil_note_clay: 'बहाव रोकने के लिए धीमा प्रयोग',
+ method_drip: 'एमिटर जड़ क्षेत्र में रखें',
+ method_sprinkler: 'तेज हवा वाले समय से बचें',
+ method_flood: 'मेड़ और जल निकासी जांचें'
+ };
+
+ const resourcePack = values => ({ ...RESOURCE_I18N.en, ...values });
+
+ RESOURCE_I18N.mr = resourcePack({
+ resource_page_title: 'संसाधन व्यवस्थापन',
+ resource_page_subtitle: 'हवामानावर आधारित पाणी, कीटकनाशक आणि खत नियोजन',
+ weather_command_center: 'हवामान कमांड सेंटर',
+ hero_title: 'प्रत्येक इनपुट शेतातील स्थितीनुसार नियोजित करा.',
+ hero_desc: 'तापमान, आर्द्रता, वारा आणि पावसाच्या संकेतांवरून सिंचन, फवारणी आणि खताची वेळ ठरवा.',
+ water_saving_target: 'पाणी बचत लक्ष्य',
+ input_protection: 'इनपुट संरक्षण',
+ planning_cycle: 'नियोजन चक्र',
+ live_weather: 'लाईव्ह हवामान',
+ update: 'अपडेट',
+ humidity: 'आर्द्रता',
+ wind: 'वारा',
+ pressure: 'दाब',
+ farm_inputs: 'शेत इनपुट',
+ decision_settings: 'निर्णय सेटिंग्ज',
+ crop: 'पीक',
+ crop_stage: 'पीक अवस्था',
+ soil_type: 'माती प्रकार',
+ irrigation_method: 'सिंचन पद्धत',
+ crop_wheat: 'गहू',
+ crop_rice: 'भात',
+ crop_cotton: 'कापूस',
+ crop_potato: 'बटाटा',
+ crop_chickpea: 'हरभरा',
+ crop_mustard: 'मोहरी',
+ crop_onion: 'कांदा',
+ stage_vegetative: 'वनस्पती वाढ',
+ stage_sowing: 'पेरणी किंवा रोपांतर',
+ stage_flowering: 'फुलोरा',
+ stage_fruiting: 'फळ किंवा दाणे भरणे',
+ stage_maturity: 'पक्व अवस्था',
+ soil_loam_short: 'दोमट',
+ soil_sandy_short: 'वालुकामय',
+ soil_clay_short: 'चिकण',
+ soil_loam: 'दोमट माती',
+ soil_sandy: 'वालुकामय माती',
+ soil_clay: 'चिकण माती',
+ irrigation_drip: 'ठिबक',
+ irrigation_sprinkler: 'स्प्रिंकलर',
+ irrigation_flood: 'पाट सिंचन',
+ preparing_recommendations: 'शिफारसी तयार होत आहेत',
+ preparing_recommendations_desc: 'हवामान आणि शेत माहिती संसाधन कृतींमध्ये बदलली जात आहे.',
+ loading: 'लोड होत आहे',
+ checking: 'तपासणी सुरू',
+ water_management: 'जल व्यवस्थापन',
+ loading_irrigation_advice: 'लाईव्ह हवामानावर आधारित सिंचन सल्ला लोड होत आहे...',
+ suggested_dose: 'सुचवलेली मात्रा',
+ best_timing: 'सर्वोत्तम वेळ',
+ method_focus: 'पद्धत फोकस',
+ pesticide_planning: 'कीटकनाशक नियोजन',
+ pesticide_checking_advice: 'फवारणी वेळ सांगण्यापूर्वी पाऊस, वारा, उष्णता आणि आर्द्रता तपासत आहे.',
+ spray_window: 'फवारणी वेळ',
+ scout_focus: 'निरीक्षण फोकस',
+ precaution: 'काळजी',
+ fertilizer_optimization: 'खत अनुकूलन',
+ fertilizer_checking_advice: 'पोषण नियोजनापूर्वी लीचिंग आणि उष्णतेचा ताण तपासत आहे.',
+ nutrient_focus: 'पोषक फोकस',
+ application_timing: 'वापर वेळ',
+ protection: 'संरक्षण',
+ action_plan: 'कृती योजना',
+ next_field_moves: 'पुढील शेत कामे',
+ loading_resource_plan: 'संसाधन योजना लोड होत आहे...',
+ live: 'लाईव्ह',
+ risk_monitor: 'जोखीम मॉनिटर',
+ weather_checks: 'हवामान तपासणी',
+ rain_risk: 'पावसाचा धोका',
+ spray_drift: 'फवारणी ड्रिफ्ट',
+ disease_pressure: 'रोग दाब',
+ nutrient_leaching: 'पोषक लीचिंग',
+ schedule: 'वेळापत्रक',
+ weather_adjusted_calendar: 'हवामानानुसार संसाधन दिनदर्शिका',
+ three_day_plan: '3 दिवसांची योजना',
+ window: 'वेळ',
+ water: 'पाणी',
+ pesticide: 'कीटकनाशक',
+ fertilizer: 'खत',
+ today: 'आज',
+ next_24_hours: 'पुढील 24 तास',
+ next_3_days: 'पुढील 3 दिवस',
+ decision_matrix: 'निर्णय मॅट्रिक्स',
+ weather_rulebook: 'हवामान नियम',
+ matrix_rain_title: 'पाऊस किंवा वादळ',
+ matrix_rain_desc: 'सिंचन, फवारणी आणि टॉप ड्रेसिंग थांबवा. निचरा आणि पाण्याचा वाहाव नियंत्रण तपासा.',
+ matrix_wind_title: 'वारा 15 किमी/ता पेक्षा जास्त',
+ matrix_wind_desc: 'कीटकनाशके आणि पानावरील खते थांबवा. वारा कमी झाल्यावरच कमी-ड्रिफ्ट नोजल वापरा.',
+ matrix_heat_title: 'उष्णता 32 C पेक्षा जास्त',
+ matrix_heat_desc: 'सकाळी 8 पूर्वी सिंचन करा. ताण टाळण्यासाठी फवारणी आणि मोठी खत मात्रा टाळा.',
+ matrix_humidity_title: 'जास्त आर्द्रता',
+ matrix_humidity_desc: 'बुरशीचा धोका पहा, हवेचा प्रवाह सुधारा आणि संध्याकाळी वरून पाणी देऊ नका.',
+ resource_expert: 'संसाधन तज्ञ',
+ chat_welcome_resource: 'नमस्कार! सध्याच्या हवामानानुसार सिंचन, कीटकनाशक आणि खताची योग्य वेळ निवडण्यात मी मदत करू शकतो.',
+ chat_placeholder_resource: 'शेती संसाधनांबद्दल विचारा...',
+ crop_at_stage: '{crop} - {stage}',
+ high: 'जास्त',
+ medium: 'मध्यम',
+ low: 'कमी',
+ normal: 'सामान्य',
+ critical: 'गंभीर',
+ go: 'करा',
+ caution: 'काळजी',
+ hold_inputs: 'इनपुट थांबवा',
+ pause: 'थांबवा',
+ heat_stress: 'उष्णता ताण',
+ optimal: 'योग्य',
+ no_spray: 'फवारणी नाही',
+ drift_risk: 'ड्रिफ्ट धोका',
+ window_open: 'वेळ उपलब्ध',
+ leaching_risk: 'लीचिंग धोका',
+ split_dose: 'विभाजित मात्रा',
+ planned: 'नियोजित',
+ closed: 'बंद',
+ morning: 'सकाळ',
+ morning_or_evening: 'सकाळ किंवा संध्याकाळ',
+ early_morning: 'सकाळी 4 - 8',
+ after_soil_check: 'माती तपासणीनंतर',
+ drainage_first: 'आधी निचरा',
+ zero_mm_today: 'आज 0 मिमी',
+ mm_value: '{value} मिमी',
+ water_pause_title: 'सिंचन थांबवा',
+ water_heat_title: 'लवकर सिंचन आवश्यक',
+ water_normal_title: 'नियोजित सिंचन ठेवा',
+ pesticide_rain_title: 'कीटकनाशक वापर पुढे ढकला',
+ pesticide_wind_title: 'वार्‍यामुळे फवारणी थांबवा',
+ pesticide_heat_title: 'थंड वेळेत फवारणी करा',
+ pesticide_good_title: 'फवारणीसाठी वेळ योग्य',
+ fertilizer_rain_title: 'खत वापर पुढे ढकला',
+ fertilizer_heat_title: 'पोषक छोटी मात्रा द्या',
+ fertilizer_good_title: 'संतुलित पोषण द्या',
+ priority_hold_title: 'फवारणी थांबवा आणि पाणी कमी करा',
+ priority_caution_title: 'सुरक्षित कामाची वेळ वापरा',
+ priority_good_title: 'स्थिती कामासाठी योग्य आहे',
+ updated_time: 'अपडेट {time}',
+ no_irrigation: 'सिंचन नाही',
+ hold_spray: 'फवारणी थांबवा',
+ only_dawn_evening: 'फक्त सकाळ/संध्याकाळ',
+ targeted_spray: 'मर्यादा ओलांडल्यास लक्षित फवारणी',
+ hold_top_dressing: 'टॉप ड्रेसिंग थांबवा',
+ forecast: 'अंदाज',
+ pending: 'प्रलंबित',
+ offline_planning_mode: 'ऑफलाइन नियोजन मोड',
+ fetching_weather: 'लाईव्ह हवामान आणत आहे...',
+ nutrient_n_split: 'नायट्रोजन विभाजित मात्रा',
+ nutrient_n_k: 'नायट्रोजन आणि पोटॅश',
+ nutrient_k_micro: 'पोटॅश आणि सूक्ष्म पोषक',
+ nutrient_k_n: 'पोटॅश आणि नायट्रोजन',
+ nutrient_p_s: 'फॉस्फरस आणि सल्फर',
+ nutrient_s_n: 'सल्फर आणि नायट्रोजन',
+ pest_rust_aphids: 'रस्ट आणि मावा',
+ pest_stem_blast: 'स्टेम बोरर आणि ब्लास्ट',
+ pest_cotton: 'रसशोषक कीड आणि बोंड अळी',
+ pest_blight_cutworm: 'लेट ब्लाइट आणि कटवर्म',
+ pest_pod_borer: 'शेंगा पोखरणारी अळी',
+ pest_aphids_white_rust: 'मावा आणि व्हाईट रस्ट',
+ pest_thrips_blotch: 'थ्रिप्स आणि पर्पल ब्लॉच',
+ soil_note_sandy: 'लहान आणि वारंवार चक्र',
+ soil_note_loam: 'सामान्य चक्र',
+ soil_note_clay: 'वाहाव टाळण्यासाठी धीमा वापर',
+ method_drip: 'एमिटर मुळाजवळ ठेवा',
+ method_sprinkler: 'वार्‍याच्या वेळा टाळा',
+ method_flood: 'मेढ आणि निचरा तपासा'
+ });
+
+ RESOURCE_I18N.pa = resourcePack({
+ resource_page_title: 'ਸੰਸਾਧਨ ਪ੍ਰਬੰਧਨ',
+ resource_page_subtitle: 'ਮੌਸਮ ਅਧਾਰਿਤ ਪਾਣੀ, ਕੀਟਨਾਸ਼ਕ ਅਤੇ ਖਾਦ ਯੋਜਨਾ',
+ weather_command_center: 'ਮੌਸਮ ਕਮਾਂਡ ਸੈਂਟਰ',
+ hero_title: 'ਹਰ ਇਨਪੁੱਟ ਨੂੰ ਖੇਤ ਦੀ ਹਾਲਤ ਦੇ ਅਧਾਰ ਤੇ ਯੋਜਿਤ ਕਰੋ।',
+ hero_desc: 'ਤਾਪਮਾਨ, ਨਮੀ, ਹਵਾ ਅਤੇ ਮੀਂਹ ਦੇ ਸੰਕੇਤਾਂ ਨਾਲ ਸਿੰਚਾਈ, ਛਿੜਕਾਅ ਅਤੇ ਖਾਦ ਦਾ ਸਮਾਂ ਤੈਅ ਕਰੋ।',
+ water_saving_target: 'ਪਾਣੀ ਬਚਤ ਟੀਚਾ',
+ input_protection: 'ਇਨਪੁੱਟ ਸੁਰੱਖਿਆ',
+ planning_cycle: 'ਯੋਜਨਾ ਚੱਕਰ',
+ live_weather: 'ਲਾਈਵ ਮੌਸਮ',
+ update: 'ਅਪਡੇਟ',
+ humidity: 'ਨਮੀ',
+ wind: 'ਹਵਾ',
+ pressure: 'ਦਬਾਅ',
+ farm_inputs: 'ਖੇਤ ਇਨਪੁੱਟ',
+ decision_settings: 'ਫੈਸਲਾ ਸੈਟਿੰਗ',
+ crop: 'ਫ਼ਸਲ',
+ crop_stage: 'ਫ਼ਸਲ ਅਵਸਥਾ',
+ soil_type: 'ਮਿੱਟੀ ਕਿਸਮ',
+ irrigation_method: 'ਸਿੰਚਾਈ ਤਰੀਕਾ',
+ crop_wheat: 'ਕਣਕ',
+ crop_rice: 'ਧਾਨ',
+ crop_cotton: 'ਕਪਾਹ',
+ crop_potato: 'ਆਲੂ',
+ crop_chickpea: 'ਚਣਾ',
+ crop_mustard: 'ਸਰੋਂ',
+ crop_onion: 'ਪਿਆਜ਼',
+ stage_vegetative: 'ਵਨਸਪਤੀ ਵਾਧਾ',
+ stage_sowing: 'ਬਿਜਾਈ ਜਾਂ ਰੋਪਾਈ',
+ stage_flowering: 'ਫੁੱਲ ਅਵਸਥਾ',
+ stage_fruiting: 'ਫਲ ਜਾਂ ਦਾਣਾ ਭਰਨਾ',
+ stage_maturity: 'ਪੱਕਣ ਦੀ ਅਵਸਥਾ',
+ soil_loam_short: 'ਦੋਮਟ',
+ soil_sandy_short: 'ਰੇਤਲੀ',
+ soil_clay_short: 'ਚਿਕਣੀ',
+ soil_loam: 'ਦੋਮਟ ਮਿੱਟੀ',
+ soil_sandy: 'ਰੇਤਲੀ ਮਿੱਟੀ',
+ soil_clay: 'ਚਿਕਣੀ ਮਿੱਟੀ',
+ irrigation_drip: 'ਡ੍ਰਿਪ',
+ irrigation_sprinkler: 'ਸਪ੍ਰਿੰਕਲਰ',
+ irrigation_flood: 'ਫਲੱਡ',
+ loading: 'ਲੋਡ ਹੋ ਰਿਹਾ',
+ checking: 'ਜਾਂਚ',
+ preparing_recommendations: 'ਸੁਝਾਅ ਤਿਆਰ ਹੋ ਰਹੇ ਹਨ',
+ preparing_recommendations_desc: 'ਮੌਸਮ ਅਤੇ ਖੇਤ ਇਨਪੁੱਟ ਨੂੰ ਸੰਸਾਧਨ ਕਾਰਵਾਈਆਂ ਵਿੱਚ ਬਦਲਿਆ ਜਾ ਰਿਹਾ ਹੈ।',
+ water_management: 'ਪਾਣੀ ਪ੍ਰਬੰਧਨ',
+ loading_irrigation_advice: 'ਲਾਈਵ ਮੌਸਮ ਅਧਾਰਿਤ ਸਿੰਚਾਈ ਸਲਾਹ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...',
+ suggested_dose: 'ਸੁਝਾਈ ਮਾਤਰਾ',
+ best_timing: 'ਸਭ ਤੋਂ ਵਧੀਆ ਸਮਾਂ',
+ method_focus: 'ਤਰੀਕਾ ਫੋਕਸ',
+ pesticide_planning: 'ਕੀਟਨਾਸ਼ਕ ਯੋਜਨਾ',
+ pesticide_checking_advice: 'ਛਿੜਕਾਅ ਸਮਾਂ ਦੱਸਣ ਤੋਂ ਪਹਿਲਾਂ ਮੀਂਹ, ਹਵਾ, ਗਰਮੀ ਅਤੇ ਨਮੀ ਜਾਂਚੀ ਜਾ ਰਹੀ ਹੈ।',
+ spray_window: 'ਛਿੜਕਾਅ ਸਮਾਂ',
+ scout_focus: 'ਜਾਂਚ ਫੋਕਸ',
+ precaution: 'ਸਾਵਧਾਨੀ',
+ fertilizer_optimization: 'ਖਾਦ ਸੁਧਾਰ',
+ fertilizer_checking_advice: 'ਪੋਸ਼ਕ ਯੋਜਨਾ ਤੋਂ ਪਹਿਲਾਂ ਲੀਚਿੰਗ ਅਤੇ ਗਰਮੀ ਤਣਾਅ ਜਾਂਚਿਆ ਜਾ ਰਿਹਾ ਹੈ।',
+ nutrient_focus: 'ਪੋਸ਼ਕ ਫੋਕਸ',
+ application_timing: 'ਵਰਤੋਂ ਸਮਾਂ',
+ protection: 'ਸੁਰੱਖਿਆ',
+ action_plan: 'ਕਾਰਵਾਈ ਯੋਜਨਾ',
+ next_field_moves: 'ਅਗਲੇ ਖੇਤ ਕੰਮ',
+ loading_resource_plan: 'ਸੰਸਾਧਨ ਯੋਜਨਾ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...',
+ live: 'ਲਾਈਵ',
+ risk_monitor: 'ਜੋਖਮ ਮਾਨੀਟਰ',
+ weather_checks: 'ਮੌਸਮ ਜਾਂਚ',
+ rain_risk: 'ਮੀਂਹ ਜੋਖਮ',
+ spray_drift: 'ਛਿੜਕਾਅ ਡ੍ਰਿਫਟ',
+ disease_pressure: 'ਰੋਗ ਦਬਾਅ',
+ nutrient_leaching: 'ਪੋਸ਼ਕ ਲੀਚਿੰਗ',
+ schedule: 'ਸਮਾਂਸੂਚੀ',
+ weather_adjusted_calendar: 'ਮੌਸਮ ਅਨੁਸਾਰ ਸੰਸਾਧਨ ਕੈਲੰਡਰ',
+ three_day_plan: '3-ਦਿਨ ਯੋਜਨਾ',
+ window: 'ਸਮਾਂ',
+ water: 'ਪਾਣੀ',
+ pesticide: 'ਕੀਟਨਾਸ਼ਕ',
+ fertilizer: 'ਖਾਦ',
+ decision_matrix: 'ਫੈਸਲਾ ਮੈਟ੍ਰਿਕਸ',
+ weather_rulebook: 'ਮੌਸਮ ਨਿਯਮ',
+ matrix_rain_title: 'ਮੀਂਹ ਜਾਂ ਤੂਫ਼ਾਨ',
+ matrix_rain_desc: 'ਸਿੰਚਾਈ, ਕੀਟਨਾਸ਼ਕ ਛਿੜਕਾਅ ਅਤੇ ਟਾਪ ਡ੍ਰੈਸਿੰਗ ਰੋਕੋ। ਨਿਕਾਸੀ ਤੇ ਧਿਆਨ ਦਿਓ।',
+ matrix_wind_title: 'ਹਵਾ 15 ਕਿਮੀ/ਘੰ ਤੋਂ ਵੱਧ',
+ matrix_wind_desc: 'ਕੀਟਨਾਸ਼ਕ ਅਤੇ ਪੱਤਿਆਂ ਵਾਲੀ ਖਾਦ ਰੋਕੋ। ਹਵਾ ਘੱਟ ਹੋਣ ਤੇ ਹੀ ਘੱਟ-ਡ੍ਰਿਫਟ ਨੋਜ਼ਲ ਵਰਤੋ।',
+ matrix_heat_title: 'ਗਰਮੀ 32 C ਤੋਂ ਵੱਧ',
+ matrix_heat_desc: 'ਸਵੇਰੇ 8 ਵਜੇ ਤੋਂ ਪਹਿਲਾਂ ਸਿੰਚਾਈ ਕਰੋ। ਤਣਾਅ ਤੋਂ ਬਚਣ ਲਈ ਛਿੜਕਾਅ ਅਤੇ ਵੱਧ ਖਾਦ ਤੋਂ ਬਚੋ।',
+ matrix_humidity_title: 'ਵੱਧ ਨਮੀ',
+ matrix_humidity_desc: 'ਫੰਗਸ ਜੋਖਮ ਵੇਖੋ, ਹਵਾ ਦਾ ਪ੍ਰਵਾਹ ਸੁਧਾਰੋ ਅਤੇ ਸ਼ਾਮ ਨੂੰ ਉੱਪਰੋਂ ਪਾਣੀ ਨਾ ਦਿਓ।',
+ resource_expert: 'ਸੰਸਾਧਨ ਵਿਸ਼ੇਸ਼ਗਿਆ',
+ chat_welcome_resource: 'ਨਮਸਤੇ! ਮੈਂ ਮੌਜੂਦਾ ਮੌਸਮ ਅਨੁਸਾਰ ਸਿੰਚਾਈ, ਕੀਟਨਾਸ਼ਕ ਅਤੇ ਖਾਦ ਦਾ ਸਹੀ ਸਮਾਂ ਚੁਣਣ ਵਿੱਚ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ।',
+ chat_placeholder_resource: 'ਖੇਤੀ ਸੰਸਾਧਨਾਂ ਬਾਰੇ ਪੁੱਛੋ...',
+ high: 'ਵੱਧ',
+ medium: 'ਮੱਧਮ',
+ low: 'ਘੱਟ',
+ normal: 'ਸਧਾਰਨ',
+ caution: 'ਸਾਵਧਾਨੀ',
+ pause: 'ਰੋਕੋ',
+ optimal: 'ਉਚਿਤ',
+ today: 'ਅੱਜ',
+ next_24_hours: 'ਅਗਲੇ 24 ਘੰਟੇ',
+ next_3_days: 'ਅਗਲੇ 3 ਦਿਨ',
+ forecast: 'ਪੂਰਵ ਅਨੁਮਾਨ',
+ pending: 'ਬਾਕੀ',
+ offline_planning_mode: 'ਆਫਲਾਈਨ ਯੋਜਨਾ ਮੋਡ',
+ fetching_weather: 'ਲਾਈਵ ਮੌਸਮ ਲਿਆ ਜਾ ਰਿਹਾ ਹੈ...'
+ });
+
+ RESOURCE_I18N.ta = resourcePack({
+ resource_page_title: 'வள மேலாண்மை',
+ resource_page_subtitle: 'வானிலை அடிப்படையிலான நீர், பூச்சிக்கொல்லி, உர திட்டம்',
+ weather_command_center: 'வானிலை கட்டுப்பாட்டு மையம்',
+ hero_title: 'ஒவ்வொரு உள்ளீட்டையும் வயல் நிலையால் திட்டமிடுங்கள்.',
+ hero_desc: 'வெப்பநிலை, ஈரப்பதம், காற்று, மழை சிக்னல்களால் பாசனம், தெளிப்பு, உர நேரத்தை முடிவு செய்யுங்கள்.',
+ water_saving_target: 'நீர் சேமிப்பு இலக்கு',
+ input_protection: 'உள்ளீட்டு பாதுகாப்பு',
+ planning_cycle: 'திட்ட சுழற்சி',
+ live_weather: 'நேரடி வானிலை',
+ update: 'புதுப்பி',
+ humidity: 'ஈரப்பதம்',
+ wind: 'காற்று',
+ pressure: 'அழுத்தம்',
+ farm_inputs: 'வயல் உள்ளீடுகள்',
+ decision_settings: 'முடிவு அமைப்புகள்',
+ crop: 'பயிர்',
+ crop_stage: 'பயிர் நிலை',
+ soil_type: 'மண் வகை',
+ irrigation_method: 'பாசன முறை',
+ crop_wheat: 'கோதுமை',
+ crop_rice: 'நெல்',
+ crop_cotton: 'பருத்தி',
+ crop_potato: 'உருளைக்கிழங்கு',
+ crop_chickpea: 'கொண்டைக்கடலை',
+ crop_mustard: 'கடுகு',
+ crop_onion: 'வெங்காயம்',
+ stage_vegetative: 'வளர்ச்சி நிலை',
+ stage_sowing: 'விதைப்பு அல்லது நடவு',
+ stage_flowering: 'மலர்ச்சி',
+ stage_fruiting: 'கனி அல்லது தானிய நிரப்பு',
+ stage_maturity: 'முதிர்ச்சி',
+ soil_loam_short: 'லோம்',
+ soil_sandy_short: 'மணல்',
+ soil_clay_short: 'களிமண்',
+ soil_loam: 'லோம் மண்',
+ soil_sandy: 'மணல் மண்',
+ soil_clay: 'களிமண்',
+ irrigation_drip: 'டிரிப்',
+ irrigation_sprinkler: 'ஸ்பிரிங்க்ளர்',
+ irrigation_flood: 'வெள்ள பாசனம்',
+ loading: 'ஏற்றுகிறது',
+ checking: 'சரிபார்ப்பு',
+ preparing_recommendations: 'பரிந்துரைகள் தயாராகின்றன',
+ preparing_recommendations_desc: 'வானிலை மற்றும் வயல் உள்ளீடுகள் வள செயல்களாக மாற்றப்படுகின்றன.',
+ water_management: 'நீர் மேலாண்மை',
+ loading_irrigation_advice: 'நேரடி வானிலை அடிப்படையிலான பாசன ஆலோசனை ஏற்றப்படுகிறது...',
+ suggested_dose: 'பரிந்துரைக்கப்பட்ட அளவு',
+ best_timing: 'சிறந்த நேரம்',
+ method_focus: 'முறை கவனம்',
+ pesticide_planning: 'பூச்சிக்கொல்லி திட்டம்',
+ pesticide_checking_advice: 'தெளிப்பு நேரத்திற்கு முன் மழை, காற்று, வெப்பம், ஈரப்பதம் சரிபார்க்கப்படுகிறது.',
+ spray_window: 'தெளிப்பு நேரம்',
+ scout_focus: 'கண்காணிப்பு கவனம்',
+ precaution: 'முன்னெச்சரிக்கை',
+ fertilizer_optimization: 'உர மேம்பாடு',
+ fertilizer_checking_advice: 'சத்து திட்டத்திற்கு முன் லீச்சிங் மற்றும் வெப்ப அழுத்தம் சரிபார்க்கப்படுகிறது.',
+ nutrient_focus: 'சத்து கவனம்',
+ application_timing: 'பயன்பாட்டு நேரம்',
+ protection: 'பாதுகாப்பு',
+ action_plan: 'செயல் திட்டம்',
+ next_field_moves: 'அடுத்த வயல் செயல்கள்',
+ loading_resource_plan: 'வள திட்டம் ஏற்றப்படுகிறது...',
+ live: 'நேரடி',
+ risk_monitor: 'அபாய கண்காணிப்பு',
+ weather_checks: 'வானிலை சோதனைகள்',
+ rain_risk: 'மழை அபாயம்',
+ spray_drift: 'தெளிப்பு சிதறல்',
+ disease_pressure: 'நோய் அழுத்தம்',
+ nutrient_leaching: 'சத்து லீச்சிங்',
+ schedule: 'அட்டவணை',
+ weather_adjusted_calendar: 'வானிலை மாற்றிய வள அட்டவணை',
+ three_day_plan: '3 நாள் திட்டம்',
+ window: 'நேரம்',
+ water: 'நீர்',
+ pesticide: 'பூச்சிக்கொல்லி',
+ fertilizer: 'உரம்',
+ decision_matrix: 'முடிவு அட்டவணை',
+ weather_rulebook: 'வானிலை விதிகள்',
+ matrix_rain_title: 'மழை அல்லது புயல்',
+ matrix_rain_desc: 'பாசனம், பூச்சிக்கொல்லி தெளிப்பு, மேல் உரமிடலை நிறுத்துங்கள். வடிகால் மீது கவனம் செலுத்துங்கள்.',
+ matrix_wind_title: 'காற்று 15 கிமீ/மணி மேல்',
+ matrix_wind_desc: 'பூச்சிக்கொல்லி மற்றும் இலை உரத்தை நிறுத்துங்கள். காற்று குறைந்த பிறகு குறைந்த-சிதறல் நுழல் பயன்படுத்துங்கள்.',
+ matrix_heat_title: 'வெப்பம் 32 C மேல்',
+ matrix_heat_desc: 'காலை 8 மணிக்கு முன் பாசனம் செய்யுங்கள். அழுத்தம் தவிர்க்க தெளிப்பு மற்றும் அதிக உரத்தை தவிர்க்கவும்.',
+ matrix_humidity_title: 'அதிக ஈரப்பதம்',
+ matrix_humidity_desc: 'பூஞ்சை அபாயம் கவனிக்கவும், காற்றோட்டத்தை மேம்படுத்தவும், மாலை மேலிருந்து நீர் விட வேண்டாம்.',
+ resource_expert: 'வள நிபுணர்',
+ chat_welcome_resource: 'வணக்கம்! தற்போதைய வானிலையிலிருந்து சரியான பாசனம், பூச்சிக்கொல்லி, உர நேரத்தைத் தேர்வு செய்ய உதவுவேன்.',
+ chat_placeholder_resource: 'விவசாய வளங்கள் பற்றி கேளுங்கள்...',
+ high: 'அதிகம்',
+ medium: 'நடுத்தரம்',
+ low: 'குறைவு',
+ normal: 'சாதாரணம்',
+ caution: 'எச்சரிக்கை',
+ pause: 'நிறுத்து',
+ optimal: 'உகந்தது',
+ today: 'இன்று',
+ next_24_hours: 'அடுத்த 24 மணி',
+ next_3_days: 'அடுத்த 3 நாட்கள்',
+ forecast: 'முன்னறிவிப்பு',
+ pending: 'நிலுவை',
+ offline_planning_mode: 'ஆஃப்லைன் திட்ட முறை',
+ fetching_weather: 'நேரடி வானிலை பெறப்படுகிறது...'
+ });
+
+ RESOURCE_I18N.te = resourcePack({
+ resource_page_title: 'వనరుల నిర్వహణ',
+ resource_page_subtitle: 'వాతావరణ ఆధారిత నీరు, పురుగుమందు, ఎరువు ప్రణాళిక',
+ weather_command_center: 'వాతావరణ కమాండ్ సెంటర్',
+ hero_title: 'ప్రతి ఇన్‌పుట్‌ను పొలం పరిస్థితులపై ప్లాన్ చేయండి.',
+ hero_desc: 'ఉష్ణోగ్రత, తేమ, గాలి, వర్ష సూచనలతో నీరు, స్ప్రే, ఎరువు సమయాన్ని నిర్ణయించండి.',
+ water_saving_target: 'నీటి ఆదా లక్ష్యం',
+ input_protection: 'ఇన్‌పుట్ రక్షణ',
+ planning_cycle: 'ప్రణాళిక చక్రం',
+ live_weather: 'లైవ్ వాతావరణం',
+ update: 'అప్డేట్',
+ humidity: 'తేమ',
+ wind: 'గాలి',
+ pressure: 'పీడనం',
+ farm_inputs: 'పొలం ఇన్‌పుట్లు',
+ decision_settings: 'నిర్ణయ సెట్టింగులు',
+ crop: 'పంట',
+ crop_stage: 'పంట దశ',
+ soil_type: 'మట్టి రకం',
+ irrigation_method: 'నీటి పద్ధతి',
+ crop_wheat: 'గోధుమ',
+ crop_rice: 'వరి',
+ crop_cotton: 'పత్తి',
+ crop_potato: 'బంగాళాదుంప',
+ crop_chickpea: 'సెనగ',
+ crop_mustard: 'ఆవాలు',
+ crop_onion: 'ఉల్లి',
+ stage_vegetative: 'వృద్ధి దశ',
+ stage_sowing: 'విత్తనం లేదా నాట్లు',
+ stage_flowering: 'పుష్ప దశ',
+ stage_fruiting: 'ఫలం లేదా గింజ నింపడం',
+ stage_maturity: 'పక్వ దశ',
+ soil_loam_short: 'లోమ్',
+ soil_sandy_short: 'ఇసుక',
+ soil_clay_short: 'బంకమట్టి',
+ soil_loam: 'లోమ్ మట్టి',
+ soil_sandy: 'ఇసుక మట్టి',
+ soil_clay: 'బంకమట్టి',
+ irrigation_drip: 'డ్రిప్',
+ irrigation_sprinkler: 'స్ప్రింక్లర్',
+ irrigation_flood: 'ఫ్లడ్',
+ loading: 'లోడ్ అవుతోంది',
+ checking: 'తనిఖీ',
+ preparing_recommendations: 'సిఫార్సులు సిద్ధమవుతున్నాయి',
+ preparing_recommendations_desc: 'వాతావరణం మరియు పొలం ఇన్‌పుట్లు వనరుల చర్యలుగా మార్చబడుతున్నాయి.',
+ water_management: 'నీటి నిర్వహణ',
+ loading_irrigation_advice: 'లైవ్ వాతావరణ ఆధారిత నీటి సలహా లోడ్ అవుతోంది...',
+ suggested_dose: 'సూచించిన మోతాదు',
+ best_timing: 'ఉత్తమ సమయం',
+ method_focus: 'పద్ధతి ఫోకస్',
+ pesticide_planning: 'పురుగుమందు ప్రణాళిక',
+ pesticide_checking_advice: 'స్ప్రే సమయానికి ముందు వర్షం, గాలి, వేడి, తేమ తనిఖీ అవుతున్నాయి.',
+ spray_window: 'స్ప్రే సమయం',
+ scout_focus: 'పరిశీలన ఫోకస్',
+ precaution: 'జాగ్రత్త',
+ fertilizer_optimization: 'ఎరువు మెరుగుదల',
+ fertilizer_checking_advice: 'పోషక ప్రణాళికకు ముందు లీచింగ్ మరియు వేడి ఒత్తిడి తనిఖీ అవుతున్నాయి.',
+ nutrient_focus: 'పోషక ఫోకస్',
+ application_timing: 'వినియోగ సమయం',
+ protection: 'రక్షణ',
+ action_plan: 'చర్య ప్రణాళిక',
+ next_field_moves: 'తదుపరి పొలం పనులు',
+ loading_resource_plan: 'వనరుల ప్రణాళిక లోడ్ అవుతోంది...',
+ live: 'లైవ్',
+ risk_monitor: 'రిస్క్ మానిటర్',
+ weather_checks: 'వాతావరణ తనిఖీలు',
+ rain_risk: 'వర్ష ప్రమాదం',
+ spray_drift: 'స్ప్రే డ్రిఫ్ట్',
+ disease_pressure: 'వ్యాధి ఒత్తిడి',
+ nutrient_leaching: 'పోషక లీచింగ్',
+ schedule: 'షెడ్యూల్',
+ weather_adjusted_calendar: 'వాతావరణ సవరించిన వనరుల క్యాలెండర్',
+ three_day_plan: '3-రోజుల ప్రణాళిక',
+ window: 'సమయం',
+ water: 'నీరు',
+ pesticide: 'పురుగుమందు',
+ fertilizer: 'ఎరువు',
+ decision_matrix: 'నిర్ణయ మ్యాట్రిక్స్',
+ weather_rulebook: 'వాతావరణ నియమాలు',
+ matrix_rain_title: 'వర్షం లేదా తుఫాను',
+ matrix_rain_desc: 'నీరు, పురుగుమందు స్ప్రే, టాప్ డ్రెస్సింగ్ నిలిపివేయండి. డ్రైనేజ్ మీద దృష్టి పెట్టండి.',
+ matrix_wind_title: 'గాలి 15 కిమీ/గం పైగా',
+ matrix_wind_desc: 'పురుగుమందు మరియు ఆకుల ఎరువు నిలిపివేయండి. గాలి తగ్గిన తర్వాత తక్కువ-డ్రిఫ్ట్ నోజిల్ వాడండి.',
+ matrix_heat_title: 'వేడి 32 C పైగా',
+ matrix_heat_desc: 'ఉదయం 8 ముందు నీరు పెట్టండి. ఒత్తిడి నివారించడానికి స్ప్రే మరియు భారీ ఎరువు వద్దు.',
+ matrix_humidity_title: 'అధిక తేమ',
+ matrix_humidity_desc: 'ఫంగస్ ప్రమాదం గమనించండి, గాలి ప్రసరణ మెరుగుపరచండి, సాయంత్రం పై నుంచి నీరు వద్దు.',
+ resource_expert: 'వనరుల నిపుణుడు',
+ chat_welcome_resource: 'నమస్తే! ప్రస్తుత వాతావరణం ఆధారంగా సరైన నీరు, పురుగుమందు, ఎరువు సమయాన్ని ఎంచుకోవడంలో సహాయం చేస్తాను.',
+ chat_placeholder_resource: 'వ్యవసాయ వనరుల గురించి అడగండి...',
+ high: 'అధికం',
+ medium: 'మధ్యస్థం',
+ low: 'తక్కువ',
+ normal: 'సాధారణం',
+ caution: 'జాగ్రత్త',
+ pause: 'ఆపండి',
+ optimal: 'అనుకూలం',
+ today: 'ఈ రోజు',
+ next_24_hours: 'తదుపరి 24 గంటలు',
+ next_3_days: 'తదుపరి 3 రోజులు',
+ forecast: 'అంచనా',
+ pending: 'పెండింగ్',
+ offline_planning_mode: 'ఆఫ్‌లైన్ ప్రణాళిక మోడ్',
+ fetching_weather: 'లైవ్ వాతావరణం తెస్తోంది...'
+ });
+ function resourceLang() {
+ return localStorage.getItem('agri_lang') || 'en';
+ }
+
+ function resourceLocale() {
+ return { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN', pa: 'pa-IN', ta: 'ta-IN', te: 'te-IN' }[resourceLang()] || 'en-IN';
+ }
+
+ function resourceT(key, values = {}) {
+ const lang = resourceLang();
+ const text = RESOURCE_I18N[lang]?.[key] || RESOURCE_I18N.en[key] || key;
+ return Object.entries(values).reduce((result, [name, value]) => result.replaceAll(`{${name}}`, value), text);
+ }
+
+ function resourceApplyTranslations() {
+ document.documentElement.lang = resourceLang();
+ document.querySelectorAll('[data-rm-i18n]').forEach(el => {
+ const key = el.getAttribute('data-rm-i18n');
+ el.textContent = resourceT(key);
+ });
+ document.querySelectorAll('[data-rm-placeholder]').forEach(el => {
+ el.setAttribute('placeholder', resourceT(el.getAttribute('data-rm-placeholder')));
+ });
+ }
+
+ const RESOURCE_CROP_PROFILES = {
+ wheat: { labelKey: 'crop_wheat', baseWater: 32, nutrientKey: 'nutrient_n_split', pestKey: 'pest_rust_aphids', waterFocusKey: 'water_focus_root_zone' },
+ rice: { labelKey: 'crop_rice', baseWater: 48, nutrientKey: 'nutrient_n_k', pestKey: 'pest_stem_blast', waterFocusKey: 'water_focus_shallow' },
+ cotton: { labelKey: 'crop_cotton', baseWater: 38, nutrientKey: 'nutrient_k_micro', pestKey: 'pest_cotton', waterFocusKey: 'water_focus_deep' },
+ potato: { labelKey: 'crop_potato', baseWater: 30, nutrientKey: 'nutrient_k_n', pestKey: 'pest_blight_cutworm', waterFocusKey: 'water_focus_even' },
+ chickpea: { labelKey: 'crop_chickpea', baseWater: 22, nutrientKey: 'nutrient_p_s', pestKey: 'pest_pod_borer', waterFocusKey: 'water_focus_light' },
+ mustard: { labelKey: 'crop_mustard', baseWater: 24, nutrientKey: 'nutrient_s_n', pestKey: 'pest_aphids_white_rust', waterFocusKey: 'water_focus_critical' },
+ onion: { labelKey: 'crop_onion', baseWater: 26, nutrientKey: 'nutrient_n_k', pestKey: 'pest_thrips_blotch', waterFocusKey: 'water_focus_frequent' }
+ };
+
+ const RESOURCE_STAGE_PROFILES = {
+ sowing: { labelKey: 'stage_sowing', factor: 0.75, fertilizerKey: 'fert_starter' },
+ vegetative: { labelKey: 'stage_vegetative', factor: 1, fertilizerKey: 'fert_growth' },
+ flowering: { labelKey: 'stage_flowering', factor: 1.15, fertilizerKey: 'fert_balanced' },
+ fruiting: { labelKey: 'stage_fruiting', factor: 1.1, fertilizerKey: 'fert_quality' },
+ maturity: { labelKey: 'stage_maturity', factor: 0.65, fertilizerKey: 'fert_reduce_n' }
+ };
+
+ const RESOURCE_SOIL_FACTORS = {
+ sandy: { labelKey: 'soil_sandy', factor: 1.15, noteKey: 'soil_note_sandy' },
+ loam: { labelKey: 'soil_loam', factor: 1, noteKey: 'soil_note_loam' },
+ clay: { labelKey: 'soil_clay', factor: 0.85, noteKey: 'soil_note_clay' }
+ };
+
+ const RESOURCE_IRRIGATION_FACTORS = {
+ drip: { labelKey: 'irrigation_drip', factor: 0.75, saving: 35, methodKey: 'method_drip' },
+ sprinkler: { labelKey: 'irrigation_sprinkler', factor: 0.9, saving: 22, methodKey: 'method_sprinkler' },
+ flood: { labelKey: 'irrigation_flood', factor: 1.15, saving: 10, methodKey: 'method_flood' }
+ };
+
+ const RESOURCE_CROP_RECOMMENDATION_PROFILES = {
+ wheat: { tempMin: 10, tempMax: 25, waterNeedKey: 'water_need_medium', rainSensitive: true, humiditySensitive: true, heatTolerant: false, soilBoost: { loam: 8, clay: 3 }, irrigationBoost: { drip: 5, sprinkler: 4 } },
+ rice: { tempMin: 22, tempMax: 35, waterNeedKey: 'water_need_high', rainFriendly: true, humiditySensitive: false, heatTolerant: true, soilBoost: { clay: 10, loam: 4 }, irrigationBoost: { flood: 10, sprinkler: 3 } },
+ cotton: { tempMin: 21, tempMax: 35, waterNeedKey: 'water_need_medium', rainSensitive: true, humiditySensitive: true, heatTolerant: true, soilBoost: { loam: 7, sandy: 4 }, irrigationBoost: { drip: 9 } },
+ potato: { tempMin: 15, tempMax: 25, waterNeedKey: 'water_need_medium', rainSensitive: true, humiditySensitive: true, heatTolerant: false, soilBoost: { loam: 9, sandy: 2 }, irrigationBoost: { drip: 8, sprinkler: 3 } },
+ chickpea: { tempMin: 18, tempMax: 30, waterNeedKey: 'water_need_low', rainSensitive: true, humiditySensitive: true, heatTolerant: true, soilBoost: { loam: 8, sandy: 6 }, irrigationBoost: { drip: 7 } },
+ mustard: { tempMin: 10, tempMax: 25, waterNeedKey: 'water_need_low', rainSensitive: true, humiditySensitive: true, heatTolerant: false, soilBoost: { loam: 7, sandy: 3 }, irrigationBoost: { drip: 5, sprinkler: 3 } },
+ onion: { tempMin: 13, tempMax: 30, waterNeedKey: 'water_need_medium', rainSensitive: true, humiditySensitive: true, heatTolerant: false, soilBoost: { loam: 8, sandy: 3 }, irrigationBoost: { drip: 9 } }
+ };
+
+ Object.assign(RESOURCE_I18N.pa, {
+ crop_at_stage: '{crop} - {stage}',
+ critical: 'ਗੰਭੀਰ',
+ go: 'ਕਰੋ',
+ hold_inputs: 'ਇਨਪੁੱਟ ਰੋਕੋ',
+ heat_stress: 'ਗਰਮੀ ਤਣਾਅ',
+ no_spray: 'ਛਿੜਕਾਅ ਨਹੀਂ',
+ drift_risk: 'ਡ੍ਰਿਫਟ ਜੋਖਮ',
+ window_open: 'ਸਮਾਂ ਖੁੱਲ੍ਹਾ',
+ leaching_risk: 'ਲੀਚਿੰਗ ਜੋਖਮ',
+ split_dose: 'ਵੰਡ ਮਾਤਰਾ',
+ planned: 'ਯੋਜਿਤ',
+ closed: 'ਬੰਦ',
+ after_wind_settles: 'ਹਵਾ ਘੱਟ ਹੋਣ ਤੋਂ ਬਾਅਦ',
+ dawn_or_evening: 'ਸਵੇਰ ਜਾਂ ਸ਼ਾਮ',
+ test_small_patch: 'ਛੋਟੇ ਹਿੱਸੇ ਤੇ ਟੈਸਟ',
+ ppe_required: 'PPE ਲਾਜ਼ਮੀ',
+ after_rain_clears: 'ਮੀਂਹ ਰੁਕਣ ਤੋਂ ਬਾਅਦ',
+ keep_covered: 'ਢੱਕ ਕੇ ਰੱਖੋ',
+ light_irrigation: 'ਹਲਕੀ ਸਿੰਚਾਈ',
+ cool_morning: 'ਠੰਡੀ ਸਵੇਰ',
+ morning: 'ਸਵੇਰ',
+ morning_or_evening: 'ਸਵੇਰ ਜਾਂ ਸ਼ਾਮ',
+ early_morning: 'ਸਵੇਰੇ 4 - 8',
+ after_soil_check: 'ਮਿੱਟੀ ਜਾਂਚ ਤੋਂ ਬਾਅਦ',
+ drainage_first: 'ਪਹਿਲਾਂ ਨਿਕਾਸੀ',
+ avoid_runoff: 'ਬਹਾਅ ਤੋਂ ਬਚੋ',
+ low_drift_nozzle: 'ਘੱਟ-ਡ੍ਰਿਫਟ ਨੋਜ਼ਲ',
+ zero_mm_today: 'ਅੱਜ 0 ਮਿਮੀ',
+ mm_value: '{value} ਮਿਮੀ',
+ water_pause_title: 'ਸਿੰਚਾਈ ਰੋਕੋ',
+ water_pause_advice: '{cropStage}: ਮੀਂਹ ਜੋਖਮ ਕਾਰਨ ਅੱਜ ਸਿੰਚਾਈ ਰੋਕੋ। ਨਿਕਾਸੀ ਜਾਂਚੋ।',
+ water_heat_title: 'ਸਵੇਰੇ ਜਲਦੀ ਸਿੰਚਾਈ ਲੋੜੀਂਦੀ',
+ water_heat_advice: '{cropStage}: ਵਾਸ਼ਪੀਕਰਨ ਜੋਖਮ ਵੱਧ ਹੈ। ਸਵੇਰੇ 8 ਵਜੇ ਤੋਂ ਪਹਿਲਾਂ ਪਾਣੀ ਦਿਓ।',
+ water_normal_title: 'ਯੋਜਿਤ ਸਿੰਚਾਈ ਜਾਰੀ ਰੱਖੋ',
+ water_normal_advice: '{cropStage}: {soilNote} ਦੇ ਅਧਾਰ ਤੇ ਨਿਯੰਤਰਿਤ ਸਿੰਚਾਈ ਕਰੋ।',
+ pesticide_rain_title: 'ਕੀਟਨਾਸ਼ਕ ਵਰਤੋਂ ਟਾਲੋ',
+ pesticide_rain_advice: 'ਮੀਂਹ ਰਸਾਇਣ ਧੋ ਸਕਦਾ ਹੈ। ਪੱਤੇ ਸੁੱਕਣ ਤੋਂ ਬਾਅਦ ਹੀ ਛਿੜਕਾਅ ਕਰੋ।',
+ pesticide_wind_title: 'ਹਵਾ ਕਾਰਨ ਛਿੜਕਾਅ ਰੋਕੋ',
+ pesticide_wind_advice: 'ਹਵਾ ਸੁਰੱਖਿਅਤ ਸੀਮਾ ਤੋਂ ਵੱਧ ਹੈ, ਡ੍ਰਿਫਟ ਤੋਂ ਬਚੋ।',
+ pesticide_heat_title: 'ਠੰਢੇ ਸਮੇਂ ਛਿੜਕਾਅ ਕਰੋ',
+ pesticide_heat_advice: 'ਗਰਮੀ ਫਸਲ ਜਲਨ ਵਧਾ ਸਕਦੀ ਹੈ। ਸਵੇਰ ਜਾਂ ਸ਼ਾਮ ਛਿੜਕਾਅ ਕਰੋ।',
+ pesticide_good_title: 'ਛਿੜਕਾਅ ਸਮਾਂ ਉਚਿਤ ਹੈ',
+ pesticide_good_advice: 'ਮੌਸਮ ਨਿਸ਼ਾਨਾ ਛਿੜਕਾਅ ਲਈ ਠੀਕ ਹੈ। ਪਹਿਲਾਂ ਕੀਟ ਪੱਧਰ ਜਾਂਚੋ।',
+ fertilizer_rain_title: 'ਖਾਦ ਵਰਤੋਂ ਟਾਲੋ',
+ fertilizer_rain_advice: 'ਮੀਂਹ ਤੋਂ ਪਹਿਲਾਂ ਟਾਪ ਡ੍ਰੈਸਿੰਗ ਨਾ ਕਰੋ। ਖੇਤ ਨਿਕਾਸੀ ਤੋਂ ਬਾਅਦ ਖਾਦ ਦਿਓ।',
+ fertilizer_heat_title: 'ਛੋਟੀ ਮਾਤਰਾ ਵਿੱਚ ਪੋਸ਼ਕ ਦਿਓ',
+ fertilizer_heat_advice: 'ਗਰਮੀ ਜੜਾਂ ਤੇ ਤਣਾਅ ਪਾ ਸਕਦੀ ਹੈ। ਹਲਕੀ ਸਿੰਚਾਈ ਤੋਂ ਬਾਅਦ ਵੰਡ ਮਾਤਰਾ ਦਿਓ।',
+ fertilizer_good_title: 'ਸੰਤੁਲਿਤ ਪੋਸ਼ਣ ਦਿਓ',
+ fertilizer_good_advice: '{crop}: ਮਿੱਟੀ ਜਾਂਚ ਅਤੇ ਅਵਸਥਾ ਅਨੁਸਾਰ {nutrient} ਨੂੰ ਤਰਜੀਹ ਦਿਓ।',
+ priority_hold_title: 'ਛਿੜਕਾਅ ਰੋਕੋ ਅਤੇ ਪਾਣੀ ਘਟਾਓ',
+ priority_hold_text: 'ਮੀਂਹ ਜੋਖਮ ਹੈ। ਖਾਦ ਨੂੰ ਲੀਚਿੰਗ ਤੋਂ ਬਚਾਓ ਅਤੇ ਪੱਤੇ ਸੁੱਕਣ ਤੱਕ ਛਿੜਕਾਅ ਰੋਕੋ।',
+ priority_caution_title: 'ਸੁਰੱਖਿਅਤ ਕੰਮ ਸਮਾਂ ਚੁਣੋ',
+ priority_caution_text: 'ਮੌਸਮ ਤਣਾਅ ਹੈ। ਸਵੇਰੇ ਸਿੰਚਾਈ ਅਤੇ ਵੰਡ ਖਾਦ ਮਾਤਰਾ ਵਰਤੋ।',
+ priority_good_title: 'ਹਾਲਾਤ ਕੰਮ ਲਈ ਠੀਕ ਹਨ',
+ priority_good_text: 'ਸਿੰਚਾਈ ਅਤੇ ਪੋਸ਼ਣ ਕੰਮ ਲਈ ਮੌਸਮ ਠੀਕ ਹੈ। ਕੀਟ ਸੀਮਾ ਤੋਂ ਬਾਅਦ ਹੀ ਛਿੜਕਾਅ ਕਰੋ।',
+ updated_time: 'ਅਪਡੇਟ {time}',
+ no_irrigation: 'ਸਿੰਚਾਈ ਨਹੀਂ',
+ hold_spray: 'ਛਿੜਕਾਅ ਰੋਕੋ',
+ only_dawn_evening: 'ਕੇਵਲ ਸਵੇਰ/ਸ਼ਾਮ',
+ targeted_spray: 'ਸੀਮਾ ਪਾਰ ਹੋਣ ਤੇ ਨਿਸ਼ਾਨਾ ਛਿੜਕਾਅ',
+ hold_top_dressing: 'ਟਾਪ ਡ੍ਰੈਸਿੰਗ ਰੋਕੋ',
+ split_after_light_water: 'ਹਲਕੇ ਪਾਣੀ ਤੋਂ ਬਾਅਦ ਵੰਡ ਮਾਤਰਾ',
+ nutrient_n_split: 'ਨਾਈਟ੍ਰੋਜਨ ਵੰਡ ਮਾਤਰਾ',
+ nutrient_n_k: 'ਨਾਈਟ੍ਰੋਜਨ ਅਤੇ ਪੋਟਾਸ਼',
+ nutrient_k_micro: 'ਪੋਟਾਸ਼ ਅਤੇ ਸੂਖਮ ਪੋਸ਼ਕ',
+ nutrient_k_n: 'ਪੋਟਾਸ਼ ਅਤੇ ਨਾਈਟ੍ਰੋਜਨ',
+ nutrient_p_s: 'ਫਾਸਫੋਰਸ ਅਤੇ ਸਲਫਰ',
+ nutrient_s_n: 'ਸਲਫਰ ਅਤੇ ਨਾਈਟ੍ਰੋਜਨ',
+ pest_rust_aphids: 'ਰਸਟ ਅਤੇ ਐਫਿਡ',
+ pest_stem_blast: 'ਸਟੇਮ ਬੋਰਰ ਅਤੇ ਬਲਾਸਟ',
+ pest_cotton: 'ਚੂਸਣ ਵਾਲੇ ਕੀਟ ਅਤੇ ਬੋਲਵਰਮ',
+ pest_blight_cutworm: 'ਲੇਟ ਬਲਾਈਟ ਅਤੇ ਕਟਵਰਮ',
+ pest_pod_borer: 'ਪੋਡ ਬੋਰਰ',
+ pest_aphids_white_rust: 'ਐਫਿਡ ਅਤੇ ਵ੍ਹਾਈਟ ਰਸਟ',
+ pest_thrips_blotch: 'ਥ੍ਰਿਪਸ ਅਤੇ ਪੁਰਪਲ ਬਲੌਚ',
+ soil_note_sandy: 'ਛੋਟੇ ਅਤੇ ਵੱਧ ਵਾਰ ਚੱਕਰ',
+ soil_note_loam: 'ਸਧਾਰਨ ਚੱਕਰ',
+ soil_note_clay: 'ਬਹਾਅ ਰੋਕਣ ਲਈ ਹੌਲੀ ਵਰਤੋਂ',
+ method_drip: 'ਐਮੀਟਰ ਜੜਾਂ ਨੇੜੇ ਰੱਖੋ',
+ method_sprinkler: 'ਹਵਾਦਾਰ ਸਮੇਂ ਤੋਂ ਬਚੋ',
+ method_flood: 'ਮੇੜ ਅਤੇ ਨਿਕਾਸੀ ਜਾਂਚੋ'
+ });
+
+ Object.assign(RESOURCE_I18N.ta, {
+ crop_at_stage: '{crop} - {stage}',
+ critical: 'கடுமை',
+ go: 'செய்க',
+ hold_inputs: 'உள்ளீடுகளை நிறுத்து',
+ heat_stress: 'வெப்ப அழுத்தம்',
+ no_spray: 'தெளிப்பு இல்லை',
+ drift_risk: 'சிதறல் அபாயம்',
+ window_open: 'நேரம் திறந்தது',
+ leaching_risk: 'லீச்சிங் அபாயம்',
+ split_dose: 'பிரிக்கப்பட்ட அளவு',
+ planned: 'திட்டமிட்டது',
+ closed: 'மூடப்பட்டது',
+ after_wind_settles: 'காற்று குறைந்த பிறகு',
+ dawn_or_evening: 'காலை அல்லது மாலை',
+ test_small_patch: 'சிறு பகுதியில் சோதனை',
+ ppe_required: 'PPE அவசியம்',
+ after_rain_clears: 'மழை நின்ற பிறகு',
+ keep_covered: 'மூடி வையுங்கள்',
+ light_irrigation: 'லேசான பாசனம்',
+ cool_morning: 'குளிர்ந்த காலை',
+ morning: 'காலை',
+ morning_or_evening: 'காலை அல்லது மாலை',
+ early_morning: 'காலை 4 - 8',
+ after_soil_check: 'மண் சோதனைக்கு பிறகு',
+ drainage_first: 'முதலில் வடிகால்',
+ avoid_runoff: 'ஒழுக்கு தவிர்க்கவும்',
+ low_drift_nozzle: 'குறைந்த சிதறல் நுழல்',
+ zero_mm_today: 'இன்று 0 மிமீ',
+ mm_value: '{value} மிமீ',
+ water_pause_title: 'பாசனத்தை நிறுத்து',
+ water_pause_advice: '{cropStage}: மழை அபாயம் இருப்பதால் இன்று பாசனத்தை நிறுத்துங்கள். வடிகாலைச் சரிபார்க்கவும்.',
+ water_heat_title: 'அதிகாலை பாசனம் தேவை',
+ water_heat_advice: '{cropStage}: ஆவியாகும் அபாயம் அதிகம். காலை 8 மணிக்கு முன் நீர் விடுங்கள்.',
+ water_normal_title: 'திட்டமிட்ட பாசனத்தை தொடரவும்',
+ water_normal_advice: '{cropStage}: {soilNote} அடிப்படையில் கட்டுப்படுத்தப்பட்ட பாசனம் செய்யுங்கள்.',
+ pesticide_rain_title: 'பூச்சிக்கொல்லியை தள்ளிவை',
+ pesticide_rain_advice: 'மழை ரசாயனத்தை கழுவக்கூடும். இலைகள் உலர்ந்த பிறகே தெளிக்கவும்.',
+ pesticide_wind_title: 'காற்றால் தெளிப்பை நிறுத்து',
+ pesticide_wind_advice: 'காற்று பாதுகாப்பு வரம்பை மீறுகிறது. சிதறலைத் தவிர்க்கவும்.',
+ pesticide_heat_title: 'குளிர்ந்த நேரத்தில் தெளிக்கவும்',
+ pesticide_heat_advice: 'வெப்பம் பயிர் எரிச்சலை அதிகரிக்கலாம். காலை அல்லது மாலை தெளிக்கவும்.',
+ pesticide_good_title: 'தெளிப்பு நேரம் உகந்தது',
+ pesticide_good_advice: 'மௌசம் குறிவைத்த தெளிப்பிற்கு ஏற்றது. முதலில் பூச்சி அளவைச் சரிபார்க்கவும்.',
+ fertilizer_rain_title: 'உர பயன்பாட்டை தள்ளிவை',
+ fertilizer_rain_advice: 'மழைக்கு முன் மேல் உரமிட வேண்டாம். வயல் வடிந்த பிறகு உரம் இடுங்கள்.',
+ fertilizer_heat_title: 'சிறு அளவில் சத்து கொடுக்கவும்',
+ fertilizer_heat_advice: 'வெப்பம் வேர் அழுத்தம் தரலாம். லேசான பாசனத்திற்கு பிறகு பிரிக்கப்பட்ட அளவு கொடுக்கவும்.',
+ fertilizer_good_title: 'சமநிலை சத்து கொடுக்கவும்',
+ fertilizer_good_advice: '{crop}: மண் சோதனை மற்றும் நிலையின்படி {nutrient} முன்னுரிமை அளிக்கவும்.',
+ priority_hold_title: 'தெளிப்பை நிறுத்தி நீரை குறை',
+ priority_hold_text: 'மழை அபாயம் உள்ளது. உரத்தை லீச்சிங்கில் இருந்து காக்கவும்.',
+ priority_caution_title: 'பாதுகாப்பான வேலை நேரம் பயன்படுத்தவும்',
+ priority_caution_text: 'வானிலை அழுத்தம் உள்ளது. காலை பாசனம் மற்றும் பிரிக்கப்பட்ட உர அளவை முன்னுரிமை அளிக்கவும்.',
+ priority_good_title: 'நிலை வேலைக்கு உகந்தது',
+ priority_good_text: 'பாசனம் மற்றும் சத்து பணிகளுக்கு வானிலை உகந்தது. பூச்சி வரம்புக்குப் பிறகே தெளிக்கவும்.',
+ updated_time: 'புதுப்பிப்பு {time}',
+ no_irrigation: 'பாசனம் இல்லை',
+ hold_spray: 'தெளிப்பை நிறுத்து',
+ only_dawn_evening: 'காலை/மாலை மட்டும்',
+ targeted_spray: 'வரம்பு கடந்தால் குறிவைத்த தெளிப்பு',
+ hold_top_dressing: 'மேல் உரமிடல் நிறுத்து',
+ split_after_light_water: 'லேசான நீருக்கு பிறகு பிரிக்கப்பட்ட அளவு',
+ nutrient_n_split: 'நைட்ரஜன் பிரிக்கப்பட்ட அளவு',
+ nutrient_n_k: 'நைட்ரஜன் மற்றும் பொட்டாசியம்',
+ nutrient_k_micro: 'பொட்டாசியம் மற்றும் நுண்சத்துக்கள்',
+ nutrient_k_n: 'பொட்டாசியம் மற்றும் நைட்ரஜன்',
+ nutrient_p_s: 'பாஸ்பரஸ் மற்றும் சல்பர்',
+ nutrient_s_n: 'சல்பர் மற்றும் நைட்ரஜன்',
+ pest_rust_aphids: 'ரஸ்ட் மற்றும் அஃபிட்',
+ pest_stem_blast: 'ஸ்டெம் போரர் மற்றும் பிளாஸ்ட்',
+ pest_cotton: 'சாறு உறிஞ்சும் பூச்சி மற்றும் போல்வோர்ம்',
+ pest_blight_cutworm: 'லேட் பிளைட் மற்றும் கட்வோர்ம்',
+ pest_pod_borer: 'பாட் போரர்',
+ pest_aphids_white_rust: 'அஃபிட் மற்றும் வைட் ரஸ்ட்',
+ pest_thrips_blotch: 'த்ரிப்ஸ் மற்றும் பர்பிள் ப்ளாட்ச்',
+ soil_note_sandy: 'சிறிய, அடிக்கடி சுழற்சி',
+ soil_note_loam: 'சாதாரண சுழற்சி',
+ soil_note_clay: 'ஒழுக்கு தவிர்க்க மெதுவான பயன்பாடு',
+ method_drip: 'எமிட்டர்களை வேர் பகுதியில் வையுங்கள்',
+ method_sprinkler: 'காற்று நேரங்களைத் தவிர்க்கவும்',
+ method_flood: 'மேடு மற்றும் வடிகால் சரிபார்க்கவும்'
+ });
+
+ Object.assign(RESOURCE_I18N.te, {
+ crop_at_stage: '{crop} - {stage}',
+ critical: 'తీవ్రం',
+ go: 'చేయండి',
+ hold_inputs: 'ఇన్‌పుట్లు ఆపండి',
+ heat_stress: 'వేడి ఒత్తిడి',
+ no_spray: 'స్ప్రే లేదు',
+ drift_risk: 'డ్రిఫ్ట్ ప్రమాదం',
+ window_open: 'సమయం అందుబాటులో ఉంది',
+ leaching_risk: 'లీచింగ్ ప్రమాదం',
+ split_dose: 'విభజిత మోతాదు',
+ planned: 'ప్రణాళికలో ఉంది',
+ closed: 'మూసింది',
+ after_wind_settles: 'గాలి తగ్గిన తర్వాత',
+ dawn_or_evening: 'ఉదయం లేదా సాయంత్రం',
+ test_small_patch: 'చిన్న భాగంలో పరీక్ష',
+ ppe_required: 'PPE అవసరం',
+ after_rain_clears: 'వర్షం తగ్గిన తర్వాత',
+ keep_covered: 'కప్పి ఉంచండి',
+ light_irrigation: 'తేలికపాటి నీరు',
+ cool_morning: 'చల్లని ఉదయం',
+ morning: 'ఉదయం',
+ morning_or_evening: 'ఉదయం లేదా సాయంత్రం',
+ early_morning: 'ఉదయం 4 - 8',
+ after_soil_check: 'మట్టి తనిఖీ తర్వాత',
+ drainage_first: 'ముందు డ్రైనేజ్',
+ avoid_runoff: 'ప్రవాహం నివారించండి',
+ low_drift_nozzle: 'తక్కువ డ్రిఫ్ట్ నోజిల్',
+ zero_mm_today: 'ఈ రోజు 0 మిమీ',
+ mm_value: '{value} మిమీ',
+ water_pause_title: 'నీరు ఆపండి',
+ water_pause_advice: '{cropStage}: వర్ష ప్రమాదం వల్ల ఈ రోజు నీరు పెట్టవద్దు. డ్రైనేజ్ తనిఖీ చేయండి.',
+ water_heat_title: 'ఉదయం నీరు అవసరం',
+ water_heat_advice: '{cropStage}: ఆవిరి ప్రమాదం ఎక్కువ. ఉదయం 8 ముందు నీరు పెట్టండి.',
+ water_normal_title: 'ప్రణాళిక ప్రకారం నీరు కొనసాగించండి',
+ water_normal_advice: '{cropStage}: {soilNote} ఆధారంగా నియంత్రిత నీరు పెట్టండి.',
+ pesticide_rain_title: 'పురుగుమందు వాయిదా వేయండి',
+ pesticide_rain_advice: 'వర్షం రసాయనాన్ని కడిగేస్తుంది. ఆకులు ఎండిన తర్వాతే స్ప్రే చేయండి.',
+ pesticide_wind_title: 'గాలితో స్ప్రే ఆపండి',
+ pesticide_wind_advice: 'గాలి సురక్షిత పరిమితిని మించి ఉంది. డ్రిఫ్ట్ నివారించండి.',
+ pesticide_heat_title: 'చల్లని సమయంలో స్ప్రే చేయండి',
+ pesticide_heat_advice: 'వేడి పంట కాల్చే ప్రమాదం పెంచుతుంది. ఉదయం లేదా సాయంత్రం స్ప్రే చేయండి.',
+ pesticide_good_title: 'స్ప్రే సమయం అనుకూలం',
+ pesticide_good_advice: 'లక్ష్య స్ప్రేకు వాతావరణం సరైనది. ముందుగా పురుగు స్థాయి తనిఖీ చేయండి.',
+ fertilizer_rain_title: 'ఎరువు వాయిదా వేయండి',
+ fertilizer_rain_advice: 'వర్షానికి ముందు టాప్ డ్రెస్సింగ్ వద్దు. పొలం డ్రెయిన్ అయిన తర్వాత ఎరువు వేయండి.',
+ fertilizer_heat_title: 'చిన్న మోతాదులో పోషకాలు ఇవ్వండి',
+ fertilizer_heat_advice: 'వేడి వేర్లపై ఒత్తిడి పెంచవచ్చు. తేలికపాటి నీటి తర్వాత విభజిత మోతాదు ఇవ్వండి.',
+ fertilizer_good_title: 'సమతుల్య పోషణ ఇవ్వండి',
+ fertilizer_good_advice: '{crop}: మట్టి పరీక్ష మరియు దశ ఆధారంగా {nutrient}కి ప్రాధాన్యం ఇవ్వండి.',
+ priority_hold_title: 'స్ప్రే ఆపి నీరు తగ్గించండి',
+ priority_hold_text: 'వర్ష ప్రమాదం ఉంది. ఎరువును లీచింగ్ నుండి కాపాడండి.',
+ priority_caution_title: 'సురక్షిత పని సమయం వాడండి',
+ priority_caution_text: 'వాతావరణ ఒత్తిడి ఉంది. ఉదయం నీరు మరియు విభజిత ఎరువు మోతాదుకు ప్రాధాన్యం ఇవ్వండి.',
+ priority_good_title: 'పరిస్థితులు పనికి అనుకూలం',
+ priority_good_text: 'నీరు మరియు పోషణ పనులకు వాతావరణం సరైనది. పురుగు పరిమితి దాటితేనే స్ప్రే చేయండి.',
+ updated_time: 'అప్డేట్ {time}',
+ no_irrigation: 'నీరు లేదు',
+ hold_spray: 'స్ప్రే ఆపండి',
+ only_dawn_evening: 'ఉదయం/సాయంత్రం మాత్రమే',
+ targeted_spray: 'పరిమితి దాటితే లక్ష్య స్ప్రే',
+ hold_top_dressing: 'టాప్ డ్రెస్సింగ్ ఆపండి',
+ split_after_light_water: 'తేలికపాటి నీటి తర్వాత విభజిత మోతాదు',
+ nutrient_n_split: 'నైట్రోజన్ విభజిత మోతాదు',
+ nutrient_n_k: 'నైట్రోజన్ మరియు పొటాషియం',
+ nutrient_k_micro: 'పొటాషియం మరియు సూక్ష్మ పోషకాలు',
+ nutrient_k_n: 'పొటాషియం మరియు నైట్రోజన్',
+ nutrient_p_s: 'ఫాస్ఫరస్ మరియు సల్ఫర్',
+ nutrient_s_n: 'సల్ఫర్ మరియు నైట్రోజన్',
+ pest_rust_aphids: 'రస్ట్ మరియు ఆఫిడ్స్',
+ pest_stem_blast: 'స్టెమ్ బోరర్ మరియు బ్లాస్ట్',
+ pest_cotton: 'రసం పీల్చే పురుగులు మరియు బోల్వార్మ్',
+ pest_blight_cutworm: 'లేట్ బ్లైట్ మరియు కట్‌వార్మ్',
+ pest_pod_borer: 'పాడ్ బోరర్',
+ pest_aphids_white_rust: 'ఆఫిడ్స్ మరియు వైట్ రస్ట్',
+ pest_thrips_blotch: 'త్రిప్స్ మరియు పర్పుల్ బ్లాచ్',
+ soil_note_sandy: 'చిన్న, తరచు చక్రాలు',
+ soil_note_loam: 'సాధారణ చక్రం',
+ soil_note_clay: 'ప్రవాహం నివారించడానికి నెమ్మదిగా వాడండి',
+ method_drip: 'ఎమిటర్లను వేర్ల దగ్గర ఉంచండి',
+ method_sprinkler: 'గాలి సమయాలు నివారించండి',
+ method_flood: 'బండ్లు మరియు డ్రైనేజ్ తనిఖీ చేయండి'
+ });
+
+ Object.assign(RESOURCE_I18N.hi, {
+ crop_recommendation: 'फसल सुझाव',
+ crop_rec_title: 'इस मौसम के लिए बेहतर फसलें',
+ crop_rec_desc: 'सुझाव मौजूदा तापमान, नमी, बारिश जोखिम, मिट्टी और सिंचाई विधि पर आधारित हैं।',
+ top_weather_match: 'शीर्ष मौसम मेल',
+ recommendation_loading: 'मौसम आधारित फसल सुझाव बन रहा है...',
+ best_crop_match: 'सबसे अच्छा मेल',
+ good_crop_match: 'अच्छा विकल्प',
+ fair_crop_match: 'स्थिति देखें',
+ suitability_score: '{score}% उपयुक्त',
+ crop_rec_reason: '{crop} मौजूदा {temp} C मौसम और {waterNeed} पानी मांग के लिए उपयुक्त है।',
+ crop_rec_temp_good: 'तापमान अनुकूल',
+ crop_rec_temp_low: 'ज्यादा ठंडा',
+ crop_rec_temp_high: 'गर्मी ध्यान',
+ crop_rec_rain_good: 'बारिश अनुकूल',
+ crop_rec_rain_risk: 'बारिश जोखिम',
+ crop_rec_humidity_good: 'नमी अनुकूल',
+ crop_rec_humidity_risk: 'रोग ध्यान',
+ crop_rec_soil_good: 'मिट्टी अनुकूल',
+ crop_rec_irrigation_good: 'सिंचाई अनुकूल',
+ water_need_low: 'कम',
+ water_need_medium: 'मध्यम',
+ water_need_high: 'अधिक',
+ use_crop: 'यह फसल चुनें'
+ });
+
+ Object.assign(RESOURCE_I18N.mr, {
+ crop_recommendation: 'पीक शिफारस',
+ crop_rec_title: 'या हवामानासाठी योग्य पिके',
+ crop_rec_desc: 'शिफारसी सध्याचे तापमान, आर्द्रता, पावसाचा धोका, माती आणि सिंचन पद्धतीवर आधारित आहेत.',
+ top_weather_match: 'सर्वोत्तम हवामान जुळणी',
+ recommendation_loading: 'हवामानावर आधारित पीक शिफारस तयार होत आहे...',
+ best_crop_match: 'सर्वोत्तम जुळणी',
+ good_crop_match: 'चांगला पर्याय',
+ fair_crop_match: 'स्थिती पहा',
+ suitability_score: '{score}% योग्य',
+ crop_rec_reason: '{crop} सध्याच्या {temp} C हवामानात आणि {waterNeed} पाण्याच्या गरजेसह योग्य आहे.',
+ crop_rec_temp_good: 'तापमान योग्य',
+ crop_rec_temp_low: 'जास्त थंड',
+ crop_rec_temp_high: 'उष्णता लक्ष',
+ crop_rec_rain_good: 'पावसासाठी योग्य',
+ crop_rec_rain_risk: 'पावसाचा धोका',
+ crop_rec_humidity_good: 'आर्द्रता योग्य',
+ crop_rec_humidity_risk: 'रोग लक्ष',
+ crop_rec_soil_good: 'माती योग्य',
+ crop_rec_irrigation_good: 'सिंचन योग्य',
+ water_need_low: 'कमी',
+ water_need_medium: 'मध्यम',
+ water_need_high: 'जास्त',
+ use_crop: 'हे पीक वापरा'
+ });
+
+ Object.assign(RESOURCE_I18N.pa, {
+ crop_recommendation: 'ਫ਼ਸਲ ਸੁਝਾਅ',
+ crop_rec_title: 'ਇਸ ਮੌਸਮ ਲਈ ਵਧੀਆ ਫ਼ਸਲਾਂ',
+ crop_rec_desc: 'ਸੁਝਾਅ ਮੌਜੂਦਾ ਤਾਪਮਾਨ, ਨਮੀ, ਮੀਂਹ ਜੋਖਮ, ਮਿੱਟੀ ਅਤੇ ਸਿੰਚਾਈ ਤਰੀਕੇ ਤੇ ਆਧਾਰਿਤ ਹਨ।',
+ top_weather_match: 'ਸਿਖਰ ਮੌਸਮ ਮੇਲ',
+ recommendation_loading: 'ਮੌਸਮ ਅਧਾਰਿਤ ਫ਼ਸਲ ਸੁਝਾਅ ਬਣ ਰਿਹਾ ਹੈ...',
+ best_crop_match: 'ਸਭ ਤੋਂ ਵਧੀਆ ਮੇਲ',
+ good_crop_match: 'ਚੰਗਾ ਵਿਕਲਪ',
+ fair_crop_match: 'ਹਾਲਾਤ ਵੇਖੋ',
+ suitability_score: '{score}% ਉਚਿਤ',
+ crop_rec_reason: '{crop} ਮੌਜੂਦਾ {temp} C ਮੌਸਮ ਅਤੇ {waterNeed} ਪਾਣੀ ਲੋੜ ਲਈ ਉਚਿਤ ਹੈ।',
+ crop_rec_temp_good: 'ਤਾਪਮਾਨ ਉਚਿਤ',
+ crop_rec_temp_low: 'ਜ਼ਿਆਦਾ ਠੰਢਾ',
+ crop_rec_temp_high: 'ਗਰਮੀ ਧਿਆਨ',
+ crop_rec_rain_good: 'ਮੀਂਹ ਅਨੁਕੂਲ',
+ crop_rec_rain_risk: 'ਮੀਂਹ ਜੋਖਮ',
+ crop_rec_humidity_good: 'ਨਮੀ ਉਚਿਤ',
+ crop_rec_humidity_risk: 'ਰੋਗ ਧਿਆਨ',
+ crop_rec_soil_good: 'ਮਿੱਟੀ ਉਚਿਤ',
+ crop_rec_irrigation_good: 'ਸਿੰਚਾਈ ਉਚਿਤ',
+ water_need_low: 'ਘੱਟ',
+ water_need_medium: 'ਮੱਧਮ',
+ water_need_high: 'ਵੱਧ',
+ use_crop: 'ਇਹ ਫ਼ਸਲ ਵਰਤੋ'
+ });
+
+ Object.assign(RESOURCE_I18N.ta, {
+ crop_recommendation: 'பயிர் பரிந்துரை',
+ crop_rec_title: 'இந்த வானிலைக்கு சிறந்த பயிர்கள்',
+ crop_rec_desc: 'பரிந்துரைகள் தற்போதைய வெப்பநிலை, ஈரப்பதம், மழை அபாயம், மண், பாசன முறையை பயன்படுத்துகின்றன.',
+ top_weather_match: 'சிறந்த வானிலை பொருத்தம்',
+ recommendation_loading: 'வானிலை அடிப்படையிலான பயிர் பரிந்துரை உருவாக்கப்படுகிறது...',
+ best_crop_match: 'சிறந்த பொருத்தம்',
+ good_crop_match: 'நல்ல தேர்வு',
+ fair_crop_match: 'நிலையை கவனிக்கவும்',
+ suitability_score: '{score}% பொருத்தம்',
+ crop_rec_reason: '{crop} தற்போதைய {temp} C வானிலை மற்றும் {waterNeed} நீர் தேவைக்கு பொருந்துகிறது.',
+ crop_rec_temp_good: 'வெப்பநிலை பொருத்தம்',
+ crop_rec_temp_low: 'மிகவும் குளிர்',
+ crop_rec_temp_high: 'வெப்ப கவனம்',
+ crop_rec_rain_good: 'மழைக்கு ஏற்றது',
+ crop_rec_rain_risk: 'மழை அபாயம்',
+ crop_rec_humidity_good: 'ஈரப்பதம் பொருத்தம்',
+ crop_rec_humidity_risk: 'நோய் கவனம்',
+ crop_rec_soil_good: 'மண் பொருத்தம்',
+ crop_rec_irrigation_good: 'பாசனம் பொருத்தம்',
+ water_need_low: 'குறைவு',
+ water_need_medium: 'நடுத்தரம்',
+ water_need_high: 'அதிகம்',
+ use_crop: 'இந்த பயிரை பயன்படுத்து'
+ });
+
+ Object.assign(RESOURCE_I18N.te, {
+ crop_recommendation: 'పంట సిఫార్సు',
+ crop_rec_title: 'ఈ వాతావరణానికి ఉత్తమ పంటలు',
+ crop_rec_desc: 'సిఫార్సులు ప్రస్తుత ఉష్ణోగ్రత, తేమ, వర్ష ప్రమాదం, మట్టి మరియు నీటి పద్ధతిని ఉపయోగిస్తాయి.',
+ top_weather_match: 'ఉత్తమ వాతావరణ సరిపోలిక',
+ recommendation_loading: 'వాతావరణ ఆధారిత పంట సిఫార్సు సిద్ధమవుతోంది...',
+ best_crop_match: 'ఉత్తమ సరిపోలిక',
+ good_crop_match: 'మంచి ఎంపిక',
+ fair_crop_match: 'పరిస్థితులు గమనించండి',
+ suitability_score: '{score}% అనుకూలం',
+ crop_rec_reason: '{crop} ప్రస్తుత {temp} C వాతావరణం మరియు {waterNeed} నీటి అవసరానికి సరిపోతుంది.',
+ crop_rec_temp_good: 'ఉష్ణోగ్రత సరిపోతుంది',
+ crop_rec_temp_low: 'చాలా చల్లగా ఉంది',
+ crop_rec_temp_high: 'వేడి గమనించండి',
+ crop_rec_rain_good: 'వర్షానికి అనుకూలం',
+ crop_rec_rain_risk: 'వర్ష ప్రమాదం',
+ crop_rec_humidity_good: 'తేమ సరిపోతుంది',
+ crop_rec_humidity_risk: 'వ్యాధి గమనిక',
+ crop_rec_soil_good: 'మట్టి సరిపోతుంది',
+ crop_rec_irrigation_good: 'నీటి పద్ధతి సరిపోతుంది',
+ water_need_low: 'తక్కువ',
+ water_need_medium: 'మధ్యస్థం',
+ water_need_high: 'అధికం',
+ use_crop: 'ఈ పంటను వాడండి'
+ });
+
+ let resourceCurrentWeather = null;
+
+ function resourceApiBase() {
+ const configured = document.querySelector('meta[name="api-url"]')?.content || 'https://agricomplete-backend.onrender.com/api';
+ const base = (typeof API_URL !== 'undefined' && API_URL)? API_URL: configured;
+ const clean = String(base).replace(/\/+$/, '');
+ return clean.endsWith('/api')? clean: `${clean}/api`;
+ }
+
+ function resourceSetText(id, value) {
+ const el = document.getElementById(id);
+ if (el) el.textContent = value;
+ }
+
+ function resourceEscapeHtml(value) {
+ return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+ }
+
+ function resourceTitleCase(value) {
+ return String(value || '').replace(/\b\w/g, char => char.toUpperCase());
+ }
+
+ function resourceFormatNumber(value, suffix) {
+ const num = Number(value);
+ if (!Number.isFinite(num)) return '--';
+ return `${Math.round(num)}${suffix}`;
+ }
+
+ function resourceWeatherIcon(condition) {
+ if (typeof getWeatherIconClass === 'function') return getWeatherIconClass(condition);
+ const text = String(condition || '').toLowerCase();
+ if (text.includes('rain')) return 'fas fa-cloud-rain';
+ if (text.includes('storm')) return 'fas fa-bolt';
+ if (text.includes('clear') || text.includes('sun')) return 'fas fa-sun';
+ if (text.includes('cloud')) return 'fas fa-cloud';
+ return 'fas fa-cloud-sun';
+ }
+
+ function resourceNormalizeWeather(data, city) {
+ return {
+ location: data.location || city,
+ temperature: Number(data.temperature),
+ condition: data.condition || 'Weather unavailable',
+ humidity: Number(data.humidity),
+ wind_kph: Number(data.wind_kph),
+ pressure_mb: data.pressure_mb,
+ aqi: data.aqi,
+ forecast: Array.isArray(data.forecast)? data.forecast: []
+ };
+ }
+
+ function resourceGetInputs() {
+ const cropKey = document.getElementById('rmCrop')?.value || 'wheat';
+ const stageKey = document.getElementById('rmStage')?.value || 'vegetative';
+ const soilKey = document.getElementById('rmSoil')?.value || 'loam';
+ const irrigationKey = document.getElementById('rmIrrigation')?.value || 'drip';
+ return {
+ cropKey,
+ stageKey,
+ soilKey,
+ irrigationKey,
+ crop: RESOURCE_CROP_PROFILES[cropKey] || RESOURCE_CROP_PROFILES.wheat,
+ stage: RESOURCE_STAGE_PROFILES[stageKey] || RESOURCE_STAGE_PROFILES.vegetative,
+ soil: RESOURCE_SOIL_FACTORS[soilKey] || RESOURCE_SOIL_FACTORS.loam,
+ irrigation: RESOURCE_IRRIGATION_FACTORS[irrigationKey] || RESOURCE_IRRIGATION_FACTORS.drip
+ };
+ }
+
+ function resourceAnalyzeWeather(weather) {
+ const safeWeather = weather || {
+ location: 'Pune',
+ temperature: 28,
+ condition: 'Standard weather',
+ humidity: 60,
+ wind_kph: 8,
+ forecast: []
+ };
+ const conditionText = String(safeWeather.condition || '').toLowerCase();
+ const forecastText = (safeWeather.forecast || []).map(item => String(item.condition || '').toLowerCase()).join(' ');
+ const allText = `${conditionText} ${forecastText}`;
+ const temp = Number.isFinite(Number(safeWeather.temperature))? Number(safeWeather.temperature): 28;
+ const humidity = Number.isFinite(Number(safeWeather.humidity))? Number(safeWeather.humidity): 60;
+ const wind = Number.isFinite(Number(safeWeather.wind_kph))? Number(safeWeather.wind_kph): 8;
+ const rain = /rain|drizzle|shower|storm|thunder/.test(allText);
+ const storm = /storm|thunder|lightning/.test(allText);
+ const heat = temp >= 32;
+ const highHeat = temp >= 36;
+ const highWind = wind >= 15;
+ const lowHumidity = humidity > 0 && humidity <= 40;
+ const highHumidity = humidity >= 75 || rain;
+ const diseasePressure = highHumidity? 'High': humidity >= 65? 'Medium': 'Normal';
+ return {
+ temp,
+ humidity,
+ wind,
+ rain,
+ storm,
+ heat,
+ highHeat,
+ highWind,
+ lowHumidity,
+ highHumidity,
+ diseasePressure,
+ sprayAllowed: !(rain || storm || highWind || heat || lowHumidity)
+ };
+ }
+
+ function resourceSetChip(id, state, text) {
+ const el = document.getElementById(id);
+ if (!el) return;
+ el.className = `resource-chip ${state}`;
+ el.textContent = text;
+ }
+
+ function resourceSetCardState(id, state) {
+ const el = document.getElementById(id);
+ if (el) el.dataset.state = state;
+ }
+
+ function resourceUpdateWeatherDisplay(weather) {
+ resourceSetText('rmWeatherLocation', weather.location || 'Selected farm');
+ resourceSetText('rmWeatherTemp', Number.isFinite(weather.temperature)? `${Math.round(weather.temperature)} C`: '-- C');
+ resourceSetText('rmWeatherCondition', resourceTitleCase(weather.condition || 'Weather unavailable'));
+ resourceSetText('rmHumidity', Number.isFinite(weather.humidity)? `${Math.round(weather.humidity)}%`: '--');
+ resourceSetText('rmWind', Number.isFinite(weather.wind_kph)? `${weather.wind_kph.toFixed(1)} km/h`: '--');
+ resourceSetText('rmPressure', weather.pressure_mb? `${weather.pressure_mb} mb`: '--');
+ resourceSetText('rmAqi', typeof getAqiLabel === 'function'? getAqiLabel(weather.aqi): (weather.aqi || 'N/A'));
+ const icon = document.getElementById('rmWeatherIcon');
+ if (icon) icon.innerHTML = `<i class="${resourceWeatherIcon(weather.condition)}"></i>`;
+ const forecast = document.getElementById('rmForecast');
+ if (forecast) {
+ forecast.innerHTML = (weather.forecast || []).slice(0, 4).map((item, index) => {
+ const day = index === 0? resourceT('today'): new Date(item.date || Date.now()).toLocaleDateString(resourceLocale(), { weekday: 'short' });
+ const temp = resourceFormatNumber(item.temp, ' C');
+ return `<div><span>${resourceEscapeHtml(day)}</span><i class="${resourceWeatherIcon(item.condition)}"></i><strong>${resourceEscapeHtml(temp)}</strong></div>`;
+ }).join('') || `<div><span>${resourceEscapeHtml(resourceT('forecast'))}</span><i class="fas fa-cloud-sun"></i><strong>${resourceEscapeHtml(resourceT('pending'))}</strong></div>`;
+ }
+ }
+
+ function resourceRenderPriority(insight) {
+ const strip = document.getElementById('rmPriorityStrip');
+ if (!strip) return;
+ if (insight.rain || insight.storm) {
+ strip.dataset.state = 'danger';
+ resourceSetText('rmPriorityTitle', resourceT('priority_hold_title'));
+ resourceSetText('rmPriorityText', resourceT('priority_hold_text'));
+ resourceSetChip('rmPriorityBadge', 'danger', resourceT('hold_inputs'));
+ } else if (insight.highWind || insight.heat || insight.lowHumidity) {
+ strip.dataset.state = 'warning';
+ resourceSetText('rmPriorityTitle', resourceT('priority_caution_title'));
+ resourceSetText('rmPriorityText', resourceT('priority_caution_text'));
+ resourceSetChip('rmPriorityBadge', 'warning', resourceT('caution'));
+ } else {
+ strip.dataset.state = 'good';
+ resourceSetText('rmPriorityTitle', resourceT('priority_good_title'));
+ resourceSetText('rmPriorityText', resourceT('priority_good_text'));
+ resourceSetChip('rmPriorityBadge', 'good', resourceT('go'));
+ }
+ }
+
+ function resourceRenderRecommendations() {
+ const inputs = resourceGetInputs();
+ const insight = resourceAnalyzeWeather(resourceCurrentWeather);
+ const waterFactor = insight.rain? 0: insight.highHeat? 1.25: insight.heat? 1.15: insight.highHumidity? 0.85: 1;
+ const waterDose = Math.max(0, Math.round(inputs.crop.baseWater * inputs.stage.factor * inputs.soil.factor * inputs.irrigation.factor * waterFactor));
+ const cropName = resourceT(inputs.crop.labelKey);
+ const stageLabel = resourceT(inputs.stage.labelKey);
+ const soilLabel = resourceT(inputs.soil.labelKey);
+ const soilNote = resourceT(inputs.soil.noteKey);
+ const irrigationLabel = resourceT(inputs.irrigation.labelKey);
+ const irrigationMethod = resourceT(inputs.irrigation.methodKey);
+ const nutrient = resourceT(inputs.crop.nutrientKey);
+ const stageFertilizer = resourceT(inputs.stage.fertilizerKey);
+ const pest = resourceT(inputs.crop.pestKey);
+ const waterFocus = resourceT(inputs.crop.waterFocusKey);
+ const cropStage = resourceT('crop_at_stage', { crop: cropName, stage: stageLabel });
+
+ resourceSetText('rmWaterSaved', `${inputs.irrigation.saving}%`);
+ resourceSetText('rmInputProtection', insight.rain || insight.storm? resourceT('critical'): insight.highWind || insight.heat? resourceT('medium'): resourceT('high'));
+
+ resourceRenderPriority(insight);
+
+ if (insight.rain || insight.storm) {
+ resourceSetCardState('rmWaterCard', 'warning');
+ resourceSetChip('irrigationWeatherHint', 'warning', resourceT('pause'));
+ resourceSetText('rmWaterTitle', resourceT('water_pause_title'));
+ resourceSetText('irrigationAdvice', resourceT('water_pause_advice', { cropStage }));
+ resourceSetText('rmWaterDose', resourceT('zero_mm_today'));
+ resourceSetText('rmWaterTiming', resourceT('after_soil_check'));
+ resourceSetText('rmWaterMethod', resourceT('drainage_first'));
+ } else if (insight.heat) {
+ resourceSetCardState('rmWaterCard', 'warning');
+ resourceSetChip('irrigationWeatherHint', 'warning', resourceT('heat_stress'));
+ resourceSetText('rmWaterTitle', resourceT('water_heat_title'));
+ resourceSetText('irrigationAdvice', resourceT('water_heat_advice', { cropStage }));
+ resourceSetText('rmWaterDose', resourceT('mm_value', { value: waterDose }));
+ resourceSetText('rmWaterTiming', resourceT('early_morning'));
+ resourceSetText('rmWaterMethod', irrigationMethod);
+ } else {
+ resourceSetCardState('rmWaterCard', 'good');
+ resourceSetChip('irrigationWeatherHint', 'good', resourceT('optimal'));
+ resourceSetText('rmWaterTitle', resourceT('water_normal_title'));
+ resourceSetText('irrigationAdvice', resourceT('water_normal_advice', { cropStage, soilNote }));
+ resourceSetText('rmWaterDose', resourceT('mm_value', { value: waterDose }));
+ resourceSetText('rmWaterTiming', resourceT('morning_or_evening'));
+ resourceSetText('rmWaterMethod', irrigationMethod);
+ }
+
+ if (insight.rain || insight.storm) {
+ resourceSetCardState('rmPesticideCard', 'danger');
+ resourceSetChip('rmPesticideBadge', 'danger', resourceT('no_spray'));
+ resourceSetText('rmPesticideTitle', resourceT('pesticide_rain_title'));
+ resourceSetText('rmPesticideAdvice', resourceT('pesticide_rain_advice'));
+ resourceSetText('rmSprayWindow', resourceT('closed'));
+ resourceSetText('rmPestScout', pest);
+ resourceSetText('rmPesticidePrecaution', resourceT('avoid_runoff'));
+ } else if (insight.highWind) {
+ resourceSetCardState('rmPesticideCard', 'danger');
+ resourceSetChip('rmPesticideBadge', 'danger', resourceT('drift_risk'));
+ resourceSetText('rmPesticideTitle', resourceT('pesticide_wind_title'));
+ resourceSetText('rmPesticideAdvice', resourceT('pesticide_wind_advice'));
+ resourceSetText('rmSprayWindow', resourceT('after_wind_settles'));
+ resourceSetText('rmPestScout', pest);
+ resourceSetText('rmPesticidePrecaution', resourceT('low_drift_nozzle'));
+ } else if (insight.heat || insight.lowHumidity) {
+ resourceSetCardState('rmPesticideCard', 'warning');
+ resourceSetChip('rmPesticideBadge', 'warning', resourceT('caution'));
+ resourceSetText('rmPesticideTitle', resourceT('pesticide_heat_title'));
+ resourceSetText('rmPesticideAdvice', resourceT('pesticide_heat_advice'));
+ resourceSetText('rmSprayWindow', resourceT('dawn_or_evening'));
+ resourceSetText('rmPestScout', pest);
+ resourceSetText('rmPesticidePrecaution', resourceT('test_small_patch'));
+ } else {
+ resourceSetCardState('rmPesticideCard', 'good');
+ resourceSetChip('rmPesticideBadge', 'good', resourceT('window_open'));
+ resourceSetText('rmPesticideTitle', resourceT('pesticide_good_title'));
+ resourceSetText('rmPesticideAdvice', resourceT('pesticide_good_advice'));
+ resourceSetText('rmSprayWindow', '6 AM - 10 AM');
+ resourceSetText('rmPestScout', pest);
+ resourceSetText('rmPesticidePrecaution', resourceT('ppe_required'));
+ }
+
+ if (insight.rain || insight.storm) {
+ resourceSetCardState('rmFertilizerCard', 'danger');
+ resourceSetChip('rmFertilizerBadge', 'danger', resourceT('leaching_risk'));
+ resourceSetText('rmFertilizerTitle', resourceT('fertilizer_rain_title'));
+ resourceSetText('rmFertilizerAdvice', resourceT('fertilizer_rain_advice'));
+ resourceSetText('rmFertDose', stageFertilizer);
+ resourceSetText('rmFertTiming', resourceT('after_rain_clears'));
+ resourceSetText('rmFertProtection', resourceT('keep_covered'));
+ } else if (insight.heat) {
+ resourceSetCardState('rmFertilizerCard', 'warning');
+ resourceSetChip('rmFertilizerBadge', 'warning', resourceT('split_dose'));
+ resourceSetText('rmFertilizerTitle', resourceT('fertilizer_heat_title'));
+ resourceSetText('rmFertilizerAdvice', resourceT('fertilizer_heat_advice'));
+ resourceSetText('rmFertDose', nutrient);
+ resourceSetText('rmFertTiming', resourceT('cool_morning'));
+ resourceSetText('rmFertProtection', resourceT('light_irrigation'));
+ } else {
+ resourceSetCardState('rmFertilizerCard', 'good');
+ resourceSetChip('rmFertilizerBadge', 'good', resourceT('planned'));
+ resourceSetText('rmFertilizerTitle', resourceT('fertilizer_good_title'));
+ resourceSetText('rmFertilizerAdvice', resourceT('fertilizer_good_advice', { crop: cropName, nutrient }));
+ resourceSetText('rmFertDose', nutrient);
+ resourceSetText('rmFertTiming', resourceT('morning'));
+ resourceSetText('rmFertProtection', stageFertilizer);
+ }
+
+ resourceRenderActionPlan({ cropName, pest, irrigationLabel, soilLabel, soilNote }, insight, waterDose);
+ resourceRenderRisks(insight);
+ resourceRenderSchedule({ waterFocus, pest, nutrient, stageFertilizer, irrigationLabel }, insight, waterDose);
+ resourceRenderCropRecommendations(inputs, insight);
+ }
+
+ function resourceRenderActionPlan(labels, insight, waterDose) {
+ const actions = [];
+ if (insight.rain || insight.storm) {
+ actions.push(resourceT('action_open_drainage'));
+ actions.push(resourceT('action_postpone_inputs'));
+ actions.push(resourceT('action_scout_after_wet', { crop: labels.cropName, pest: labels.pest }));
+ } else {
+ actions.push(resourceT('action_irrigate', { crop: labels.cropName, dose: resourceT('mm_value', { value: waterDose }), method: labels.irrigationLabel }));
+ actions.push(insight.heat? resourceT('action_heat_irrigation') : resourceT('action_normal_window'));
+ actions.push(insight.highWind? resourceT('action_delay_sprays') : resourceT('action_scout_before_spray', { pest: labels.pest }));
+ }
+ actions.push(resourceT('action_soil_note', { soilNote: labels.soilNote, soil: labels.soilLabel }));
+ const list = document.getElementById('rmActionPlan');
+ if (list) list.innerHTML = actions.map(item => `<li>${resourceEscapeHtml(item)}</li>`).join('');
+ const now = new Date();
+ resourceSetText('rmLastUpdated', resourceT('updated_time', { time: now.toLocaleTimeString(resourceLocale(), { hour: '2-digit', minute: '2-digit' }) }));
+ }
+
+ function resourceRiskState(value) {
+ if (value === resourceT('high') || value === resourceT('closed')) return 'danger';
+ if (value === resourceT('medium') || value === resourceT('caution')) return 'warning';
+ return 'good';
+ }
+
+ function resourceRenderRisks(insight) {
+ const risks = [
+ [resourceT('rain_risk'), insight.rain || insight.storm? resourceT('high'): resourceT('low')],
+ [resourceT('spray_drift'), insight.highWind? resourceT('high'): insight.wind >= 11? resourceT('medium'): resourceT('low')],
+ [resourceT('disease_pressure'), resourceT(insight.diseasePressure.toLowerCase())],
+ [resourceT('nutrient_leaching'), insight.rain? resourceT('high'): insight.highHumidity? resourceT('medium'): resourceT('low')]
+ ];
+ const el = document.getElementById('rmRiskList');
+ if (!el) return;
+ el.innerHTML = risks.map(([label, value]) => `
+ <div class="resource-risk-item" data-state="${resourceRiskState(value)}">
+ <span>${resourceEscapeHtml(label)}</span>
+ <strong>${resourceEscapeHtml(value)}</strong>
+ </div>
+ `).join('');
+ }
+
+ function resourceRenderSchedule(labels, insight, waterDose) {
+ const sprayToday = insight.rain || insight.storm || insight.highWind? resourceT('hold_spray'): insight.heat? resourceT('only_dawn_evening'): resourceT('targeted_spray');
+ const fertToday = insight.rain || insight.storm? resourceT('hold_top_dressing'): insight.heat? resourceT('split_after_light_water'): labels.nutrient;
+ const waterToday = insight.rain || insight.storm? resourceT('no_irrigation'): `${resourceT('mm_value', { value: waterDose })} ${labels.irrigationLabel}`;
+ const rows = [
+ [resourceT('today'), waterToday, sprayToday, fertToday],
+ [resourceT('next_24_hours'), insight.rain? resourceT('check_drainage_soil'): resourceT('review_soil_repeat'), insight.highWind? resourceT('retry_after_wind'): resourceT('scout_edges'), labels.stageFertilizer],
+ [resourceT('next_3_days'), labels.waterFocus, resourceT('monitor_pest', { pest: labels.pest }), resourceT('recheck_soil')]
+ ];
+ const body = document.getElementById('rmScheduleBody');
+ if (body) {
+ body.innerHTML = rows.map(row => `
+ <tr>
+ <td>${resourceEscapeHtml(row[0])}</td>
+ <td>${resourceEscapeHtml(row[1])}</td>
+ <td>${resourceEscapeHtml(row[2])}</td>
+ <td>${resourceEscapeHtml(row[3])}</td>
+ </tr>
+ `).join('');
+ }
+ }
+
+ function resourceCropScoreState(score) {
+ if (score >= 76) return 'good';
+ if (score >= 58) return 'warning';
+ return 'danger';
+ }
+
+ function resourceCropMatchLabel(score) {
+ if (score >= 76) return resourceT('best_crop_match');
+ if (score >= 58) return resourceT('good_crop_match');
+ return resourceT('fair_crop_match');
+ }
+
+ function resourceScoreCrop(cropKey, inputs, insight) {
+ const profile = RESOURCE_CROP_RECOMMENDATION_PROFILES[cropKey];
+ if (!profile) return null;
+
+ let score = 52;
+ const reasons = [];
+ const tempDistance = insight.temp < profile.tempMin ? profile.tempMin - insight.temp : insight.temp > profile.tempMax ? insight.temp - profile.tempMax : 0;
+ if (tempDistance === 0) {
+ score += 26;
+ reasons.push('crop_rec_temp_good');
+ } else {
+ score -= Math.min(26, tempDistance * 4);
+ reasons.push(insight.temp < profile.tempMin ? 'crop_rec_temp_low' : 'crop_rec_temp_high');
+ }
+
+ if (insight.rain || insight.storm) {
+ if (profile.rainFriendly) {
+ score += 12;
+ reasons.push('crop_rec_rain_good');
+ } else if (profile.rainSensitive) {
+ score -= 16;
+ reasons.push('crop_rec_rain_risk');
+ }
+ }
+
+ if (insight.highHumidity) {
+ if (profile.humiditySensitive) {
+ score -= 11;
+ reasons.push('crop_rec_humidity_risk');
+ } else {
+ score += 7;
+ reasons.push('crop_rec_humidity_good');
+ }
+ } else {
+ reasons.push('crop_rec_humidity_good');
+ }
+
+ if (insight.heat && !profile.heatTolerant) score -= 10;
+ if (insight.heat && profile.heatTolerant) score += 7;
+
+ score += profile.soilBoost?.[inputs.soilKey] || 0;
+ score += profile.irrigationBoost?.[inputs.irrigationKey] || 0;
+ if (profile.soilBoost?.[inputs.soilKey]) reasons.push('crop_rec_soil_good');
+ if (profile.irrigationBoost?.[inputs.irrigationKey]) reasons.push('crop_rec_irrigation_good');
+
+ return {
+ key: cropKey,
+ score: Math.max(25, Math.min(96, Math.round(score))),
+ waterNeedKey: profile.waterNeedKey,
+ reasons: [...new Set(reasons)].slice(0, 3)
+ };
+ }
+
+ function resourceRenderCropRecommendations(inputs, insight) {
+ const scored = Object.keys(RESOURCE_CROP_RECOMMENDATION_PROFILES)
+ .map(cropKey => resourceScoreCrop(cropKey, inputs, insight))
+ .filter(Boolean)
+ .sort((a, b) => b.score - a.score)
+ .slice(0, 3);
+ if (!scored.length) return;
+
+ const best = scored[0];
+ const bestProfile = RESOURCE_CROP_PROFILES[best.key];
+ const bestName = resourceT(bestProfile.labelKey);
+ const bestWaterNeed = resourceT(best.waterNeedKey);
+ resourceSetChip('rmBestCropBadge', resourceCropScoreState(best.score), resourceCropMatchLabel(best.score));
+ resourceSetChip('rmBestCropScore', resourceCropScoreState(best.score), resourceT('suitability_score', { score: best.score }));
+ resourceSetText('rmBestCropName', bestName);
+ resourceSetText('rmBestCropReason', resourceT('crop_rec_reason', {
+ crop: bestName,
+ temp: Math.round(insight.temp),
+ waterNeed: bestWaterNeed
+ }));
+
+ const list = document.getElementById('rmCropRecommendationList');
+ if (!list) return;
+ list.innerHTML = scored.map(item => {
+ const profile = RESOURCE_CROP_PROFILES[item.key];
+ const cropName = resourceT(profile.labelKey);
+ const state = resourceCropScoreState(item.score);
+ const waterNeed = resourceT(item.waterNeedKey);
+ const reasonBadges = item.reasons.map(reasonKey => `<span class="resource-chip ${state}">${resourceEscapeHtml(resourceT(reasonKey))}</span>`).join('');
+ return `
+ <article class="resource-crop-option" data-state="${state}">
+ <span class="resource-chip ${state}">${resourceEscapeHtml(resourceT('suitability_score', { score: item.score }))}</span>
+ <strong>${resourceEscapeHtml(cropName)}</strong>
+ <span>${resourceEscapeHtml(resourceT('crop_rec_reason', { crop: cropName, temp: Math.round(insight.temp), waterNeed }))}</span>
+ <div class="resource-crop-meta">${reasonBadges}</div>
+ <button class="resource-crop-select" type="button" onclick="resourceSelectRecommendedCrop('${item.key}')">
+ <i class="fas fa-check"></i> ${resourceEscapeHtml(resourceT('use_crop'))}
+ </button>
+ </article>
+ `;
+ }).join('');
+ }
+
+ function resourceSelectRecommendedCrop(cropKey) {
+ const cropSelect = document.getElementById('rmCrop');
+ if (cropSelect && RESOURCE_CROP_PROFILES[cropKey]) {
+ cropSelect.value = cropKey;
+ resourceRenderRecommendations();
+ }
+ }
+
+ async function resourceUpdateWeather() {
+ const input = document.getElementById('weatherCityInput');
+ const city = input?.value?.trim() || 'Pune';
+ resourceSetText('rmWeatherCondition', resourceT('fetching_weather'));
+ resourceSetChip('rmPriorityBadge', 'neutral', resourceT('loading'));
+ try {
+ const response = await fetch(`${resourceApiBase()}/weather/current?city=${encodeURIComponent(city)}`);
+ const data = await response.json();
+ if (!response.ok) throw new Error(data.msg || data.message || 'Weather data unavailable');
+ resourceCurrentWeather = resourceNormalizeWeather(data, city);
+ resourceUpdateWeatherDisplay(resourceCurrentWeather);
+ resourceRenderRecommendations();
+ } catch (err) {
+ console.error('Resource weather error:', err);
+ resourceCurrentWeather = {
+ location: city,
+ temperature: 28,
+ condition: resourceT('offline_planning_mode'),
+ humidity: 60,
+ wind_kph: 8,
+ pressure_mb: null,
+ aqi: null,
+ forecast: []
+ };
+ resourceUpdateWeatherDisplay(resourceCurrentWeather);
+ resourceRenderRecommendations();
+ resourceSetText('rmWeatherCondition', resourceT('offline_planning_mode'));
+ resourceSetText('rmPriorityText', resourceT('offline_priority_text'));
+ }
+ }
+
+ window.resourceUpdateWeather = resourceUpdateWeather;
+ window.resourceRenderRecommendations = resourceRenderRecommendations;
+ window.resourceSelectRecommendedCrop = resourceSelectRecommendedCrop;
+ window.resourceApplyTranslations = resourceApplyTranslations;
+
+ const resourceBaseChangeLanguage = window.changeLanguage;
+ if (typeof resourceBaseChangeLanguage === 'function') {
+ window.changeLanguage = function(lang) {
+ resourceBaseChangeLanguage(lang);
+ resourceApplyTranslations();
+ resourceRenderRecommendations();
+ };
+ }
+
  window.addEventListener('DOMContentLoaded', () => {
- fetchWeather();
+ resourceApplyTranslations();
+ resourceRenderRecommendations();
+ resourceUpdateWeather();
  });
  </script>
 </body>
 </html>
-
