@@ -2277,12 +2277,16 @@ const dynamicStaticUiTranslations = {
  "Disease help": "रोग सहायता",
  "Market price": "बाजार भाव",
  "Sell crop": "फसल बेचें",
+ "Onion": "प्याज",
+ "Cotton": "कपास",
+ "Turmeric": "हल्दी",
  "Mon": "सोम",
  "Tue": "मंगल",
  "Wed": "बुध",
  "Thu": "गुरु",
  "Fri": "शुक्र",
- "Sat": "शनि"
+ "Sat": "शनि",
+ "Sun": "रवि"
  },
  mr: {
  "listing": "लिस्टिंग",
@@ -2296,12 +2300,16 @@ const dynamicStaticUiTranslations = {
  "Disease help": "रोग मदत",
  "Market price": "बाजारभाव",
  "Sell crop": "पीक विका",
+ "Onion": "कांदा",
+ "Cotton": "कापूस",
+ "Turmeric": "हळद",
  "Mon": "सोम",
  "Tue": "मंगळ",
  "Wed": "बुध",
  "Thu": "गुरु",
  "Fri": "शुक्र",
- "Sat": "शनि"
+ "Sat": "शनि",
+ "Sun": "रवि"
  },
  pa: {
  "listing": "ਲਿਸਟਿੰਗ",
@@ -2315,12 +2323,16 @@ const dynamicStaticUiTranslations = {
  "Disease help": "ਰੋਗ ਮਦਦ",
  "Market price": "ਬਾਜ਼ਾਰ ਭਾਅ",
  "Sell crop": "ਫ਼ਸਲ ਵੇਚੋ",
+ "Onion": "ਪਿਆਜ਼",
+ "Cotton": "ਕਪਾਹ",
+ "Turmeric": "ਹਲਦੀ",
  "Mon": "ਸੋਮ",
  "Tue": "ਮੰਗਲ",
  "Wed": "ਬੁੱਧ",
  "Thu": "ਵੀਰ",
  "Fri": "ਸ਼ੁੱਕਰ",
- "Sat": "ਸ਼ਨੀ"
+ "Sat": "ਸ਼ਨੀ",
+ "Sun": "ਐਤ"
  },
  ta: {
  "listing": "பட்டியல்",
@@ -2334,12 +2346,16 @@ const dynamicStaticUiTranslations = {
  "Disease help": "நோய் உதவி",
  "Market price": "சந்தை விலை",
  "Sell crop": "பயிர் விற்க",
+ "Onion": "வெங்காயம்",
+ "Cotton": "பருத்தி",
+ "Turmeric": "மஞ்சள்",
  "Mon": "தி",
  "Tue": "செ",
  "Wed": "பு",
  "Thu": "வி",
  "Fri": "வெ",
- "Sat": "சனி"
+ "Sat": "சனி",
+ "Sun": "ஞா"
  },
  te: {
  "listing": "లిస్టింగ్",
@@ -2353,12 +2369,16 @@ const dynamicStaticUiTranslations = {
  "Disease help": "వ్యాధి సహాయం",
  "Market price": "మార్కెట్ ధర",
  "Sell crop": "పంట అమ్మండి",
+ "Onion": "ఉల్లిపాయ",
+ "Cotton": "పత్తి",
+ "Turmeric": "పసుపు",
  "Mon": "సోమ",
  "Tue": "మంగళ",
  "Wed": "బుధ",
  "Thu": "గురు",
  "Fri": "శుక్ర",
- "Sat": "శని"
+ "Sat": "శని",
+ "Sun": "ఆది"
  }
 };
 
@@ -5722,10 +5742,10 @@ const PRICE_TREND_DATA = {
  { label: 'May', value: 2600 }
  ],
  '1Y': [
- { label: '23 Q1', value: 1950 },
- { label: '23 Q2', value: 2200 },
- { label: '23 Q3', value: 2500 },
- { label: '23 Q4', value: 2400 }
+ { label: 'Q1', value: 1950 },
+ { label: 'Q2', value: 2200 },
+ { label: 'Q3', value: 2500 },
+ { label: 'Q4', value: 2400 }
  ]
  }
  },
@@ -5753,10 +5773,10 @@ const PRICE_TREND_DATA = {
  { label: 'May', value: 3725 }
  ],
  '1Y': [
- { label: '23 Q1', value: 3180 },
- { label: '23 Q2', value: 3420 },
- { label: '23 Q3', value: 3650 },
- { label: '23 Q4', value: 3580 }
+ { label: 'Q1', value: 3180 },
+ { label: 'Q2', value: 3420 },
+ { label: 'Q3', value: 3650 },
+ { label: 'Q4', value: 3580 }
  ]
  }
  },
@@ -5784,10 +5804,196 @@ const PRICE_TREND_DATA = {
  { label: 'May', value: 4460 }
  ],
  '1Y': [
- { label: '23 Q1', value: 3600 },
- { label: '23 Q2', value: 3980 },
- { label: '23 Q3', value: 4410 },
- { label: '23 Q4', value: 4280 }
+ { label: 'Q1', value: 3600 },
+ { label: 'Q2', value: 3980 },
+ { label: 'Q3', value: 4410 },
+ { label: 'Q4', value: 4280 }
+ ]
+ }
+ },
+ onion: {
+ label: 'Onion',
+ periods: {
+ '1W': [
+ { label: 'Mon', value: 1320 },
+ { label: 'Tue', value: 1280 },
+ { label: 'Wed', value: 1210 },
+ { label: 'Thu', value: 1180 },
+ { label: 'Fri', value: 1240 },
+ { label: 'Sat', value: 1190 },
+ { label: 'Sun', value: 1160 }
+ ],
+ '1M': [
+ { label: 'Week 1', value: 1390 },
+ { label: 'Week 2', value: 1320 },
+ { label: 'Week 3', value: 1240 },
+ { label: 'Week 4', value: 1160 }
+ ],
+ '3M': [
+ { label: 'Mar', value: 1510 },
+ { label: 'Apr', value: 1370 },
+ { label: 'May', value: 1160 }
+ ],
+ '1Y': [
+ { label: 'Q1', value: 1180 },
+ { label: 'Q2', value: 1420 },
+ { label: 'Q3', value: 1680 },
+ { label: 'Q4', value: 1260 }
+ ]
+ }
+ },
+ potato: {
+ label: 'Potato',
+ periods: {
+ '1W': [
+ { label: 'Mon', value: 1040 },
+ { label: 'Tue', value: 1010 },
+ { label: 'Wed', value: 990 },
+ { label: 'Thu', value: 960 },
+ { label: 'Fri', value: 980 },
+ { label: 'Sat', value: 940 },
+ { label: 'Sun', value: 930 }
+ ],
+ '1M': [
+ { label: 'Week 1', value: 1080 },
+ { label: 'Week 2', value: 1020 },
+ { label: 'Week 3', value: 980 },
+ { label: 'Week 4', value: 930 }
+ ],
+ '3M': [
+ { label: 'Mar', value: 1120 },
+ { label: 'Apr', value: 1030 },
+ { label: 'May', value: 930 }
+ ],
+ '1Y': [
+ { label: 'Q1', value: 890 },
+ { label: 'Q2', value: 1060 },
+ { label: 'Q3', value: 1210 },
+ { label: 'Q4', value: 980 }
+ ]
+ }
+ },
+ cotton: {
+ label: 'Cotton',
+ periods: {
+ '1W': [
+ { label: 'Mon', value: 6620 },
+ { label: 'Tue', value: 6710 },
+ { label: 'Wed', value: 6680 },
+ { label: 'Thu', value: 6840 },
+ { label: 'Fri', value: 6910 },
+ { label: 'Sat', value: 6980 },
+ { label: 'Sun', value: 7040 }
+ ],
+ '1M': [
+ { label: 'Week 1', value: 6410 },
+ { label: 'Week 2', value: 6620 },
+ { label: 'Week 3', value: 6840 },
+ { label: 'Week 4', value: 7040 }
+ ],
+ '3M': [
+ { label: 'Mar', value: 6210 },
+ { label: 'Apr', value: 6640 },
+ { label: 'May', value: 7040 }
+ ],
+ '1Y': [
+ { label: 'Q1', value: 6020 },
+ { label: 'Q2', value: 6380 },
+ { label: 'Q3', value: 6910 },
+ { label: 'Q4', value: 6720 }
+ ]
+ }
+ },
+ chickpea: {
+ label: 'Chickpea',
+ periods: {
+ '1W': [
+ { label: 'Mon', value: 4860 },
+ { label: 'Tue', value: 4920 },
+ { label: 'Wed', value: 5010 },
+ { label: 'Thu', value: 5060 },
+ { label: 'Fri', value: 5120 },
+ { label: 'Sat', value: 5090 },
+ { label: 'Sun', value: 5180 }
+ ],
+ '1M': [
+ { label: 'Week 1', value: 4750 },
+ { label: 'Week 2', value: 4890 },
+ { label: 'Week 3', value: 5030 },
+ { label: 'Week 4', value: 5180 }
+ ],
+ '3M': [
+ { label: 'Mar', value: 4620 },
+ { label: 'Apr', value: 4940 },
+ { label: 'May', value: 5180 }
+ ],
+ '1Y': [
+ { label: 'Q1', value: 4480 },
+ { label: 'Q2', value: 4710 },
+ { label: 'Q3', value: 5140 },
+ { label: 'Q4', value: 5020 }
+ ]
+ }
+ },
+ mustard: {
+ label: 'Mustard',
+ periods: {
+ '1W': [
+ { label: 'Mon', value: 5290 },
+ { label: 'Tue', value: 5360 },
+ { label: 'Wed', value: 5410 },
+ { label: 'Thu', value: 5480 },
+ { label: 'Fri', value: 5520 },
+ { label: 'Sat', value: 5490 },
+ { label: 'Sun', value: 5570 }
+ ],
+ '1M': [
+ { label: 'Week 1', value: 5160 },
+ { label: 'Week 2', value: 5310 },
+ { label: 'Week 3', value: 5450 },
+ { label: 'Week 4', value: 5570 }
+ ],
+ '3M': [
+ { label: 'Mar', value: 5040 },
+ { label: 'Apr', value: 5320 },
+ { label: 'May', value: 5570 }
+ ],
+ '1Y': [
+ { label: 'Q1', value: 4920 },
+ { label: 'Q2', value: 5180 },
+ { label: 'Q3', value: 5560 },
+ { label: 'Q4', value: 5410 }
+ ]
+ }
+ },
+ turmeric: {
+ label: 'Turmeric',
+ periods: {
+ '1W': [
+ { label: 'Mon', value: 7240 },
+ { label: 'Tue', value: 7310 },
+ { label: 'Wed', value: 7480 },
+ { label: 'Thu', value: 7560 },
+ { label: 'Fri', value: 7680 },
+ { label: 'Sat', value: 7620 },
+ { label: 'Sun', value: 7790 }
+ ],
+ '1M': [
+ { label: 'Week 1', value: 7040 },
+ { label: 'Week 2', value: 7280 },
+ { label: 'Week 3', value: 7520 },
+ { label: 'Week 4', value: 7790 }
+ ],
+ '3M': [
+ { label: 'Mar', value: 6820 },
+ { label: 'Apr', value: 7310 },
+ { label: 'May', value: 7790 }
+ ],
+ '1Y': [
+ { label: 'Q1', value: 6540 },
+ { label: 'Q2', value: 7010 },
+ { label: 'Q3', value: 7720 },
+ { label: 'Q4', value: 7460 }
  ]
  }
  }
@@ -5801,11 +6007,13 @@ window.updateChartData = function(period, crop) {
  const chartGroup = document.getElementById('priceTrendBars') || document.querySelector('.chart-bar-group');
  if (!chartGroup) return;
 
- const activeFilter = document.querySelector('.chart-filter.active');
+ const chartCard = chartGroup.closest('.chart-container') || document;
+ const activeFilter = chartCard.querySelector('.chart-filter.active');
  const selectedPeriod = period || activeFilter?.textContent?.trim() || '1W';
  const cropSelect = document.getElementById('priceTrendCrop');
  const selectedCrop = crop || cropSelect?.value || 'wheat';
  const cropData = PRICE_TREND_DATA[selectedCrop] || PRICE_TREND_DATA.wheat;
+ const cropLabel = getStaticUiText(cropData.label);
  const periodData = cropData.periods[selectedPeriod] || cropData.periods['1W'];
  if (!periodData?.length) return;
 
@@ -5825,7 +6033,7 @@ window.updateChartData = function(period, crop) {
  const height = 32 + ((Number(item.value) - min) / range) * 66;
  const stateClass = Number(item.value) === max? ' is-high': Number(item.value) === min? ' is-low': '';
  return `
- <div class="chart-bar${stateClass}" style="--bar-height:${height.toFixed(1)}%; animation: growUp 0.6s ease-out ${idx * 0.05}s both;" title="${escapeHtml(cropData.label)} ${escapeHtml(item.label)}: ${formatTrendPrice(item.value)}">
+ <div class="chart-bar${stateClass}" style="--bar-height:${height.toFixed(1)}%; animation: growUp 0.6s ease-out ${idx * 0.05}s both;" title="${escapeHtml(cropLabel)} ${escapeHtml(item.label)}: ${formatTrendPrice(item.value)}">
  <span class="bar-value">${formatTrendPrice(item.value)}</span>
  <span class="bar-label">${escapeHtml(item.label)}</span>
  </div>
@@ -5853,10 +6061,11 @@ window.updateChartData = function(period, crop) {
  if (insightEl) {
  const direction = change > 0.3? 'up': change < -0.3? 'down': 'stable';
  const best = formatTrendPrice(max);
- insightEl.textContent = `${cropData.label} is ${direction} ${Math.abs(change).toFixed(1)}% for ${selectedPeriod}. Best observed rate: ${best}/q.`;
+ insightEl.textContent = `${cropLabel} is ${direction} ${Math.abs(change).toFixed(1)}% for ${selectedPeriod}. Best observed rate: ${best}/q.`;
  }
 
- document.querySelectorAll('.chart-filter').forEach(btn => {
+ chartCard.querySelectorAll('.chart-filter').forEach(btn => {
  btn.classList.toggle('active', btn.textContent.trim() === selectedPeriod);
  });
+ applyStaticUiTranslations();
 };

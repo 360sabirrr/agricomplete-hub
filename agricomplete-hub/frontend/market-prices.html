@@ -91,27 +91,61 @@
 
  <!-- Chart + Comparison -->
  <div class="grid-sidebar fade-in delay-1" style="margin-bottom:var(--space-xl);">
- <div class="chart-container">
+ <div class="chart-container price-trend-card">
  <div class="chart-header">
- <h4><i class="fas fa-chart-line" style="color:var(--color-primary);margin-right:8px;"></i> Price Trends - Wheat</h4>
- <div class="chart-filters">
- <button class="chart-filter active">1W</button>
- <button class="chart-filter">1M</button>
- <button class="chart-filter">3M</button>
- <button class="chart-filter">1Y</button>
+ <div class="chart-title-group">
+ <h4><i class="fas fa-chart-line" style="color:var(--color-primary);margin-right:8px;"></i> <span data-i18n="price_trend">Crop Price Trends (Rs./quintal)</span></h4>
+ <p data-i18n="chart_market_note">Pune APMC indicative mandi rates</p>
+ </div>
+ <div class="chart-controls">
+ <label class="chart-crop-select">
+ <span data-i18n="chart_crop_label">Crop</span>
+ <select id="priceTrendCrop" onchange="updateChartData(null, this.value)">
+ <option value="wheat">Wheat</option>
+ <option value="rice">Rice</option>
+ <option value="soybean">Soybean</option>
+ <option value="onion">Onion</option>
+ <option value="potato">Potato</option>
+ <option value="cotton">Cotton</option>
+ <option value="chickpea">Chickpea</option>
+ <option value="mustard">Mustard</option>
+ <option value="turmeric">Turmeric</option>
+ </select>
+ </label>
+ <div class="chart-filters" aria-label="Price trend period">
+ <button class="chart-filter active" onclick="updateChartData('1W')">1W</button>
+ <button class="chart-filter" onclick="updateChartData('1M')">1M</button>
+ <button class="chart-filter" onclick="updateChartData('3M')">3M</button>
+ <button class="chart-filter" onclick="updateChartData('1Y')">1Y</button>
+ </div>
+ </div>
+ </div>
+ <div class="chart-summary">
+ <div class="trend-metric">
+ <span data-i18n="chart_current_price">Current</span>
+ <strong id="priceTrendCurrent">Rs.2,510</strong>
+ </div>
+ <div class="trend-metric">
+ <span data-i18n="chart_period_avg">Average</span>
+ <strong id="priceTrendAverage">Rs.2,321</strong>
+ </div>
+ <div class="trend-metric">
+ <span data-i18n="chart_price_change">Change</span>
+ <strong id="priceTrendChange" class="trend-up">+19.5%</strong>
  </div>
  </div>
  <div class="chart-body">
- <div class="chart-bar-group">
- <div class="chart-bar" style="height:60%;"><span class="bar-value">Rs.2,050</span><span class="bar-label">Mon</span></div>
- <div class="chart-bar" style="height:68%;"><span class="bar-value">Rs.2,180</span><span class="bar-label">Tue</span></div>
- <div class="chart-bar" style="height:55%;"><span class="bar-value">Rs.1,920</span><span class="bar-label">Wed</span></div>
- <div class="chart-bar" style="height:75%;"><span class="bar-value">Rs.2,350</span><span class="bar-label">Thu</span></div>
- <div class="chart-bar" style="height:88%;background:linear-gradient(180deg,#26A69A,#00897B);"><span class="bar-value">Rs.2,580</span><span class="bar-label">Fri</span></div>
- <div class="chart-bar" style="height:72%;"><span class="bar-value">Rs.2,240</span><span class="bar-label">Sat</span></div>
- <div class="chart-bar" style="height:82%;background:linear-gradient(180deg,var(--color-secondary-light),var(--color-secondary));"><span class="bar-value">Rs.2,450</span><span class="bar-label">Today</span></div>
+ <div class="chart-scale" aria-hidden="true">
+ <span data-i18n="chart_high">High</span>
+ <span data-i18n="chart_avg_short">Avg</span>
+ <span data-i18n="chart_low">Low</span>
+ </div>
+ <div class="chart-plot">
+ <div class="chart-average-line" id="priceTrendAverageLine"><span data-i18n="chart_avg_short">Avg</span></div>
+ <div class="chart-bar-group" id="priceTrendBars"></div>
  </div>
  </div>
+ <div class="chart-insight" id="priceTrendInsight"></div>
  </div>
 
  <!-- Crop Price Comparison -->
@@ -259,7 +293,7 @@
  </div>
  </div>
 
- <script src="js/main.js?v=i18n-pages-20260604"></script>
+ <script src="js/main.js?v=market-chart-20260604"></script>
  <script>document.getElementById('marketUpdateTime').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});</script>
 </body>
 </html>
