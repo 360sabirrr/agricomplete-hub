@@ -2191,7 +2191,7 @@ const API_URL = (() => {
  return 'http://localhost:5000/api';
  }
 
- return 'https://agricomplete-backend.onrender.com/api';
+ return `${window.location.origin}/api`;
 })();
 
 // API Helper
