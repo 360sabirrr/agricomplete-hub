@@ -107,6 +107,39 @@ def ensure_sqlite_schema():
 
         conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS idx_user_phone_unique ON "user"(phone) WHERE phone IS NOT NULL'))
 
+
+def ensure_postgres_schema():
+    if db.engine.dialect.name != 'postgresql':
+        return
+
+    user_columns = {
+        'first_name': 'VARCHAR(50)',
+        'last_name': 'VARCHAR(50)',
+        'phone': 'VARCHAR(20)',
+        'state': 'VARCHAR(50)',
+        'district': 'VARCHAR(50)',
+        'village': 'VARCHAR(100)',
+        'total_area': 'VARCHAR(50)',
+        'soil_type': 'VARCHAR(75)',
+        'irrigation_source': 'VARCHAR(100)',
+        'primary_crops': 'VARCHAR(150)',
+        'farming_type': 'VARCHAR(100)',
+        'subscription': "VARCHAR(20) DEFAULT 'Basic'",
+        'created_at': 'TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()',
+    }
+    market_listing_columns = {
+        'category': 'VARCHAR(50)',
+        'image_data': 'TEXT',
+    }
+
+    with db.engine.begin() as conn:
+        for column_name, column_type in user_columns.items():
+            conn.execute(text(f'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
+        for column_name, column_type in market_listing_columns.items():
+            conn.execute(text(f'ALTER TABLE market_listing ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
+        conn.execute(text('UPDATE "user" SET email = LOWER(TRIM(email)) WHERE email IS NOT NULL'))
+        conn.execute(text("UPDATE \"user\" SET phone = NULL WHERE phone IS NULL OR TRIM(phone) = ''"))
+
 from routes.auth import auth_bp
 from routes.farm import farm_bp
 from routes.market import market_bp
@@ -154,6 +187,7 @@ def assistant_status_direct():
 with app.app_context():
     db.create_all()
     ensure_sqlite_schema()
+    ensure_postgres_schema()
 
 # Error handlers
 @app.errorhandler(400)
