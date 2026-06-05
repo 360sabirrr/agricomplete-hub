@@ -9,15 +9,10 @@ import urllib.request
 
 assistant_bp = Blueprint('assistant', __name__)
 
-DEFAULT_MODEL = 'gpt-4o-mini'
-DEFAULT_API_URL = 'https://api.openai.com/v1/chat/completions'
-DEFAULT_GEMINI_MODEL = 'gemini-2.0-flash'
-DEFAULT_GEMINI_FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-2.0-flash-lite']
+DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash-lite'
+DEFAULT_GEMINI_FALLBACK_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
 DEFAULT_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
-DEFAULT_GEMINI_TIMEOUT_SECONDS = 12
-DEFAULT_OLLAMA_MODEL = 'llama3.2:3b'
-DEFAULT_OLLAMA_URL = 'http://127.0.0.1:11434/api/chat'
-DEFAULT_OLLAMA_TIMEOUT_SECONDS = 5
+DEFAULT_GEMINI_TIMEOUT_SECONDS = 24
 MAX_MESSAGE_LENGTH = 2500
 MAX_HISTORY_ITEMS = 8
 
@@ -211,13 +206,6 @@ def _clean_history(history):
     return cleaned
 
 
-def _llm_settings():
-    api_key = os.getenv('OPENAI_API_KEY') or os.getenv('LLM_API_KEY')
-    api_url = os.getenv('LLM_API_URL') or DEFAULT_API_URL
-    model = os.getenv('OPENAI_MODEL') or os.getenv('LLM_MODEL') or DEFAULT_MODEL
-    return api_key, api_url, model
-
-
 def _gemini_settings():
     api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
     api_url = os.getenv('GEMINI_API_URL') or DEFAULT_GEMINI_API_URL
@@ -228,7 +216,7 @@ def _gemini_settings():
 
 
 def _gemini_timeout_seconds():
-    raw_value = os.getenv('GEMINI_TIMEOUT_SECONDS') or os.getenv('LLM_TIMEOUT_SECONDS')
+    raw_value = os.getenv('GEMINI_TIMEOUT_SECONDS')
     try:
         return max(4, min(float(raw_value or DEFAULT_GEMINI_TIMEOUT_SECONDS), 30))
     except (TypeError, ValueError):
@@ -331,253 +319,28 @@ def _call_gemini_llm(message, history, api_key, api_url, model):
     return _extract_gemini_text(data)
 
 
-def _call_gemini_task(system_prompt, user_prompt, api_key, api_url, model, max_tokens=240):
-    payload = {
-        'systemInstruction': {
-            'parts': [{'text': system_prompt}],
-        },
-        'contents': [
-            {'role': 'user', 'parts': [{'text': user_prompt}]},
-        ],
-        'generationConfig': {
-            'temperature': 0,
-            'maxOutputTokens': max_tokens,
-        },
-    }
-    req = urllib.request.Request(
-        _gemini_url(api_url, model),
-        data=json.dumps(payload).encode('utf-8'),
-        headers={
-            'Content-Type': 'application/json',
-            'x-goog-api-key': api_key,
-        },
-        method='POST',
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=_gemini_timeout_seconds()) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            return _extract_gemini_text(data)
-    except urllib.error.HTTPError as err:
-        try:
-            error_body = json.loads(err.read().decode('utf-8'))
-            message = error_body.get('error', {}).get('message') or str(err)
-        except Exception:
-            message = str(err)
-        return None, f'Gemini task failed: {message}'
-    except Exception as err:
-        return None, f'Gemini task failed: {err}'
-
-
-def _json_object_from_text(text):
-    raw = str(text or '').strip()
-    if raw.startswith('```'):
-        raw = raw.strip('`').strip()
-        if raw.lower().startswith('json'):
-            raw = raw[4:].strip()
-
-    start = raw.find('{')
-    end = raw.rfind('}')
-    if start == -1 or end == -1 or end < start:
-        return None
-
-    try:
-        return json.loads(raw[start:end + 1])
-    except (TypeError, ValueError):
-        return None
-
-
-def _call_openai_compatible_llm(message, history, api_key, api_url, model):
-    payload = {
-        'model': model,
-        'messages': [
-            {'role': 'system', 'content': _system_prompt()},
-            *_clean_history(history),
-            {'role': 'user', 'content': message},
-        ],
-        'temperature': 0.55,
-        'max_tokens': 650,
-    }
-    request_body = json.dumps(payload).encode('utf-8')
-    req = urllib.request.Request(
-        api_url,
-        data=request_body,
-        headers={
-            'Authorization': f'Bearer {api_key}',
-            'Content-Type': 'application/json',
-        },
-        method='POST',
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=25) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except urllib.error.HTTPError as err:
-        try:
-            error_body = json.loads(err.read().decode('utf-8'))
-            message = error_body.get('error', {}).get('message') or str(err)
-        except Exception:
-            message = str(err)
-        return None, f'LLM request failed: {message}'
-    except Exception as err:
-        return None, f'LLM request failed: {err}'
-
-    try:
-        answer = data['choices'][0]['message']['content'].strip()
-    except (KeyError, IndexError, TypeError):
-        return None, 'LLM returned an invalid response.'
-
-    return answer, None
-
-
-def _ollama_settings():
-    model = os.getenv('OLLAMA_MODEL') or os.getenv('LOCAL_LLM_MODEL') or DEFAULT_OLLAMA_MODEL
-    api_url = os.getenv('OLLAMA_API_URL') or DEFAULT_OLLAMA_URL
-    return api_url, model
-
-
-def _ollama_timeout_seconds():
-    raw_value = os.getenv('OLLAMA_TIMEOUT_SECONDS') or os.getenv('OLLAMA_TIMEOUT')
-    try:
-        return max(2, min(float(raw_value or DEFAULT_OLLAMA_TIMEOUT_SECONDS), 60))
-    except (TypeError, ValueError):
-        return DEFAULT_OLLAMA_TIMEOUT_SECONDS
-
-
-def _call_ollama_llm(message, history):
-    api_url, model = _ollama_settings()
-    payload = {
-        'model': model,
-        'messages': [
-            {'role': 'system', 'content': _system_prompt()},
-            *_clean_history(history),
-            {'role': 'user', 'content': message},
-        ],
-        'stream': False,
-        'options': {
-            'temperature': 0.55,
-            'num_predict': 650,
-        },
-    }
-    req = urllib.request.Request(
-        api_url,
-        data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'},
-        method='POST',
-    )
-
-    try:
-        with urllib.request.urlopen(req, timeout=_ollama_timeout_seconds()) as response:
-            data = json.loads(response.read().decode('utf-8'))
-    except urllib.error.HTTPError as err:
-        try:
-            error_body = json.loads(err.read().decode('utf-8'))
-            error_message = error_body.get('error') or str(err)
-        except Exception:
-            error_message = str(err)
-        if 'not found' in str(error_message).lower():
-            return None, f'Local Ollama model "{model}" is not installed. Run: ollama pull {model}'
-        return None, f'Local Ollama request failed: {error_message}'
-    except Exception:
-        return None, (
-            'No API key is configured and local Ollama is not running. '
-            f'Install Ollama, run "ollama pull {model}", then restart the backend.'
-        )
-
-    answer = (data.get('message') or {}).get('content', '').strip()
-    if not answer:
-        return None, 'Local Ollama returned an empty response.'
-
-    return answer, None
-
-
 def _call_llm(message, history):
     gemini_api_key, gemini_api_url, gemini_model = _gemini_settings()
-    if gemini_api_key:
-        errors = []
-        for model in _gemini_model_candidates(gemini_model):
-            answer, error = _call_gemini_llm(message, history, gemini_api_key, gemini_api_url, model)
-            if answer:
-                return answer, None
-            errors.append(f'{model}: {error}')
-        return None, 'Gemini request failed for all configured models. ' + ' | '.join(errors)
+    if not gemini_api_key:
+        return None, 'Gemini API key is not configured. Add GEMINI_API_KEY to backend/.env and restart the backend.'
 
-    api_key, api_url, model = _llm_settings()
-    if api_key:
-        return _call_openai_compatible_llm(message, history, api_key, api_url, model)
-
-    return _call_ollama_llm(message, history)
-
-
-@assistant_bp.route('/weather-intent', methods=['POST'])
-def weather_intent():
-    data = _get_json_body()
-    message = _clean_text(data.get('message'), 500)
-    if not message:
-        return jsonify({'msg': 'Message is required'}), 400
-
-    api_key, api_url, model = _gemini_settings()
-    if not api_key:
-        return jsonify({
-            'is_weather': False,
-            'city': '',
-            'language': 'unknown',
-            'confidence': 0,
-            'source': 'unconfigured'
-        }), 200
-
-    system_prompt = (
-        'You classify user chat messages for a farming web app. '
-        'Return JSON only with keys: is_weather boolean, city string, language string, confidence number. '
-        'is_weather is true only when the user asks for live/current weather, forecast, rain, temperature, humidity, wind, AQI, or weather details. '
-        'city must be the requested city/location translated or transliterated to English when present; otherwise an empty string. '
-        'language should be a BCP-47 style short code like en, hi, mr, pa, ta, te, ur, es, fr, ar, or "unknown". '
-        'Do not answer the user question.'
-    )
-    user_prompt = f'Classify this message: {message}'
-    answer, error = _call_gemini_task(system_prompt, user_prompt, api_key, api_url, model)
-    parsed = _json_object_from_text(answer)
-    if error or not isinstance(parsed, dict):
-        return jsonify({
-            'is_weather': False,
-            'city': '',
-            'language': 'unknown',
-            'confidence': 0,
-            'source': 'fallback'
-        }), 200
-
-    return jsonify({
-        'is_weather': bool(parsed.get('is_weather')),
-        'city': _clean_text(parsed.get('city'), 120),
-        'language': _clean_text(parsed.get('language'), 24) or 'unknown',
-        'confidence': parsed.get('confidence') if isinstance(parsed.get('confidence'), (int, float)) else 0,
-        'source': 'llm'
-    }), 200
+    errors = []
+    for model in _gemini_model_candidates(gemini_model):
+        answer, error = _call_gemini_llm(message, history, gemini_api_key, gemini_api_url, model)
+        if answer:
+            return answer, None
+        errors.append(f'{model}: {error}')
+    return None, 'Gemini request failed for all configured models. ' + ' | '.join(errors)
 
 
 @assistant_bp.route('/status', methods=['GET'])
 def assistant_status():
     gemini_api_key, _, gemini_model = _gemini_settings()
-    openai_api_key, _, openai_model = _llm_settings()
-    if gemini_api_key:
-        return jsonify({
-            'provider': 'gemini',
-            'configured': True,
-            'model': gemini_model,
-            'fallback_models': _gemini_model_candidates(gemini_model),
-        }), 200
-    if openai_api_key:
-        return jsonify({
-            'provider': 'openai-compatible',
-            'configured': True,
-            'model': openai_model,
-        }), 200
-    api_url, ollama_model = _ollama_settings()
     return jsonify({
-        'provider': 'ollama',
-        'configured': False,
-        'model': ollama_model,
-        'api_url': api_url,
+        'provider': 'gemini',
+        'configured': bool(gemini_api_key),
+        'model': gemini_model,
+        'fallback_models': _gemini_model_candidates(gemini_model),
     }), 200
 
 

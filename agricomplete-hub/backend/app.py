@@ -157,33 +157,6 @@ app.register_blueprint(disease_bp, url_prefix='/api/disease')
 app.register_blueprint(assistant_bp, url_prefix='/api/assistant')
 
 
-@app.route('/api/assistant/status')
-def assistant_status_direct():
-    from routes.assistant import _gemini_model_candidates, _gemini_settings, _llm_settings, _ollama_settings
-    gemini_api_key, _, gemini_model = _gemini_settings()
-    openai_api_key, _, openai_model = _llm_settings()
-    if gemini_api_key:
-        return jsonify({
-            'provider': 'gemini',
-            'configured': True,
-            'model': gemini_model,
-            'fallback_models': _gemini_model_candidates(gemini_model),
-        }), 200
-    if openai_api_key:
-        return jsonify({
-            'provider': 'openai-compatible',
-            'configured': True,
-            'model': openai_model,
-        }), 200
-    api_url, ollama_model = _ollama_settings()
-    return jsonify({
-        'provider': 'ollama',
-        'configured': False,
-        'model': ollama_model,
-        'api_url': api_url,
-    }), 200
-
-
 with app.app_context():
     db.create_all()
     ensure_sqlite_schema()

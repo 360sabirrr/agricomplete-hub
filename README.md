@@ -68,9 +68,9 @@ This project focuses on practical agricultural support:
 
 ### APIs
 - Gemini API for AI chatbot responses when `GEMINI_API_KEY` is configured
-- WeatherAPI.com for weather when `WEATHERAPI_KEY` is configured
-- OpenWeatherMap for AQI/weather fallback when `OPENWEATHER_API_KEY` is configured
-- Open-Meteo as a no-key weather fallback without AQI
+- WeatherAPI.com for weather pages when `WEATHERAPI_KEY` is configured
+- OpenWeatherMap for weather page AQI/weather fallback when `OPENWEATHER_API_KEY` is configured
+- Open-Meteo as a no-key weather page fallback without AQI
 
 ### Planned ML Module
 - Crop disease prediction model using a real-world dataset
@@ -135,9 +135,9 @@ Create a `.env` file in the root or backend folder.
 JWT_SECRET_KEY=your_secret_key
 DATABASE_URL=postgresql+psycopg2://username:password@localhost:5432/agricompletehub
 GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.0-flash
-GEMINI_FALLBACK_MODELS=gemini-2.0-flash,gemini-2.0-flash-lite
-GEMINI_TIMEOUT_SECONDS=12
+GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-2.5-flash-lite,gemini-2.0-flash,gemini-2.0-flash-lite
+GEMINI_TIMEOUT_SECONDS=24
 WEATHERAPI_KEY=your_weatherapi_key
 OPENWEATHER_API_KEY=your_openweathermap_key
 FLASK_ENV=development
@@ -178,9 +178,9 @@ Set these Render environment variables:
 DATABASE_URL=your_render_postgresql_external_or_internal_url
 JWT_SECRET_KEY=generate_a_long_secret
 GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-2.0-flash
-GEMINI_FALLBACK_MODELS=gemini-2.0-flash,gemini-2.0-flash-lite
-GEMINI_TIMEOUT_SECONDS=12
+GEMINI_MODEL=gemini-2.5-flash-lite
+GEMINI_FALLBACK_MODELS=gemini-2.5-flash-lite,gemini-2.0-flash,gemini-2.0-flash-lite
+GEMINI_TIMEOUT_SECONDS=24
 WEATHERAPI_KEY=optional_weatherapi_key
 OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
 FLASK_ENV=production
