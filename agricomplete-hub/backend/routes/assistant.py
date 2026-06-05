@@ -3,6 +3,7 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 import json
 import os
 import re
+import time
 import urllib.parse
 import urllib.error
 import urllib.request
@@ -10,11 +11,14 @@ import urllib.request
 assistant_bp = Blueprint('assistant', __name__)
 
 DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash-lite'
-DEFAULT_GEMINI_FALLBACK_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-2.0-flash-lite']
+DEFAULT_GEMINI_FALLBACK_MODELS = []
 DEFAULT_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
 DEFAULT_GEMINI_TIMEOUT_SECONDS = 24
+DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS = 30
 MAX_MESSAGE_LENGTH = 2500
 MAX_HISTORY_ITEMS = 8
+
+_gemini_cooldown_until = 0
 
 OFFLINE_TOPIC_ANSWERS = [
     (('photosynthesis',), 'Photosynthesis is how plants use sunlight, water, and carbon dioxide to make food for growth. It also releases oxygen. Healthy green leaves, enough water, and balanced nutrients improve photosynthesis.'),
@@ -319,10 +323,39 @@ def _call_gemini_llm(message, history, api_key, api_url, model):
     return _extract_gemini_text(data)
 
 
+def _is_rate_limit_error(error):
+    lowered = str(error or '').lower()
+    return any(item in lowered for item in ['quota exceeded', 'rate limit', 'retry in', '429'])
+
+
+def _retry_after_seconds(error):
+    match = re.search(r'retry in\s+([0-9.]+)s', str(error or ''), re.IGNORECASE)
+    if not match:
+        return DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS
+    try:
+        return max(5, min(int(float(match.group(1))) + 1, 120))
+    except (TypeError, ValueError):
+        return DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS
+
+
+def _rate_limit_answer(retry_after):
+    wait_text = f'about {retry_after} seconds' if retry_after else 'a short time'
+    return (
+        f'Gemini is rate-limited right now. Please wait {wait_text} and send the prompt again. '
+        'For reliable chatbot responses on Render, increase the Gemini API quota or enable billing in Google AI Studio.'
+    )
+
+
 def _call_llm(message, history):
+    global _gemini_cooldown_until
+
     gemini_api_key, gemini_api_url, gemini_model = _gemini_settings()
     if not gemini_api_key:
         return None, 'Gemini API key is not configured. Add GEMINI_API_KEY to backend/.env and restart the backend.'
+
+    remaining_cooldown = int(_gemini_cooldown_until - time.time())
+    if remaining_cooldown > 0:
+        return None, f'Gemini rate limit cooldown active. Please retry in {remaining_cooldown}s.'
 
     errors = []
     for model in _gemini_model_candidates(gemini_model):
@@ -330,7 +363,11 @@ def _call_llm(message, history):
         if answer:
             return answer, None
         errors.append(f'{model}: {error}')
-    return None, 'Gemini request failed for all configured models. ' + ' | '.join(errors)
+
+    error_text = 'Gemini request failed for all configured models. ' + ' | '.join(errors)
+    if _is_rate_limit_error(error_text):
+        _gemini_cooldown_until = time.time() + _retry_after_seconds(error_text)
+    return None, error_text
 
 
 @assistant_bp.route('/status', methods=['GET'])
@@ -353,6 +390,15 @@ def chat():
 
     answer, error = _call_llm(message, data.get('history'))
     if error:
+        if _is_rate_limit_error(error):
+            retry_after = _retry_after_seconds(error)
+            return jsonify({
+                'msg': error,
+                'answer': _rate_limit_answer(retry_after),
+                'retry_after_seconds': retry_after,
+                'source': 'rate_limited'
+            }), 200
+
         return jsonify({
             'msg': error,
             'answer': _local_fallback_answer(message),
