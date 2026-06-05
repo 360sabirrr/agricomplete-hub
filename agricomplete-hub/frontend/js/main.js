@@ -5189,6 +5189,16 @@ function buildPromptAwareFallbackAnswer(message) {
  const topicAnswer = getAssistantOfflineTopicAnswer(text);
  if (topicAnswer) return topicAnswer;
 
+ if (includesAny(text, ['what crop', 'which crop', 'crop should', 'plant in my farm', 'seed in my farm', 'sow in my farm', 'grow in my farm', 'recommend crop'])) {
+ return [
+ 'For a safe general crop choice, match the crop to your season and water supply:',
+ '- Rainy/kharif season: soybean, maize, cotton, pigeon pea, or paddy if you have plenty of water.',
+ '- Winter/rabi season: wheat, gram/chickpea, mustard, onion, or garlic with irrigation.',
+ '- Low-water farms: gram, pigeon pea, millet, sorghum, sesame, or groundnut are usually safer than paddy.',
+ 'For a more exact recommendation, share your location, soil type, water source, and current season.'
+ ].join('\n');
+ }
+
  if (includesAny(text, ['compare', 'difference between', ' vs ', ' versus '])) {
  return `For "${topic}", compare them on purpose, cost, effort, risk, time, and expected result. The better choice depends on your goal and constraints. If this is farming-related, also compare water need, soil suitability, pest risk, and market demand.`;
  }
@@ -5258,6 +5268,9 @@ async function buildLlmAssistantAnswer(message, history = assistantConversationH
  }, ASSISTANT_LLM_TIMEOUT_MS);
 
  const answer = String(data?.answer || '').trim();
+ if (data?.source === 'rate_limited' || answer.toLowerCase().includes('gemini is rate-limited')) {
+ return { text: buildGeneralAnswer(message), source: 'local' };
+ }
  return answer? { text: answer, source: data.source || 'llm' }: null;
 }
 

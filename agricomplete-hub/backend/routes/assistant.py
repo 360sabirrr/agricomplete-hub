@@ -188,6 +188,14 @@ def _prompt_aware_fallback_answer(message):
     topic_answer = _offline_topic_answer(lowered)
     if topic_answer:
         return topic_answer
+    if any(item in lowered for item in ['what crop', 'which crop', 'crop should', 'plant in my farm', 'seed in my farm', 'sow in my farm', 'grow in my farm', 'recommend crop']):
+        return (
+            'For a safe general crop choice, match the crop to your season and water supply:\n'
+            '- Rainy/kharif season: soybean, maize, cotton, pigeon pea, or paddy if you have plenty of water.\n'
+            '- Winter/rabi season: wheat, gram/chickpea, mustard, onion, or garlic with irrigation.\n'
+            '- Low-water farms: gram, pigeon pea, millet, sorghum, sesame, or groundnut are usually safer than paddy.\n'
+            'For a more exact recommendation, share your location, soil type, water source, and current season.'
+        )
     if any(item in lowered for item in ['compare', 'difference between', ' vs ', ' versus ']):
         return f'For "{topic}", compare purpose, cost, effort, risk, time, and expected result. For farming decisions, also compare water need, soil suitability, pest risk, and market demand.'
     if lowered.startswith('how ') or any(item in lowered for item in ['how to', 'how can i', 'how do i']):
@@ -356,14 +364,6 @@ def _retry_after_seconds(error):
         return DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS
 
 
-def _rate_limit_answer(retry_after):
-    wait_text = f'about {retry_after} seconds' if retry_after else 'a short time'
-    return (
-        f'Gemini is rate-limited right now. Please wait {wait_text} and send the prompt again. '
-        'For reliable chatbot responses on Render, increase the Gemini API quota or enable billing in Google AI Studio.'
-    )
-
-
 def _call_llm(message, history):
     global _gemini_cooldown_until
 
@@ -415,15 +415,6 @@ def chat():
 
     answer, error = _call_llm(message, data.get('history'))
     if error:
-        if _is_rate_limit_error(error):
-            retry_after = _retry_after_seconds(error)
-            return jsonify({
-                'msg': error,
-                'answer': _rate_limit_answer(retry_after),
-                'retry_after_seconds': retry_after,
-                'source': 'rate_limited'
-            }), 200
-
         return jsonify({
             'msg': error,
             'answer': _local_fallback_answer(message),
