@@ -5229,6 +5229,24 @@ function buildGeneralAnswer(message) {
  return buildPromptAwareFallbackAnswer(cleaned);
 }
 
+function buildSimpleAssistantAnswer(message) {
+ const text = normalizeAssistantText(message).replace(/[.,!?;:-]+$/g, '').replace(/\s+/g, ' ');
+ const greetings = ['hi', 'hii', 'hello', 'hey', 'hey there', 'good morning', 'good afternoon', 'good evening', 'namaste', 'namaskar', 'नमस्ते', 'नमस्कार'];
+ const thanks = ['thanks', 'thank you', 'ok thanks', 'okay thanks', 'धन्यवाद'];
+ const goodbyes = ['bye', 'goodbye', 'see you', 'see you later'];
+
+ if (greetings.includes(text)) {
+ return 'Hi! I am AgriMate. Ask me anything about farming, crops, weather planning, marketplace, or any general question.';
+ }
+ if (thanks.includes(text)) {
+ return 'You are welcome. Ask me anytime if you need help with farming or the app.';
+ }
+ if (goodbyes.includes(text)) {
+ return 'Goodbye. Come back anytime when you need farming or app help.';
+ }
+ return '';
+}
+
 async function buildLlmAssistantAnswer(message, history = assistantConversationHistory.slice(-8)) {
  const data = await apiFetchWithTimeout('/assistant/chat', {
  method: 'POST',
@@ -5246,6 +5264,9 @@ async function buildLlmAssistantAnswer(message, history = assistantConversationH
 async function generateAssistantResponse(message) {
  const command = getAssistantCommand(message);
  if (command) return command;
+
+ const simpleAnswer = buildSimpleAssistantAnswer(message);
+ if (simpleAnswer) return { text: simpleAnswer, source: 'local' };
 
  try {
  const llmAnswer = await buildLlmAssistantAnswer(message);

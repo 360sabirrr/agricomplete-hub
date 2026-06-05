@@ -163,6 +163,24 @@ def _question_topic(message):
     return topic
 
 
+def _simple_local_answer(message):
+    text = re.sub(r'\s+', ' ', _clean_text(message, 120).lower()).strip(' .,!?:;-')
+    greetings = {
+        'hi', 'hii', 'hello', 'hey', 'hey there', 'good morning', 'good afternoon',
+        'good evening', 'namaste', 'namaskar', 'नमस्ते', 'नमस्कार'
+    }
+    thanks = {'thanks', 'thank you', 'ok thanks', 'okay thanks', 'धन्यवाद'}
+    goodbyes = {'bye', 'goodbye', 'see you', 'see you later'}
+
+    if text in greetings:
+        return 'Hi! I am AgriMate. Ask me anything about farming, crops, weather planning, marketplace, or any general question.'
+    if text in thanks:
+        return 'You are welcome. Ask me anytime if you need help with farming or the app.'
+    if text in goodbyes:
+        return 'Goodbye. Come back anytime when you need farming or app help.'
+    return ''
+
+
 def _prompt_aware_fallback_answer(message):
     text = _clean_text(message, 320)
     lowered = text.lower()
@@ -387,6 +405,13 @@ def chat():
     message = _clean_text(data.get('message'))
     if not message:
         return jsonify({'msg': 'Message is required'}), 400
+
+    simple_answer = _simple_local_answer(message)
+    if simple_answer:
+        return jsonify({
+            'answer': simple_answer,
+            'source': 'local'
+        }), 200
 
     answer, error = _call_llm(message, data.get('history'))
     if error:
