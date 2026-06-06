@@ -77,6 +77,15 @@ def _listing_created_at_utc(listing):
         created_at = created_at.replace(tzinfo=timezone.utc)
     return created_at.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
 
+def _build_report_alert_message(listing, reason):
+    crop_name = _clean_text(getattr(listing, 'crop_name', ''), 70) or 'your crop'
+    report_reason = _clean_text(reason, 80) or 'Listing issue'
+    message = (
+        f'A marketplace user reported an issue with your {crop_name} listing: '
+        f'{report_reason}. Please review the photo, price, quantity, and location.'
+    )
+    return message[:255]
+
 def seller_display_name(user):
     if not user:
         return "Farmer"
@@ -234,3 +243,34 @@ def delete_listing(id):
     db.session.delete(listing)
     db.session.commit()
     return jsonify({"msg": "Listing deleted"}), 200
+
+@market_bp.route('/listings/<int:id>/reports', methods=['POST'])
+@jwt_required()
+def report_listing(id):
+    from models import FarmAlert, MarketListing
+    data = _get_json_body()
+    user_id = _get_current_user_id()
+    if user_id is None:
+        return jsonify({"msg": "Invalid authentication token"}), 401
+
+    listing = MarketListing.query.get_or_404(id)
+    if listing.seller_id == user_id:
+        return jsonify({"msg": "You cannot report your own listing"}), 400
+
+    reason = _clean_text(data.get('reason'), 80)
+    if not reason:
+        return jsonify({"msg": "Report reason is required"}), 400
+
+    alert = FarmAlert(
+        user_id=listing.seller_id,
+        type='Market',
+        priority='Urgent',
+        message=_build_report_alert_message(listing, reason),
+    )
+    db.session.add(alert)
+    db.session.commit()
+
+    return jsonify({
+        "msg": "Report submitted. The seller has been notified.",
+        "alert_id": alert.id
+    }), 201

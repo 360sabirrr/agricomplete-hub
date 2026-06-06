@@ -3561,7 +3561,7 @@ function closeReportListingModal() {
  if (modal) modal.style.display = 'none';
 }
 
-function submitListingReport(event) {
+async function submitListingReport(event) {
  event.preventDefault();
  const form = event.currentTarget;
  const listingId = String(document.getElementById('reportListingId')?.value || '');
@@ -3575,11 +3575,29 @@ function submitListingReport(event) {
  return;
  }
 
+ if (!localStorage.getItem('agri_token')) {
+ showToast('Please log in to report a listing.', 'error');
+ return;
+ }
+
  const reportDetail = {
  reason: selectedReason,
  note,
  reportedAt: new Date().toISOString()
  };
+
+ try {
+ await apiFetch(`/market/listings/${encodeURIComponent(listingId)}/reports`, {
+ method: 'POST',
+ body: JSON.stringify({
+ reason: selectedReason,
+ note
+ })
+ });
+ } catch (err) {
+ showToast(err.msg || 'Could not submit the report. Please try again.', 'error');
+ return;
+ }
 
  const reportedIds = getReportedMarketplaceListingIds();
  if (!reportedIds.includes(listingId)) {
@@ -3595,7 +3613,7 @@ function submitListingReport(event) {
  setMarketplaceStoredIds(MARKETPLACE_SAVED_KEY, savedIds);
  closeReportListingModal();
  renderMarketplaceFilteredListings();
- showToast(`Reported: ${reportDetail.reason}. Listing hidden for you.`, 'warning');
+ showToast('Report submitted. The seller has been notified to review this crop listing.', 'warning');
 }
 
 function normalizePhoneForChat(phone) {
@@ -3925,25 +3943,64 @@ const defaultNotifications = [
  { id: 'n3', title: 'Irrigation reminder', message: 'Field B moisture is low. Check irrigation schedule.', time: '1d ago' }
 ];
 
+function normalizeNotification(alert) {
+ return {
+ id: String(alert?.id || `notification-${Date.now()}`),
+ title: String(alert?.title || 'Notification'),
+ message: String(alert?.message || ''),
+ time: alert?.time || formatListingTime(alert?.created_at || new Date().toISOString()),
+ isRead: Boolean(alert?.is_read)
+ };
+}
+
+function notificationListHtml(notifications) {
+ return notifications.length? notifications.map(n => `
+ <div class="notification-item ${n.isRead? 'is-read': 'is-unread'}">
+ <h5>${escapeHtml(n.title)}</h5>
+ <p>${escapeHtml(n.message)}</p>
+ <span>${escapeHtml(n.time)}</span>
+ </div>
+ `).join(''): '<div class="notification-empty">No new notifications</div>';
+}
+
+function setNotificationDot(button, unreadCount) {
+ const dot = button.querySelector('.notif-dot');
+ if (dot) dot.style.display = unreadCount > 0? 'block': 'none';
+}
+
+function updateNotificationMenu(menu, notifications) {
+ const list = menu.querySelector('.notification-list');
+ if (list) list.innerHTML = notificationListHtml(notifications);
+}
+
+async function fetchUserNotifications() {
+ if (!localStorage.getItem('agri_token')) {
+ const savedRead = localStorage.getItem('agri_notifications_read') === 'true';
+ return {
+ notifications: defaultNotifications.map(item => ({ ...item, isRead: savedRead })),
+ unreadCount: savedRead? 0: defaultNotifications.length
+ };
+ }
+
+ const data = await apiFetch('/user/alerts');
+ const alerts = Array.isArray(data?.alerts)? data.alerts: [];
+ return {
+ notifications: alerts.map(normalizeNotification),
+ unreadCount: Number(data?.unread_count) || 0
+ };
+}
+
 function createNotificationMenu(notifications) {
  const menu = document.createElement('div');
  menu.className = 'notification-menu';
  menu.setAttribute('aria-hidden', 'true');
-
- const listHtml = notifications.length? notifications.map(n => `
- <div class="notification-item">
- <h5>${n.title}</h5>
- <p>${n.message}</p>
- <span>${n.time}</span>
- </div>
- `).join(''): '<div class="notification-empty">No new notifications</div>';
 
  menu.innerHTML = `
  <div class="notification-header">
  <h4>Notifications</h4>
  <button type="button" class="mark-read-btn">Mark all read</button>
  </div>
- <div class="notification-list">${listHtml}</div>
+ <div class="notification-list">${notificationListHtml(notifications)}</div>
  `;
 
  return menu;
@@ -3953,8 +4010,8 @@ function initNotifications() {
  const bellButtons = Array.from(document.querySelectorAll('.notification-btn'));
  if (!bellButtons.length) return;
 
- const savedRead = localStorage.getItem('agri_notifications_read') === 'true';
- const notifications = defaultNotifications;
+ let notifications = [];
+ let unreadCount = 0;
  const menuByButton = new Map();
 
  bellButtons.forEach(button => {
@@ -3965,11 +4022,7 @@ function initNotifications() {
  container.style.position = 'relative';
  container.appendChild(menu);
  menuByButton.set(button, menu);
-
- if (savedRead) {
- const dot = button.querySelector('.notif-dot');
- if (dot) dot.style.display = 'none';
- }
+ setNotificationDot(button, unreadCount);
 
  button.addEventListener('click', (event) => {
  event.stopPropagation();
@@ -3988,16 +4041,33 @@ function initNotifications() {
 
  const markReadBtn = menu.querySelector('.mark-read-btn');
  if (markReadBtn) {
- markReadBtn.addEventListener('click', (event) => {
+ markReadBtn.addEventListener('click', async (event) => {
  event.stopPropagation();
+ try {
+ if (localStorage.getItem('agri_token')) {
+ await apiFetch('/user/alerts/read', { method: 'POST' });
+ }
  localStorage.setItem('agri_notifications_read', 'true');
- document.querySelectorAll('.notification-btn.notif-dot').forEach(dot => {
- dot.style.display = 'none';
- });
+ notifications = notifications.map(item => ({ ...item, isRead: true }));
+ unreadCount = 0;
+ menuByButton.forEach((notificationMenu) => updateNotificationMenu(notificationMenu, notifications));
+ bellButtons.forEach(button => setNotificationDot(button, unreadCount));
+ } catch (err) {
+ showToast(err.msg || 'Could not mark notifications as read.', 'error');
+ }
  menu.classList.remove('open');
  menu.setAttribute('aria-hidden', 'true');
  });
  }
+ });
+
+ fetchUserNotifications().then(result => {
+ notifications = result.notifications;
+ unreadCount = result.unreadCount;
+ menuByButton.forEach((menu) => updateNotificationMenu(menu, notifications));
+ bellButtons.forEach(button => setNotificationDot(button, unreadCount));
+ }).catch(err => {
+ console.warn('Failed to load notifications:', err);
  });
 
  document.addEventListener('click', () => {
