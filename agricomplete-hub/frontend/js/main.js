@@ -4721,6 +4721,10 @@ const assistantOfflineTopicAnswers = [
  {
  keys: ['capital of maharashtra', 'maharashtra capital'],
  answer: 'The capital of Maharashtra is Mumbai.'
+ },
+ {
+ keys: ['pune', 'poona'],
+ answer: 'Pune is a major city in Maharashtra known for education, IT, manufacturing, culture, and history. It is often called the Oxford of the East because of its strong education sector. Pune is also famous for Shaniwar Wada, Aga Khan Palace, nearby forts, pleasant weather, food culture, startups, and the automobile industry.'
  }
 ];
 
@@ -5170,15 +5174,24 @@ function assistantTopicKeyMatches(text, key) {
 }
 
 function getAssistantQuestionTopic(message) {
- let topic = String(message || '').trim().replace(/[?!.\s]+$/g, '');
+ let topic = String(message || '').replace(/\s+/g, ' ').trim().replace(/[?!.\s]+$/g, '');
  const prefixes = [
- 'can you explain ', 'please explain ', 'explain ', 'tell me about ', 'what is ', 'what are ',
+ 'can you explain me about ', 'can you explain about ', 'can you explain ',
+ 'please explain me about ', 'please explain about ', 'please explain ',
+ 'explain me about ', 'explain about ', 'explain ',
+ 'tell me about ', 'what is ', 'what are ',
  'who is ', 'who are ', 'define ', 'meaning of ', 'how to ', 'how do i ', 'how can i ',
  'why is ', 'why are ', 'why do ', 'why does ', 'give me ', 'show me '
  ];
  const lowered = topic.toLowerCase();
  const prefix = prefixes.find(item => lowered.startsWith(item));
  if (prefix) topic = topic.slice(prefix.length).trim();
+ topic = topic
+ .replace(/\b(please\s+)?(do not|don't|dont)\s+give me\b.*$/i, '')
+ .replace(/\b(famous\s+){2,}/gi, 'famous ')
+ .replace(/\b(explain me|explain)\b\s*$/i, '')
+ .trim()
+ .replace(/[?!.\s]+$/g, '');
  return topic || String(message || '').trim();
 }
 
@@ -5212,7 +5225,7 @@ function buildPromptAwareFallbackAnswer(message) {
  }
 
  if (text.startsWith('what ') || text.startsWith('who ') || includesAny(text, ['define', 'meaning of', 'explain'])) {
- return `In simple terms, "${topic}" is the topic you are asking to understand. The useful answer is: what it means, why it matters, and how it is used. If it is related to farming or this app, connect it to soil, crop health, weather, market price, or the app workflow.`;
+ return `${topic}: Here is the most useful way to understand it: what it is, the main facts or features, why it matters, and one practical example. Ask a more specific question to get a deeper answer.`;
  }
 
  if (includesAny(text, ['write', 'draft', 'message', 'application', 'letter'])) {
@@ -5223,7 +5236,7 @@ function buildPromptAwareFallbackAnswer(message) {
  return `For "${topic}", choose based on your goal, budget, time, risk, and available resources. If this is a farm decision, the most important factors are season, soil, water, crop duration, pest risk, and market price.`;
  }
 
- return `About "${topic}": focus on the exact goal, the current condition, and the next useful action. A practical answer should compare options by cost, time, risk, and expected result.`;
+ return `${topic}: I can help with a concise explanation, comparison, or next-step guidance. Share the exact detail you want, such as meaning, importance, examples, advantages, disadvantages, or practical use.`;
 }
 
 function buildGeneralAnswer(message) {

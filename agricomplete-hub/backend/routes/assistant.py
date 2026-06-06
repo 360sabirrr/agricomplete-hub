@@ -41,6 +41,7 @@ OFFLINE_TOPIC_ANSWERS = [
     (('javascript', 'js'), 'JavaScript makes web pages interactive. It handles clicks, forms, API calls, charts, chat behavior, and dynamic UI updates.'),
     (('capital of india', 'india capital'), 'The capital of India is New Delhi.'),
     (('capital of maharashtra', 'maharashtra capital'), 'The capital of Maharashtra is Mumbai.'),
+    (('pune', 'poona'), 'Pune is a major city in Maharashtra known for education, IT, manufacturing, culture, and history. It is often called the Oxford of the East because of its strong education sector. Pune is also famous for Shaniwar Wada, Aga Khan Palace, nearby forts, pleasant weather, food culture, startups, and the automobile industry.'),
 ]
 
 
@@ -150,17 +151,25 @@ def _offline_topic_answer(text):
 
 
 def _question_topic(message):
-    topic = _clean_text(message, 320).strip(' ?!.')
+    topic = re.sub(r'\s+', ' ', _clean_text(message, 320)).strip(' ?!.')
     lowered = topic.lower()
     prefixes = [
-        'can you explain ', 'please explain ', 'explain ', 'tell me about ', 'what is ', 'what are ',
+        'can you explain me about ', 'can you explain about ', 'can you explain ',
+        'please explain me about ', 'please explain about ', 'please explain ',
+        'explain me about ', 'explain about ', 'explain ',
+        'tell me about ', 'what is ', 'what are ',
         'who is ', 'who are ', 'define ', 'meaning of ', 'how to ', 'how do i ', 'how can i ',
         'why is ', 'why are ', 'why do ', 'why does ', 'give me ', 'show me ',
     ]
     for prefix in prefixes:
         if lowered.startswith(prefix):
-            return topic[len(prefix):].strip() or topic
-    return topic
+            topic = topic[len(prefix):].strip() or topic
+            break
+
+    topic = re.sub(r"\b(please\s+)?(do not|don't|dont)\s+give me\b.*$", '', topic, flags=re.IGNORECASE)
+    topic = re.sub(r'\b(famous\s+){2,}', 'famous ', topic, flags=re.IGNORECASE)
+    topic = re.sub(r'\b(explain me|explain)\b\s*$', '', topic, flags=re.IGNORECASE)
+    return topic.strip(' ?!.') or _clean_text(message, 120).strip(' ?!.')
 
 
 def _simple_local_answer(message):
@@ -203,8 +212,8 @@ def _prompt_aware_fallback_answer(message):
     if lowered.startswith('why ') or any(item in lowered for item in ['reason for', 'cause of', 'because of']):
         return f'The likely reason for "{topic}" depends on the situation. Check recent changes, environment, timing, inputs used, and visible symptoms before deciding the action.'
     if lowered.startswith('what ') or lowered.startswith('who ') or any(item in lowered for item in ['define', 'meaning of', 'explain']):
-        return f'In simple terms, "{topic}" is the topic you are asking to understand. A useful answer covers what it means, why it matters, and how it is used.'
-    return f'About "{topic}": focus on the exact goal, current condition, and next useful action. Compare options by cost, time, risk, and expected result.'
+        return f'{topic}: Here is the most useful way to understand it: what it is, the main facts or features, why it matters, and one practical example. Ask a more specific question to get a deeper answer.'
+    return f'{topic}: I can help with a concise explanation, comparison, or next-step guidance. Share the exact detail you want, such as meaning, importance, examples, advantages, disadvantages, or practical use.'
 
 
 def _local_fallback_answer(message):
