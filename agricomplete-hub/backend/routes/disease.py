@@ -27,6 +27,7 @@ TREATMENTS_PATHS = [
 
 IMG_SIZE = (128, 128)
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'true').lower() == 'true'
 
 _model = None
 _class_names = None
@@ -73,6 +74,20 @@ def _load_model_bundle():
         _class_names = [str(item) for item in class_names]
         _treatments = _load_json_file(TREATMENTS_PATHS, {})
         return _model, _class_names, _treatments or {}
+
+
+def _model_status():
+    model_path = _first_existing_path(MODEL_PATHS)
+    class_names_path = _first_existing_path(CLASS_NAMES_PATHS)
+    treatments_path = _first_existing_path(TREATMENTS_PATHS)
+    return {
+        'configured': bool(model_path and class_names_path),
+        'loaded': _model is not None and _class_names is not None,
+        'model_path': model_path,
+        'class_names_path': class_names_path,
+        'treatments_path': treatments_path,
+        'preload_enabled': PRELOAD_MODEL,
+    }
 
 
 def _preprocess_image(uploaded_file):
@@ -168,6 +183,11 @@ def _guidance_for(label, treatments):
     }
 
 
+@disease_bp.route('/status', methods=['GET'])
+def disease_status():
+    return jsonify(_model_status()), 200
+
+
 @disease_bp.route('/predict', methods=['POST'])
 def predict_disease():
     if 'image' not in request.files:
@@ -223,3 +243,11 @@ def predict_disease():
             'msg': str(err),
             'status': 'model_error'
         }), 503
+
+
+if PRELOAD_MODEL:
+    try:
+        _load_model_bundle()
+        logger.info('Disease prediction model loaded during startup.')
+    except Exception as err:
+        logger.warning('Disease prediction model was not preloaded: %s', err)
