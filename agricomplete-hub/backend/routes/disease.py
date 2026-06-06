@@ -5,6 +5,11 @@ import logging
 import os
 import threading
 
+os.environ.setdefault('CUDA_VISIBLE_DEVICES', '-1')
+os.environ.setdefault('TF_NUM_INTRAOP_THREADS', '1')
+os.environ.setdefault('TF_NUM_INTEROP_THREADS', '1')
+os.environ.setdefault('OMP_NUM_THREADS', '1')
+
 disease_bp = Blueprint('disease', __name__)
 logger = logging.getLogger(__name__)
 
@@ -70,6 +75,12 @@ def _load_model_bundle():
             raise FileNotFoundError('Disease class_names.json was not found or is invalid.')
 
         import tensorflow as tf
+
+        try:
+            tf.config.threading.set_intra_op_parallelism_threads(1)
+            tf.config.threading.set_inter_op_parallelism_threads(1)
+        except RuntimeError:
+            pass
 
         _model = tf.keras.models.load_model(model_path)
         _class_names = [str(item) for item in class_names]
