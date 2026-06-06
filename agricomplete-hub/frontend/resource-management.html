@@ -55,22 +55,8 @@
  <section class="resource-hero fade-in">
  <div class="resource-hero-copy">
  <span class="resource-kicker"><i class="fas fa-cloud-sun-rain"></i> <span data-rm-i18n="weather_command_center">Weather Command Center</span></span>
- <h1 data-rm-i18n="hero_title">Plan every input from field conditions.</h1>
- <p data-rm-i18n="hero_desc">Use live temperature, humidity, wind, and rain signals to decide when to irrigate, spray pesticides, and apply fertilizer.</p>
- <div class="resource-hero-metrics" aria-label="Resource impact summary">
- <div>
- <strong id="rmWaterSaved">28%</strong>
- <span data-rm-i18n="water_saving_target">water saving target</span>
- </div>
- <div>
- <strong id="rmInputProtection">High</strong>
- <span data-rm-i18n="input_protection">input protection</span>
- </div>
- <div>
- <strong id="rmDecisionSpeed">3 min</strong>
- <span data-rm-i18n="planning_cycle">planning cycle</span>
- </div>
- </div>
+ <h1 data-rm-i18n="hero_title">One screen for water, fertilizer, and pesticide decisions.</h1>
+ <p data-rm-i18n="hero_desc">Select crop conditions once and get a live, weather-aware plan for what to apply today, what to delay, and what to monitor next.</p>
  </div>
 
  <div class="resource-live-panel">
@@ -96,10 +82,7 @@
  <div class="resource-weather-grid">
  <div><span data-rm-i18n="humidity">Humidity</span><strong id="rmHumidity">--</strong></div>
  <div><span data-rm-i18n="wind">Wind</span><strong id="rmWind">--</strong></div>
- <div><span data-rm-i18n="pressure">Pressure</span><strong id="rmPressure">--</strong></div>
- <div><span data-rm-i18n="aqi">AQI</span><strong id="rmAqi">--</strong></div>
  </div>
- <div class="resource-forecast" id="rmForecast" aria-label="Weather forecast"></div>
  </div>
  </section>
 
@@ -159,15 +142,60 @@
  <span class="resource-chip" id="rmPriorityBadge" data-rm-i18n="loading">Loading</span>
  </section>
 
+ <section class="resource-professional-summary fade-in delay-1" aria-label="Farm decision summary">
+ <article>
+ <span class="resource-kicker"><i class="fas fa-map-location-dot"></i> Farm profile</span>
+ <strong id="rmProfileSummary">Wheat - vegetative growth</strong>
+ <p id="rmProfileSupport">Loam soil with drip irrigation</p>
+ </article>
+ <article>
+ <span class="resource-kicker"><i class="fas fa-seedling"></i> Crop fit</span>
+ <strong id="rmCropFitSummary">Checking</strong>
+ <p id="rmCropFitSupport">Weather-based crop recommendation is being prepared.</p>
+ </article>
+ <article>
+ <span class="resource-kicker"><i class="fas fa-wallet"></i> Input strategy</span>
+ <strong id="rmInputStrategySummary">Optimize</strong>
+ <p id="rmInputStrategySupport">Use weather windows to reduce waste and protect yield.</p>
+ </article>
+ </section>
+
+ <section class="resource-command-strip fade-in delay-2" aria-label="Today's resource plan">
+ <article class="resource-command-card" id="rmWaterCommand" data-state="neutral">
+ <div class="resource-command-icon water"><i class="fas fa-tint"></i></div>
+ <div>
+ <span data-rm-i18n="today_water">Today Water</span>
+ <strong id="rmWaterCommandValue">--</strong>
+ <p id="rmWaterCommandNote" data-rm-i18n="checking">Checking</p>
+ </div>
+ </article>
+ <article class="resource-command-card" id="rmSprayCommand" data-state="neutral">
+ <div class="resource-command-icon pesticide"><i class="fas fa-shield-virus"></i></div>
+ <div>
+ <span data-rm-i18n="today_pesticide">Today Pesticide</span>
+ <strong id="rmSprayCommandValue">--</strong>
+ <p id="rmSprayCommandNote" data-rm-i18n="checking">Checking</p>
+ </div>
+ </article>
+ <article class="resource-command-card" id="rmFertCommand" data-state="neutral">
+ <div class="resource-command-icon fertilizer"><i class="fas fa-flask"></i></div>
+ <div>
+ <span data-rm-i18n="today_fertilizer">Today Fertilizer</span>
+ <strong id="rmFertCommandValue">--</strong>
+ <p id="rmFertCommandNote" data-rm-i18n="checking">Checking</p>
+ </div>
+ </article>
+ </section>
+
  <section class="resource-section resource-crop-rec fade-in delay-2" aria-label="Weather-based crop recommendation">
  <div class="resource-panel-header">
  <div>
  <span class="resource-kicker"><i class="fas fa-seedling"></i> <span data-rm-i18n="crop_recommendation">Crop Recommendation</span></span>
- <h2 data-rm-i18n="crop_rec_title">Best crops for this weather</h2>
+ <h2 data-rm-i18n="crop_rec_title">Crop fit and input plan</h2>
  </div>
  <span class="resource-chip good" id="rmBestCropBadge" data-rm-i18n="top_weather_match">Top weather match</span>
  </div>
- <p class="resource-section-copy" data-rm-i18n="crop_rec_desc">Recommendations use current temperature, humidity, rain risk, soil type, and irrigation method.</p>
+ <p class="resource-section-copy" data-rm-i18n="crop_rec_desc">Compare your selected crop with weather-suitable alternatives, then apply water, fertilizer, and spray decisions from the cards below.</p>
  <div class="resource-crop-rec-layout">
  <article class="resource-crop-best">
  <div class="resource-crop-best-icon"><i class="fas fa-award"></i></div>
@@ -338,8 +366,8 @@
  resource_page_title: 'Resource Management',
  resource_page_subtitle: 'Weather-led water, pesticide, and fertilizer planning',
  weather_command_center: 'Weather Command Center',
- hero_title: 'Plan every input from field conditions.',
- hero_desc: 'Use live temperature, humidity, wind, and rain signals to decide when to irrigate, spray pesticides, and apply fertilizer.',
+ hero_title: 'One screen for water, fertilizer, and pesticide decisions.',
+ hero_desc: 'Select crop conditions once and get a live, weather-aware plan for what to apply today, what to delay, and what to monitor next.',
  water_saving_target: 'water saving target',
  input_protection: 'input protection',
  planning_cycle: 'planning cycle',
@@ -380,6 +408,27 @@
  preparing_recommendations_desc: 'Weather and field inputs are being converted into resource actions.',
  loading: 'Loading',
  checking: 'Checking',
+ today_water: 'Today Water',
+ today_pesticide: 'Today Pesticide',
+ today_fertilizer: 'Today Fertilizer',
+ no_water_needed: 'No irrigation',
+ water_needed_now: 'Irrigate early',
+ water_plan_normal: 'Planned dose',
+ rain_hold_note: 'Rain risk active. Save water and inspect drainage.',
+ heat_water_note: 'High evaporation. Finish irrigation before peak heat.',
+ normal_water_note: 'Use selected method and check soil before repeating.',
+ spray_hold: 'Hold spray',
+ spray_safe: 'Spray allowed',
+ spray_caution: 'Caution window',
+ spray_hold_note: 'Weather is unsafe for chemical spray today.',
+ spray_safe_note: 'Scout first, then spray only if pest threshold is crossed.',
+ spray_caution_note: 'Use dawn or evening and avoid drift.',
+ fert_hold: 'Hold fertilizer',
+ fert_apply: 'Apply nutrition',
+ fert_split: 'Split dose',
+ fert_hold_note: 'Delay top dressing to prevent nutrient loss.',
+ fert_apply_note: 'Good window for stage-based nutrition.',
+ fert_split_note: 'Use small dose with light irrigation.',
  water_management: 'Water Management',
  loading_irrigation_advice: 'Loading live weather-based irrigation advice...',
  suggested_dose: 'Suggested dose',
@@ -1840,6 +1889,39 @@
  if (el) el.dataset.state = state;
  }
 
+ function resourceSetCommand(id, state, valueId, value, noteId, note) {
+ const card = document.getElementById(id);
+ if (card) card.dataset.state = state;
+ resourceSetText(valueId, value);
+ resourceSetText(noteId, note);
+ }
+
+ function resourceRenderCommandSummary(insight, waterDose) {
+ if (insight.rain || insight.storm) {
+ resourceSetCommand('rmWaterCommand', 'warning', 'rmWaterCommandValue', resourceT('no_water_needed'), 'rmWaterCommandNote', resourceT('rain_hold_note'));
+ } else if (insight.heat) {
+ resourceSetCommand('rmWaterCommand', 'warning', 'rmWaterCommandValue', resourceT('water_needed_now'), 'rmWaterCommandNote', resourceT('heat_water_note'));
+ } else {
+ resourceSetCommand('rmWaterCommand', 'good', 'rmWaterCommandValue', resourceT('mm_today', { value: waterDose }), 'rmWaterCommandNote', resourceT('normal_water_note'));
+ }
+
+ if (insight.rain || insight.storm || insight.highWind) {
+ resourceSetCommand('rmSprayCommand', 'danger', 'rmSprayCommandValue', resourceT('spray_hold'), 'rmSprayCommandNote', resourceT('spray_hold_note'));
+ } else if (insight.heat || insight.lowHumidity) {
+ resourceSetCommand('rmSprayCommand', 'warning', 'rmSprayCommandValue', resourceT('spray_caution'), 'rmSprayCommandNote', resourceT('spray_caution_note'));
+ } else {
+ resourceSetCommand('rmSprayCommand', 'good', 'rmSprayCommandValue', resourceT('spray_safe'), 'rmSprayCommandNote', resourceT('spray_safe_note'));
+ }
+
+ if (insight.rain || insight.storm) {
+ resourceSetCommand('rmFertCommand', 'danger', 'rmFertCommandValue', resourceT('fert_hold'), 'rmFertCommandNote', resourceT('fert_hold_note'));
+ } else if (insight.heat) {
+ resourceSetCommand('rmFertCommand', 'warning', 'rmFertCommandValue', resourceT('fert_split'), 'rmFertCommandNote', resourceT('fert_split_note'));
+ } else {
+ resourceSetCommand('rmFertCommand', 'good', 'rmFertCommandValue', resourceT('fert_apply'), 'rmFertCommandNote', resourceT('fert_apply_note'));
+ }
+ }
+
  function resourceUpdateWeatherDisplay(weather) {
  resourceSetText('rmWeatherLocation', weather.location || 'Selected farm');
  resourceSetText('rmWeatherTemp', Number.isFinite(weather.temperature)? `${Math.round(weather.temperature)} C`: '-- C');
@@ -1902,6 +1984,7 @@
  resourceSetText('rmInputProtection', insight.rain || insight.storm? resourceT('critical'): insight.highWind || insight.heat? resourceT('medium'): resourceT('high'));
 
  resourceRenderPriority(insight);
+ resourceRenderCommandSummary(insight, waterDose);
 
  if (insight.rain || insight.storm) {
  resourceSetCardState('rmWaterCard', 'warning');
@@ -2070,6 +2153,28 @@
  return resourceT('fair_crop_match');
  }
 
+ function resourceRenderProfessionalSummary(inputs, insight, best) {
+ const selectedCrop = resourceT(inputs.crop.labelKey);
+ const selectedStage = resourceT(inputs.stage.labelKey);
+ const soilLabel = resourceT(inputs.soil.labelKey);
+ const irrigationLabel = resourceT(inputs.irrigation.labelKey);
+ const bestProfile = best ? RESOURCE_CROP_PROFILES[best.key] : null;
+ const bestCropName = bestProfile ? resourceT(bestProfile.labelKey) : selectedCrop;
+ const strategy = insight.rain || insight.storm ? resourceT('hold_inputs') : insight.heat || insight.highWind ? resourceT('caution') : resourceT('go');
+ const support = insight.rain || insight.storm
+ ? resourceT('priority_hold_text')
+ : insight.heat || insight.highWind
+ ? resourceT('priority_caution_text')
+ : resourceT('priority_good_text');
+
+ resourceSetText('rmProfileSummary', `${selectedCrop} - ${selectedStage}`);
+ resourceSetText('rmProfileSupport', `${soilLabel} soil with ${irrigationLabel} irrigation`);
+ resourceSetText('rmCropFitSummary', best ? `${bestCropName} (${best.score}%)` : selectedCrop);
+ resourceSetText('rmCropFitSupport', best ? resourceCropMatchLabel(best.score) : resourceT('checking'));
+ resourceSetText('rmInputStrategySummary', strategy);
+ resourceSetText('rmInputStrategySupport', support);
+ }
+
  function resourceScoreCrop(cropKey, inputs, insight) {
  const profile = RESOURCE_CROP_RECOMMENDATION_PROFILES[cropKey];
  if (!profile) return null;
@@ -2135,6 +2240,7 @@
  const bestProfile = RESOURCE_CROP_PROFILES[best.key];
  const bestName = resourceT(bestProfile.labelKey);
  const bestWaterNeed = resourceT(best.waterNeedKey);
+ resourceRenderProfessionalSummary(inputs, insight, best);
  resourceSetChip('rmBestCropBadge', resourceCropScoreState(best.score), resourceCropMatchLabel(best.score));
  resourceSetChip('rmBestCropScore', resourceCropScoreState(best.score), resourceT('suitability_score', { score: best.score }));
  resourceSetText('rmBestCropName', bestName);

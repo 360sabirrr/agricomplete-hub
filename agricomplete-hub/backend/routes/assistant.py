@@ -4,21 +4,20 @@ import json
 import os
 import re
 import time
-import urllib.parse
 import urllib.error
 import urllib.request
 
 assistant_bp = Blueprint('assistant', __name__)
 
-DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash-lite'
-DEFAULT_GEMINI_FALLBACK_MODELS = []
-DEFAULT_GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent'
-DEFAULT_GEMINI_TIMEOUT_SECONDS = 24
-DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS = 30
+DEFAULT_OPENROUTER_MODEL = 'openrouter/auto'
+DEFAULT_OPENROUTER_FALLBACK_MODELS = []
+DEFAULT_OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
+DEFAULT_OPENROUTER_TIMEOUT_SECONDS = 24
+DEFAULT_OPENROUTER_RATE_LIMIT_COOLDOWN_SECONDS = 30
 MAX_MESSAGE_LENGTH = 2500
 MAX_HISTORY_ITEMS = 8
 
-_gemini_cooldown_until = 0
+_openrouter_cooldown_until = 0
 
 OFFLINE_TOPIC_ANSWERS = [
     (('photosynthesis',), 'Photosynthesis is how plants use sunlight, water, and carbon dioxide to make food for growth. It also releases oxygen. Healthy green leaves, enough water, and balanced nutrients improve photosynthesis.'),
@@ -245,105 +244,90 @@ def _clean_history(history):
     return cleaned
 
 
-def _gemini_settings():
-    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
-    api_url = os.getenv('GEMINI_API_URL') or DEFAULT_GEMINI_API_URL
-    model = (os.getenv('GEMINI_MODEL') or DEFAULT_GEMINI_MODEL).strip()
-    if model.startswith('models/'):
-        model = model.split('/', 1)[1]
+def _openrouter_settings():
+    api_key = os.getenv('OPENROUTER_API_KEY')
+    api_url = os.getenv('OPENROUTER_API_URL') or DEFAULT_OPENROUTER_API_URL
+    model = (os.getenv('OPENROUTER_MODEL') or DEFAULT_OPENROUTER_MODEL).strip()
     return api_key, api_url, model
 
 
-def _gemini_timeout_seconds():
-    raw_value = os.getenv('GEMINI_TIMEOUT_SECONDS')
+def _openrouter_timeout_seconds():
+    raw_value = os.getenv('OPENROUTER_TIMEOUT_SECONDS')
     try:
-        return max(4, min(float(raw_value or DEFAULT_GEMINI_TIMEOUT_SECONDS), 30))
+        return max(4, min(float(raw_value or DEFAULT_OPENROUTER_TIMEOUT_SECONDS), 30))
     except (TypeError, ValueError):
-        return DEFAULT_GEMINI_TIMEOUT_SECONDS
+        return DEFAULT_OPENROUTER_TIMEOUT_SECONDS
 
 
-def _gemini_model_candidates(primary_model):
-    configured = os.getenv('GEMINI_FALLBACK_MODELS') or ''
-    fallback_models = [item.strip() for item in configured.split(',') if item.strip()] or DEFAULT_GEMINI_FALLBACK_MODELS
+def _openrouter_model_candidates(primary_model):
+    configured = os.getenv('OPENROUTER_FALLBACK_MODELS') or ''
+    fallback_models = [item.strip() for item in configured.split(',') if item.strip()] or DEFAULT_OPENROUTER_FALLBACK_MODELS
     models = [primary_model, *fallback_models]
     unique_models = []
     for model in models:
-        normalized = model.split('/', 1)[1] if model.startswith('models/') else model
-        if normalized and normalized not in unique_models:
-            unique_models.append(normalized)
+        if model and model not in unique_models:
+            unique_models.append(model)
     return unique_models
 
 
-def _gemini_url(api_url, model):
-    if '{model}' in api_url:
-        return api_url.format(model=urllib.parse.quote(model, safe=''))
-    return api_url
+def _openrouter_messages(message, history):
+    messages = [{'role': 'system', 'content': _system_prompt()}]
+    messages.extend(_clean_history(history))
+    messages.append({'role': 'user', 'content': message})
+    return messages
 
 
-def _gemini_history(history):
-    contents = []
-    for item in _clean_history(history):
-        role = 'model' if item['role'] == 'assistant' else 'user'
-        contents.append({
-            'role': role,
-            'parts': [{'text': item['content']}],
-        })
-    return contents
-
-
-def _extract_gemini_text(data):
+def _extract_openrouter_text(data):
     if not isinstance(data, dict):
-        return None, 'Gemini returned a non-JSON response.'
+        return None, 'OpenRouter returned a non-JSON response.'
 
-    candidates = data.get('candidates')
-    if not isinstance(candidates, list) or not candidates:
-        feedback = data.get('promptFeedback') if isinstance(data.get('promptFeedback'), dict) else {}
-        block_reason = feedback.get('blockReason')
-        suffix = f' Block reason: {block_reason}.' if block_reason else ''
-        return None, f'Gemini returned no candidates.{suffix}'
+    choices = data.get('choices')
+    if not isinstance(choices, list) or not choices:
+        error = data.get('error') if isinstance(data.get('error'), dict) else {}
+        message = error.get('message')
+        suffix = f' {message}' if message else ''
+        return None, f'OpenRouter returned no choices.{suffix}'
 
-    candidate = candidates[0] if isinstance(candidates[0], dict) else {}
-    content = candidate.get('content') if isinstance(candidate.get('content'), dict) else {}
-    parts = content.get('parts') if isinstance(content.get('parts'), list) else []
-    answer = ''.join(
-        str(part.get('text', ''))
-        for part in parts
-        if isinstance(part, dict) and part.get('text')
-    ).strip()
+    choice = choices[0] if isinstance(choices[0], dict) else {}
+    message = choice.get('message') if isinstance(choice.get('message'), dict) else {}
+    content = message.get('content', '')
+    if isinstance(content, list):
+        answer = ''.join(
+            str(part.get('text', ''))
+            for part in content
+            if isinstance(part, dict) and part.get('text')
+        ).strip()
+    else:
+        answer = str(content or '').strip()
 
     if answer:
         return answer, None
 
-    finish_reason = candidate.get('finishReason') or 'unknown'
-    return None, f'Gemini returned an empty response. Finish reason: {finish_reason}.'
+    finish_reason = choice.get('finish_reason') or 'unknown'
+    return None, f'OpenRouter returned an empty response. Finish reason: {finish_reason}.'
 
 
-def _call_gemini_llm(message, history, api_key, api_url, model):
+def _call_openrouter_llm(message, history, api_key, api_url, model):
     payload = {
-        'systemInstruction': {
-            'parts': [{'text': _system_prompt()}],
-        },
-        'contents': [
-            *_gemini_history(history),
-            {'role': 'user', 'parts': [{'text': message}]},
-        ],
-        'generationConfig': {
-            'temperature': 0.55,
-            'maxOutputTokens': 650,
-        },
+        'model': model,
+        'messages': _openrouter_messages(message, history),
+        'temperature': 0.55,
+        'max_tokens': 650,
     }
     req = urllib.request.Request(
-        _gemini_url(api_url, model),
+        api_url,
         data=json.dumps(payload).encode('utf-8'),
         headers={
             'Content-Type': 'application/json',
-            'x-goog-api-key': api_key,
+            'Authorization': f'Bearer {api_key}',
+            'HTTP-Referer': os.getenv('OPENROUTER_SITE_URL') or 'http://localhost',
+            'X-Title': os.getenv('OPENROUTER_APP_NAME') or 'AgriComplete Hub',
         },
         method='POST',
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=_gemini_timeout_seconds()) as response:
+        with urllib.request.urlopen(req, timeout=_openrouter_timeout_seconds()) as response:
             data = json.loads(response.read().decode('utf-8'))
     except urllib.error.HTTPError as err:
         try:
@@ -351,11 +335,11 @@ def _call_gemini_llm(message, history, api_key, api_url, model):
             message = error_body.get('error', {}).get('message') or str(err)
         except Exception:
             message = str(err)
-        return None, f'Gemini request failed: {message}'
+        return None, f'OpenRouter request failed: {message}'
     except Exception as err:
-        return None, f'Gemini request failed: {err}'
+        return None, f'OpenRouter request failed: {err}'
 
-    return _extract_gemini_text(data)
+    return _extract_openrouter_text(data)
 
 
 def _is_rate_limit_error(error):
@@ -366,45 +350,45 @@ def _is_rate_limit_error(error):
 def _retry_after_seconds(error):
     match = re.search(r'retry in\s+([0-9.]+)s', str(error or ''), re.IGNORECASE)
     if not match:
-        return DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS
+        return DEFAULT_OPENROUTER_RATE_LIMIT_COOLDOWN_SECONDS
     try:
         return max(5, min(int(float(match.group(1))) + 1, 120))
     except (TypeError, ValueError):
-        return DEFAULT_GEMINI_RATE_LIMIT_COOLDOWN_SECONDS
+        return DEFAULT_OPENROUTER_RATE_LIMIT_COOLDOWN_SECONDS
 
 
 def _call_llm(message, history):
-    global _gemini_cooldown_until
+    global _openrouter_cooldown_until
 
-    gemini_api_key, gemini_api_url, gemini_model = _gemini_settings()
-    if not gemini_api_key:
-        return None, 'Gemini API key is not configured. Add GEMINI_API_KEY to backend/.env and restart the backend.'
+    openrouter_api_key, openrouter_api_url, openrouter_model = _openrouter_settings()
+    if not openrouter_api_key:
+        return None, 'OpenRouter API key is not configured. Add OPENROUTER_API_KEY to backend/.env and restart the backend.'
 
-    remaining_cooldown = int(_gemini_cooldown_until - time.time())
+    remaining_cooldown = int(_openrouter_cooldown_until - time.time())
     if remaining_cooldown > 0:
-        return None, f'Gemini rate limit cooldown active. Please retry in {remaining_cooldown}s.'
+        return None, f'OpenRouter rate limit cooldown active. Please retry in {remaining_cooldown}s.'
 
     errors = []
-    for model in _gemini_model_candidates(gemini_model):
-        answer, error = _call_gemini_llm(message, history, gemini_api_key, gemini_api_url, model)
+    for model in _openrouter_model_candidates(openrouter_model):
+        answer, error = _call_openrouter_llm(message, history, openrouter_api_key, openrouter_api_url, model)
         if answer:
             return answer, None
         errors.append(f'{model}: {error}')
 
-    error_text = 'Gemini request failed for all configured models. ' + ' | '.join(errors)
+    error_text = 'OpenRouter request failed for all configured models. ' + ' | '.join(errors)
     if _is_rate_limit_error(error_text):
-        _gemini_cooldown_until = time.time() + _retry_after_seconds(error_text)
+        _openrouter_cooldown_until = time.time() + _retry_after_seconds(error_text)
     return None, error_text
 
 
 @assistant_bp.route('/status', methods=['GET'])
 def assistant_status():
-    gemini_api_key, _, gemini_model = _gemini_settings()
+    openrouter_api_key, _, openrouter_model = _openrouter_settings()
     return jsonify({
-        'provider': 'gemini',
-        'configured': bool(gemini_api_key),
-        'model': gemini_model,
-        'fallback_models': _gemini_model_candidates(gemini_model),
+        'provider': 'openrouter',
+        'configured': bool(openrouter_api_key),
+        'model': openrouter_model,
+        'fallback_models': _openrouter_model_candidates(openrouter_model),
     }), 200
 
 

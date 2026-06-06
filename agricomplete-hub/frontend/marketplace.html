@@ -103,6 +103,30 @@
  <section class="market-section fade-in delay-1">
  <div class="market-section-header">
  <div>
+ <span class="market-section-label saved"><i class="fas fa-bookmark"></i> Buyer shortlist</span>
+ <h3>Saved Listings</h3>
+ <p>Bookmark crops first, then open this shortlist when you want to compare.</p>
+ </div>
+ <button type="button" class="btn btn-primary btn-sm market-saved-toggle" onclick="toggleSavedListingsPanel()">
+ <i class="fas fa-bookmark"></i>
+ <span id="savedListingsToggleText">View Saved Listings</span>
+ <span id="savedListingsCount" class="market-saved-count">0</span>
+ </button>
+ </div>
+ <div id="savedListingsPanel" class="market-saved-panel" style="display:none;">
+ <div class="grid-4" id="savedListingsGrid"></div>
+ <div id="savedComparePanel" class="market-compare-panel" style="display:none;"></div>
+ <div id="savedListingsEmpty" class="market-empty-state" style="display:none;">
+ <i class="fas fa-bookmark"></i>
+ <h4>No saved crops yet</h4>
+ <p>Use the Save button on crop cards to bookmark listings for comparison.</p>
+ </div>
+ </div>
+ </section>
+
+ <section class="market-section fade-in delay-1">
+ <div class="market-section-header">
+ <div>
  <span class="market-section-label"><i class="fas fa-clipboard-list"></i> Seller mode</span>
  <h3>My Listings</h3>
  <p>Crops you have listed for sale</p>
@@ -202,6 +226,39 @@
  <button type="button" onclick="closeContactModal()" style="font-size:1.3rem;color:var(--text-muted);"><i class="fas fa-times"></i></button>
  </div>
  <div id="contactModalBody"></div>
+ </div>
+ </div>
+
+ <!-- Report Listing Modal -->
+ <div id="reportListingModal" class="market-report-modal" style="display:none;">
+ <div class="market-report-card">
+ <div class="market-report-header">
+ <div>
+ <span><i class="fas fa-shield-halved"></i> Trust & Safety</span>
+ <h3>Report Listing</h3>
+ <p id="reportListingSubtitle">Tell us what looks suspicious.</p>
+ </div>
+ <button type="button" class="market-report-close" onclick="closeReportListingModal()" aria-label="Close report dialog"><i class="fas fa-times"></i></button>
+ </div>
+ <form id="reportListingForm" class="market-report-form">
+ <input type="hidden" id="reportListingId">
+ <div class="market-report-reasons" role="radiogroup" aria-label="Report reason">
+ <label><input type="radio" name="reportReason" value="Fake or misleading listing" required><span><i class="fas fa-mask"></i> Fake or misleading listing</span></label>
+ <label><input type="radio" name="reportReason" value="Suspicious price or quantity"><span><i class="fas fa-tags"></i> Suspicious price or quantity</span></label>
+ <label><input type="radio" name="reportReason" value="Seller asked for advance payment"><span><i class="fas fa-money-bill-wave"></i> Seller asked for advance payment</span></label>
+ <label><input type="radio" name="reportReason" value="Wrong crop/photo/location details"><span><i class="fas fa-location-dot"></i> Wrong crop/photo/location details</span></label>
+ <label><input type="radio" name="reportReason" value="Duplicate or spam listing"><span><i class="fas fa-copy"></i> Duplicate or spam listing</span></label>
+ <label><input type="radio" name="reportReason" value="Other"><span><i class="fas fa-circle-question"></i> Other reason</span></label>
+ </div>
+ <div class="input-group">
+ <label for="reportListingNote">More details <small>(optional)</small></label>
+ <textarea class="input-field" id="reportListingNote" rows="3" placeholder="Example: Seller is asking advance payment before crop inspection."></textarea>
+ </div>
+ <div class="market-report-actions">
+ <button type="button" class="btn btn-secondary" onclick="closeReportListingModal()">Cancel</button>
+ <button type="submit" class="btn btn-primary"><i class="fas fa-flag"></i> Submit Report</button>
+ </div>
+ </form>
  </div>
  </div>
 

@@ -11,13 +11,13 @@ services:
         sync: false
       - key: JWT_SECRET_KEY
         generateValue: true
-      - key: GEMINI_API_KEY
+      - key: OPENROUTER_API_KEY
         sync: false
-      - key: GEMINI_MODEL
-        value: gemini-2.5-flash-lite
-      - key: GEMINI_FALLBACK_MODELS
+      - key: OPENROUTER_MODEL
+        value: openrouter/auto
+      - key: OPENROUTER_FALLBACK_MODELS
         value: ""
-      - key: GEMINI_TIMEOUT_SECONDS
+      - key: OPENROUTER_TIMEOUT_SECONDS
         value: "24"
       - key: WEATHERAPI_KEY
         sync: false

@@ -375,7 +375,21 @@ const translations = {
  dash_welcome: "తిరిగి స్వాగతం, రాజేష్! "
  }
 };
-let currentLang = localStorage.getItem('agri_lang') || 'en';
+const SUPPORTED_LANGUAGES = ['en', 'hi', 'mr', 'pa', 'ta', 'te'];
+const LANGUAGE_LABELS = {
+ en: 'English',
+ hi: 'हिन्दी',
+ mr: 'मराठी',
+ pa: 'ਪੰਜਾਬੀ',
+ ta: 'தமிழ்',
+ te: 'తెలుగు'
+};
+
+function normalizeLanguage(lang) {
+ return SUPPORTED_LANGUAGES.includes(lang) ? lang : 'en';
+}
+
+let currentLang = normalizeLanguage(localStorage.getItem('agri_lang') || 'en');
 
 // Additional labels for pages that still use static text without data-i18n attributes.
 const supplementalTranslations = {
@@ -2442,6 +2456,27 @@ function applyStaticUiTranslations() {
  translateStaticAttributes();
 }
 
+function syncLanguageSelectors() {
+ document.querySelectorAll('.lang-selector select').forEach(select => {
+ if (select.dataset.languageEnhanced !== 'true') {
+ select.innerHTML = SUPPORTED_LANGUAGES.map(code => `<option value="${code}">${LANGUAGE_LABELS[code]}</option>`).join('');
+ select.dataset.languageEnhanced = 'true';
+ }
+ select.value = currentLang;
+ select.setAttribute('aria-label', 'Select language');
+ });
+}
+
+function updateDocumentLanguageState() {
+ document.documentElement.lang = currentLang;
+ document.documentElement.dir = 'ltr';
+ document.body?.setAttribute('data-lang', currentLang);
+}
+
+function notifyLanguageChanged() {
+ window.dispatchEvent(new CustomEvent('agri:languagechange', { detail: { lang: currentLang } }));
+}
+
 function translateLabel(key) {
  const primary = translations[currentLang] || translations.en;
  const supplemental = supplementalTranslations[currentLang] || supplementalTranslations.en;
@@ -2532,21 +2567,24 @@ function applyStaticPageTranslations() {
 }
 
 function changeLanguage(lang) {
- currentLang = lang;
- localStorage.setItem('agri_lang', lang);
+ const nextLang = normalizeLanguage(lang);
+ if (nextLang === currentLang) {
+ syncLanguageSelectors();
+ return;
+ }
+ currentLang = nextLang;
+ localStorage.setItem('agri_lang', currentLang);
  applyTranslations();
  if (document.getElementById('priceTrendBars')) {
  updateChartData();
  }
  syncStoredUserUI();
- // Force update all selector values
- document.querySelectorAll('.lang-selector select').forEach(sel => {
- sel.value = lang;
- });
+ notifyLanguageChanged();
 }
 
 function applyTranslations() {
- document.documentElement.lang = currentLang;
+ currentLang = normalizeLanguage(currentLang);
+ updateDocumentLanguageState();
  document.querySelectorAll('[data-i18n]').forEach(el => {
  const key = el.getAttribute('data-i18n');
  const value = translateLabel(key);
@@ -2566,10 +2604,7 @@ function applyTranslations() {
  }
  applyStaticUiTranslations();
  applyChatbotStaticTranslations();
- // Sync all language selectors
- document.querySelectorAll('.lang-selector select').forEach(sel => {
- sel.value = currentLang;
- });
+ syncLanguageSelectors();
 }
 
 function getStoredUser() {
@@ -2705,15 +2740,30 @@ function toggleFarmDetailsEdit(show = true) {
 }
 
 function showToast(message, type = 'success') {
- const toast = document.getElementById('toastNotification');
- if (!toast) { alert(message); return; }
+ let toast = document.getElementById('toastNotification');
+ if (!toast) {
+ toast = document.createElement('div');
+ toast.id = 'toastNotification';
+ toast.className = 'toast-notification app-toast';
+ toast.style.display = 'none';
+ toast.innerHTML = `
+ <div class="toast-content">
+ <i class="toast-icon fas fa-check-circle"></i>
+ <span class="toast-message"></span>
+ </div>
+ `;
+ document.body.appendChild(toast);
+ }
 
  const icon = toast.querySelector('.toast-icon');
  const msg = toast.querySelector('.toast-message');
  if (msg) msg.textContent = message;
- if (icon) icon.className = 'toast-icon fas ' + (type === 'error'? 'fa-exclamation-circle': 'fa-check-circle');
- toast.classList.remove('toast-hide', 'toast-error');
+ const iconClass = type === 'error'? 'fa-exclamation-circle': type === 'warning'? 'fa-triangle-exclamation': type === 'info'? 'fa-circle-info': 'fa-check-circle';
+ if (icon) icon.className = `toast-icon fas ${iconClass}`;
+ toast.classList.remove('toast-hide', 'toast-error', 'toast-warning', 'toast-info');
  if (type === 'error') toast.classList.add('toast-error');
+ if (type === 'warning') toast.classList.add('toast-warning');
+ if (type === 'info') toast.classList.add('toast-info');
  toast.style.display = 'block';
 
  // Force re-trigger animation
@@ -2878,6 +2928,10 @@ function escapeHtml(value) {
  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function escapeJsString(value) {
+ return String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, ' ');
+}
+
 const MARKETPLACE_CATEGORIES = [
  'Grains & Cereals',
  'Pulses',
@@ -2991,6 +3045,77 @@ function getSafeListingImageData(value) {
 
 let marketplaceListingsById = new Map();
 let marketplaceAllListings = [];
+const MARKETPLACE_SAVED_KEY = 'agri_marketplace_saved_listings';
+const MARKETPLACE_REPORTED_KEY = 'agri_marketplace_reported_listings';
+
+function getMarketplaceStoredIds(key) {
+ try {
+ const value = JSON.parse(localStorage.getItem(key) || '[]');
+ return Array.isArray(value)? value.map(id => String(id)): [];
+ } catch (err) {
+ return [];
+ }
+}
+
+function setMarketplaceStoredIds(key, ids) {
+ localStorage.setItem(key, JSON.stringify(Array.from(new Set(ids.map(id => String(id))))));
+}
+
+function getSavedMarketplaceListingIds() {
+ return getMarketplaceStoredIds(MARKETPLACE_SAVED_KEY);
+}
+
+function getReportedMarketplaceListingIds() {
+ return getMarketplaceStoredIds(MARKETPLACE_REPORTED_KEY);
+}
+
+function getMarketplaceReportDetails() {
+ try {
+ const stored = JSON.parse(localStorage.getItem(`${MARKETPLACE_REPORTED_KEY}_details`) || '{}');
+ return stored && typeof stored === 'object' && !Array.isArray(stored)? stored: {};
+ } catch (err) {
+ return {};
+ }
+}
+
+function setMarketplaceReportDetail(id, detail) {
+ const reports = getMarketplaceReportDetails();
+ reports[String(id)] = detail;
+ localStorage.setItem(`${MARKETPLACE_REPORTED_KEY}_details`, JSON.stringify(reports));
+}
+
+function isListingSaved(id) {
+ return getSavedMarketplaceListingIds().includes(String(id));
+}
+
+function isListingReported(id) {
+ return getReportedMarketplaceListingIds().includes(String(id));
+}
+
+function getListingSafetyStatus(listing) {
+ const reasons = [];
+ const price = Number(listing?.price);
+ const quantity = getListingQuantityValue(listing);
+ const cropName = String(listing?.crop_name || listing?.cropName || '').trim();
+ const location = String(listing?.location || '').trim();
+
+ if (isListingReported(listing?.id)) reasons.push('reported by you');
+ if (!cropName) reasons.push('missing crop name');
+ if (!location) reasons.push('missing location');
+ if (!Number.isFinite(price) || price <= 0) reasons.push('invalid price');
+ if (quantity <= 0) reasons.push('invalid quantity');
+
+ return {
+ suspicious: reasons.length > 0,
+ reported: isListingReported(listing?.id),
+ reasons
+ };
+}
+
+function shouldHideMarketplaceListing(listing) {
+ const status = getListingSafetyStatus(listing);
+ return status.suspicious && !isListingOwnedByCurrentUser(listing);
+}
 
 function normalizeMarketplaceText(value) {
  return String(value || '').trim().toLowerCase();
@@ -3170,14 +3295,26 @@ function createMarketplaceCardHtml(listing) {
  const category = escapeHtml(getListingCategory(listing));
  const iconClass = getListingIconClass(cropName);
  const timeAgo = formatListingTime(listing.created_at || listing.createdAt || new Date().toISOString());
- const listingId = escapeHtml(listing.id);
+ const rawListingId = String(listing.id);
+ const listingId = escapeHtml(rawListingId);
+ const listingIdArg = escapeJsString(rawListingId);
  const isOwner = isListingOwnedByCurrentUser(listing);
+ const isSaved = isListingSaved(rawListingId);
+ const safetyStatus = getListingSafetyStatus(listing);
  const imageData = getSafeListingImageData(listing.image_data || listing.imageData);
  const mediaHtml = imageData? `<img src="${imageData}" alt="${cropName}" style="width:100%;height:100%;object-fit:cover;display:block;">`: `<span class="crop-icon-badge"><i class="${iconClass}"></i></span>`;
+ const safetyWarningHtml = safetyStatus.suspicious && isOwner? `
+ <div class="product-safety-warning">
+ <i class="fas fa-triangle-exclamation"></i>
+ <span>Needs review: ${escapeHtml(safetyStatus.reasons.join(', '))}</span>
+ </div>
+ `: '';
 
  let actionsHtml = `
- <button type="button" onclick="openListingContact('${listingId}')" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</button>
- <button type="button" onclick="chatListing('${listingId}')" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</button>
+ <button type="button" onclick="openListingContact('${listingIdArg}')" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-phone"></i> Contact</button>
+ <button type="button" onclick="chatListing('${listingIdArg}')" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;"><i class="fas fa-comment"></i> Chat</button>
+ <button type="button" onclick="toggleSavedListing('${listingIdArg}')" class="btn btn-secondary btn-sm product-save-btn ${isSaved? 'saved': ''}" style="flex:1;justify-content:center;"><i class="${isSaved? 'fas': 'far'} fa-bookmark"></i> ${isSaved? 'Saved': 'Save'}</button>
+ <button type="button" onclick="reportListing('${listingIdArg}')" class="btn btn-secondary btn-sm product-report-btn" style="flex:1;justify-content:center;"><i class="fas fa-flag"></i> Report</button>
  `;
 
  let ownerTagHtml = '';
@@ -3185,8 +3322,8 @@ function createMarketplaceCardHtml(listing) {
  if (isOwner) {
  ownerTagHtml = `<div class="product-tag" style="background:var(--color-secondary);right:12px;left:auto;font-size:0.65rem;">Your Listing</div>`;
  actionsHtml = `
- <button onclick="editListing('${listingId}')" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;font-weight:700;"><i class="fas fa-edit"></i> Edit</button>
- <button onclick="deleteListing('${listingId}')" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;background:#DC3545;border-color:#DC3545;color:#fff;font-weight:700;"><i class="fas fa-trash"></i> Delete</button>
+ <button onclick="editListing('${listingIdArg}')" class="btn btn-primary btn-sm" style="flex:1;justify-content:center;font-weight:700;"><i class="fas fa-edit"></i> Edit</button>
+ <button onclick="deleteListing('${listingIdArg}')" class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;background:#DC3545;border-color:#DC3545;color:#fff;font-weight:700;"><i class="fas fa-trash"></i> Delete</button>
  `;
  }
 
@@ -3205,6 +3342,7 @@ function createMarketplaceCardHtml(listing) {
  </div>
  <div class="product-price">Rs.${safePrice}/q</div>
  <p class="product-seller"><span>Listed by</span> ${seller} - ${timeAgo}</p>
+ ${safetyWarningHtml}
  <div class="product-actions">
  ${actionsHtml}
  </div>
@@ -3236,8 +3374,90 @@ async function renderMarketplaceListings() {
  myGrid.innerHTML = '';
  buyGrid.innerHTML = '';
  updateMarketplaceSectionState(0, 0, true);
+ renderSavedMarketplaceListings([]);
  renderMarketplaceCount();
  }
+}
+
+function renderSavedComparePanel(savedListings) {
+ const panel = document.getElementById('savedComparePanel');
+ if (!panel) return;
+
+ if (!savedListings.length) {
+ panel.style.display = 'none';
+ panel.innerHTML = '';
+ return;
+ }
+
+ const rows = savedListings.map(listing => {
+ const price = Number(listing.price);
+ const safePrice = Number.isFinite(price)? `Rs.${price.toLocaleString('en-IN')}/q`: 'Ask seller';
+ return `
+ <tr>
+ <td><strong>${escapeHtml(listing.crop_name || listing.cropName || 'Crop')}</strong></td>
+ <td>${escapeHtml(getListingCategory(listing))}</td>
+ <td>${safePrice}</td>
+ <td>${escapeHtml(listing.quantity || '0')} qtl</td>
+ <td>${escapeHtml(listing.location || 'Unknown')}</td>
+ </tr>
+ `;
+ }).join('');
+
+ panel.style.display = 'block';
+ panel.innerHTML = `
+ <div class="market-compare-head">
+ <div>
+ <span><i class="fas fa-scale-balanced"></i> Compare saved crops</span>
+ <p>Quickly compare price, quantity and pickup location before contacting sellers.</p>
+ </div>
+ <button type="button" class="btn btn-secondary btn-sm" onclick="clearSavedListings()"><i class="fas fa-trash"></i> Clear saved</button>
+ </div>
+ <div class="market-compare-table">
+ <table>
+ <thead>
+ <tr><th>Crop</th><th>Category</th><th>Price</th><th>Quantity</th><th>Location</th></tr>
+ </thead>
+ <tbody>${rows}</tbody>
+ </table>
+ </div>
+ `;
+}
+
+function renderSavedMarketplaceListings(visibleBuyListings = null) {
+ const savedPanel = document.getElementById('savedListingsPanel');
+ const savedGrid = document.getElementById('savedListingsGrid');
+ const savedEmpty = document.getElementById('savedListingsEmpty');
+ const savedCountEl = document.getElementById('savedListingsCount');
+ const savedToggleText = document.getElementById('savedListingsToggleText');
+ if (!savedGrid && !savedEmpty && !savedCountEl && !savedToggleText) return;
+
+ const savedIds = getSavedMarketplaceListingIds();
+ const sourceListings = Array.isArray(visibleBuyListings)? visibleBuyListings: marketplaceAllListings.filter(listing => !isListingOwnedByCurrentUser(listing) && !shouldHideMarketplaceListing(listing));
+ const savedListings = sourceListings.filter(listing => savedIds.includes(String(listing.id)));
+ const isPanelOpen = savedPanel?.style.display !== 'none';
+
+ if (savedCountEl) savedCountEl.textContent = String(savedListings.length);
+ if (savedToggleText) savedToggleText.textContent = isPanelOpen? 'Hide Saved Listings': 'View Saved Listings';
+
+ if (!isPanelOpen) {
+ if (savedGrid) savedGrid.innerHTML = '';
+ if (savedEmpty) savedEmpty.style.display = 'none';
+ renderSavedComparePanel([]);
+ return;
+ }
+
+ if (savedGrid) savedGrid.innerHTML = savedListings.map(createMarketplaceCardHtml).join('');
+ if (savedEmpty) savedEmpty.style.display = savedListings.length? 'none': 'block';
+ renderSavedComparePanel(savedListings);
+}
+
+function toggleSavedListingsPanel() {
+ const savedPanel = document.getElementById('savedListingsPanel');
+ if (!savedPanel) return;
+
+ const shouldOpen = savedPanel.style.display === 'none';
+ savedPanel.style.display = shouldOpen? 'block': 'none';
+ renderSavedMarketplaceListings();
 }
 
 function renderMarketplaceFilteredListings() {
@@ -3251,13 +3471,14 @@ function renderMarketplaceFilteredListings() {
  getFilteredMarketplaceListings().forEach(listing => {
  if (isListingOwnedByCurrentUser(listing)) {
  myListings.push(listing);
- } else {
+ } else if (!shouldHideMarketplaceListing(listing)) {
  buyListings.push(listing);
  }
  });
 
  myGrid.innerHTML = myListings.map(createMarketplaceCardHtml).join('');
  buyGrid.innerHTML = buyListings.map(createMarketplaceCardHtml).join('');
+ renderSavedMarketplaceListings(buyListings);
  updateMarketplaceSectionState(myListings.length, buyListings.length);
  renderMarketplaceCount();
  applyStaticUiTranslations();
@@ -3296,6 +3517,85 @@ function updateMarketplaceSectionState(myCount, buyCount, hasError = false) {
  if (myCountEl) myCountEl.textContent = formatListingCount(myCount);
  if (buyCountEl) buyCountEl.textContent = formatListingCount(buyCount);
  applyStaticUiTranslations();
+}
+
+function toggleSavedListing(id) {
+ const listingId = String(id);
+ const savedIds = getSavedMarketplaceListingIds();
+ const nextIds = savedIds.includes(listingId)? savedIds.filter(savedId => savedId !== listingId): [...savedIds, listingId];
+ setMarketplaceStoredIds(MARKETPLACE_SAVED_KEY, nextIds);
+ renderMarketplaceFilteredListings();
+ showToast(savedIds.includes(listingId)? 'Removed from saved listings.': 'Saved for later comparison.', savedIds.includes(listingId)? 'info': 'success');
+}
+
+function clearSavedListings() {
+ setMarketplaceStoredIds(MARKETPLACE_SAVED_KEY, []);
+ renderMarketplaceFilteredListings();
+ showToast('Saved listings cleared.', 'info');
+}
+
+function reportListing(id) {
+ const listingId = String(id);
+ const listing = marketplaceListingsById.get(listingId);
+ const cropName = listing?.crop_name || listing?.cropName || 'this listing';
+ const modal = document.getElementById('reportListingModal');
+ const form = document.getElementById('reportListingForm');
+ const idInput = document.getElementById('reportListingId');
+ const subtitle = document.getElementById('reportListingSubtitle');
+ const note = document.getElementById('reportListingNote');
+
+ if (!modal || !form || !idInput) {
+ alert(`Report ${cropName}: Please select a reason in the report dialog.`);
+ return;
+ }
+
+ idInput.value = listingId;
+ if (subtitle) subtitle.textContent = `Why do you want to report ${cropName}?`;
+ if (note) note.value = '';
+ form.querySelectorAll('input[name="reportReason"]').forEach(input => { input.checked = false; });
+ modal.style.display = 'flex';
+}
+
+function closeReportListingModal() {
+ const modal = document.getElementById('reportListingModal');
+ if (modal) modal.style.display = 'none';
+}
+
+function submitListingReport(event) {
+ event.preventDefault();
+ const form = event.currentTarget;
+ const listingId = String(document.getElementById('reportListingId')?.value || '');
+ const selectedReason = form.querySelector('input[name="reportReason"]:checked')?.value || '';
+ const note = document.getElementById('reportListingNote')?.value?.trim() || '';
+ const listing = marketplaceListingsById.get(listingId);
+ const cropName = listing?.crop_name || listing?.cropName || 'this listing';
+
+ if (!listingId || !selectedReason) {
+ showToast('Please select a report reason.', 'error');
+ return;
+ }
+
+ const reportDetail = {
+ reason: selectedReason,
+ note,
+ reportedAt: new Date().toISOString()
+ };
+
+ const reportedIds = getReportedMarketplaceListingIds();
+ if (!reportedIds.includes(listingId)) {
+ setMarketplaceStoredIds(MARKETPLACE_REPORTED_KEY, [...reportedIds, listingId]);
+ }
+ setMarketplaceReportDetail(listingId, {
+ ...reportDetail,
+ cropName,
+ listingId
+ });
+
+ const savedIds = getSavedMarketplaceListingIds().filter(savedId => savedId !== listingId);
+ setMarketplaceStoredIds(MARKETPLACE_SAVED_KEY, savedIds);
+ closeReportListingModal();
+ renderMarketplaceFilteredListings();
+ showToast(`Reported: ${reportDetail.reason}. Listing hidden for you.`, 'warning');
 }
 
 function normalizePhoneForChat(phone) {
@@ -3520,7 +3820,13 @@ async function seedMarketplaceFromLocalStorageIfNeeded() {
 function initMarketplaceListingFlow() {
  const form = document.getElementById('listingForm');
  const modal = document.getElementById('listingModal');
+ const reportForm = document.getElementById('reportListingForm');
  if (!form ||!modal ||!document.getElementById('myListingsGrid') ||!document.getElementById('buyListingsGrid')) return;
+
+ if (reportForm && reportForm.dataset.bound !== 'true') {
+ reportForm.addEventListener('submit', submitListingReport);
+ reportForm.dataset.bound = 'true';
+ }
 
  seedMarketplaceFromLocalStorageIfNeeded().finally(() => {
  renderMarketplaceListings();
@@ -3775,8 +4081,73 @@ function initHelpMenu() {
 function toggleSidebar() {
  const sidebar = document.getElementById('sidebar');
  const overlay = document.getElementById('sidebarOverlay');
+ const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
+ if (isMobile) {
  if (sidebar) sidebar.classList.toggle('open');
  if (overlay) overlay.classList.toggle('show');
+ return;
+ }
+
+ document.body.classList.toggle('sidebar-collapsed');
+ localStorage.setItem('agri_sidebar_collapsed', document.body.classList.contains('sidebar-collapsed')? 'true': 'false');
+ updateSidebarToggleState();
+}
+
+function closeSidebarMenu() {
+ const sidebar = document.getElementById('sidebar');
+ const overlay = document.getElementById('sidebarOverlay');
+ sidebar?.classList.remove('open');
+ overlay?.classList.remove('show');
+}
+
+function updateSidebarToggleState() {
+ const isCollapsed = document.body.classList.contains('sidebar-collapsed');
+ document.querySelectorAll('[data-sidebar-toggle]').forEach(button => {
+ button.setAttribute('aria-expanded', String(!isCollapsed));
+ button.classList.toggle('is-collapsed', isCollapsed);
+ });
+}
+
+function initSidebarToggleMenu() {
+ const topbarLeft = document.querySelector('.topbar-left');
+ const sidebar = document.getElementById('sidebar');
+ if (!topbarLeft || !sidebar) return;
+
+ if (!document.querySelector('.topbar-menu-toggle')) {
+ const button = document.createElement('button');
+ button.type = 'button';
+ button.className = 'topbar-menu-toggle';
+ button.setAttribute('data-sidebar-toggle', 'true');
+ button.setAttribute('aria-label', 'Toggle navigation menu');
+ button.setAttribute('aria-expanded', 'true');
+ button.innerHTML = '<i class="fas fa-bars"></i>';
+ button.addEventListener('click', toggleSidebar);
+ topbarLeft.prepend(button);
+ }
+
+ document.getElementById('sidebarToggle')?.setAttribute('data-sidebar-toggle', 'true');
+
+ if (localStorage.getItem('agri_sidebar_collapsed') === 'true' && !window.matchMedia('(max-width: 768px)').matches) {
+ document.body.classList.add('sidebar-collapsed');
+ }
+
+ sidebar.querySelectorAll('a').forEach(link => {
+ link.addEventListener('click', () => {
+ if (window.matchMedia('(max-width: 768px)').matches) closeSidebarMenu();
+ });
+ });
+
+ window.addEventListener('resize', () => {
+ if (!window.matchMedia('(max-width: 768px)').matches) closeSidebarMenu();
+ updateSidebarToggleState();
+ });
+
+ document.addEventListener('keydown', event => {
+ if (event.key === 'Escape') closeSidebarMenu();
+ });
+
+ updateSidebarToggleState();
 }
 
 // Auto-set active sidebar item based on current URL
@@ -3784,7 +4155,7 @@ function setActiveSidebar() {
  const currentPath = window.location.pathname.split('/').pop();
  if (!currentPath) return;
  
- document.querySelectorAll('.sidebar-nav.nav-item').forEach(item => {
+ document.querySelectorAll('.sidebar-nav .nav-item').forEach(item => {
  const href = item.getAttribute('href');
  if (href === currentPath) {
  item.classList.add('active');
@@ -4388,6 +4759,7 @@ document.addEventListener('DOMContentLoaded', () => {
  // Apply saved language and sidebar state
  applyTranslations();
  syncStoredUserUI();
+ initSidebarToggleMenu();
  setActiveSidebar();
  loadProfileData();
  initMarketplaceListingFlow();
@@ -5281,7 +5653,7 @@ async function buildLlmAssistantAnswer(message, history = assistantConversationH
  }, ASSISTANT_LLM_TIMEOUT_MS);
 
  const answer = String(data?.answer || '').trim();
- if (data?.source === 'rate_limited' || answer.toLowerCase().includes('gemini is rate-limited')) {
+ if (data?.source === 'rate_limited' || answer.toLowerCase().includes('rate limit')) {
  return { text: buildGeneralAnswer(message), source: 'local' };
  }
  return answer? { text: answer, source: data.source || 'llm' }: null;
@@ -5298,7 +5670,7 @@ async function generateAssistantResponse(message) {
  const llmAnswer = await buildLlmAssistantAnswer(message);
  if (llmAnswer) return llmAnswer;
  } catch (err) {
- console.warn('Gemini assistant unavailable, using local fallback:', err);
+ console.warn('Online assistant unavailable, using local fallback:', err);
  }
 
  return { text: buildGeneralAnswer(message), source: 'local' };

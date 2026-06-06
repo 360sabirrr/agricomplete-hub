@@ -144,25 +144,27 @@
  <!-- Weather + Crop Rec -->
  <div class="fade-in delay-1" style="margin-bottom:var(--space-xl);">
  <!-- Weather Widget (Full Width) -->
- <div class="weather-widget" id="weatherWidget" style="grid-column: 1 / -1;">
- <div style="position:relative;z-index:1;">
- <div style="display:flex;justify-content:space-between;gap:var(--space-md);align-items:flex-start;flex-wrap:wrap;">
+ <div class="weather-widget weather-widget-pro" id="weatherWidget">
+ <div class="weather-widget-content">
+ <div class="weather-topline">
+ <div class="weather-identity">
+ <div class="weather-icon-frame" id="weatherIcon"><i class="fas fa-cloud-sun"></i></div>
  <div>
- <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-sm);">
- <div id="weatherIcon" style="font-size:2rem;"><i class="fas fa-cloud-sun"></i></div>
- <div>
- <h4 style="color:#fff;margin-bottom:2px;">Weather</h4>
- <p id="weatherLocation" style="color:rgba(255,255,255,.8);font-size:.85rem;">Pune, Maharashtra</p>
+ <h4>Weather</h4>
+ <p id="weatherLocation">Pune, Maharashtra</p>
  </div>
  </div>
- <div class="weather-temp" id="weatherTemp">-- C</div>
- <div class="weather-desc" id="weatherDesc">Loading weather...</div>
- </div>
- <div style="display:flex;gap:8px;align-items:center;">
- <input class="input-field" id="weatherCityInput" type="text" value="Pune" style="width:160px;padding:8px 12px;">
- <button class="btn btn-accent btn-sm" type="button" onclick="fetchWeather()">
+ <div class="weather-controls">
+ <input class="input-field weather-city-input" id="weatherCityInput" type="text" value="Pune">
+ <button class="btn btn-accent btn-sm weather-update-btn" type="button" onclick="fetchWeather()">
  <i class="fas fa-sync-alt"></i> Update
  </button>
+ </div>
+ </div>
+ <div class="weather-main-readout">
+ <div>
+ <div class="weather-temp" id="weatherTemp">-- C</div>
+ <div class="weather-desc" id="weatherDesc">Loading weather...</div>
  </div>
  </div>
  <div class="weather-details">
@@ -178,7 +180,7 @@
  </div>
 
  <!-- Chart + Alerts -->
- <div class="grid-sidebar fade-in delay-2" style="margin-bottom:var(--space-xl);">
+ <div class="grid-sidebar dashboard-insights-grid fade-in delay-2" style="margin-bottom:var(--space-xl);">
  <!-- Price Trend Chart -->
  <div class="chart-container price-trend-card">
  <div class="chart-header">
