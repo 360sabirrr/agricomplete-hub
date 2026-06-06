@@ -32,6 +32,7 @@ PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'true').lower() == 'true'
 _model = None
 _class_names = None
 _treatments = None
+_model_warmed = False
 _model_lock = threading.Lock()
 
 
@@ -51,7 +52,7 @@ def _load_json_file(paths, default):
 
 
 def _load_model_bundle():
-    global _model, _class_names, _treatments
+    global _model, _class_names, _treatments, _model_warmed
 
     if _model is not None and _class_names is not None:
         return _model, _class_names, _treatments or {}
@@ -73,7 +74,16 @@ def _load_model_bundle():
         _model = tf.keras.models.load_model(model_path)
         _class_names = [str(item) for item in class_names]
         _treatments = _load_json_file(TREATMENTS_PATHS, {})
+        _warm_model(_model)
+        _model_warmed = True
         return _model, _class_names, _treatments or {}
+
+
+def _warm_model(model):
+    import numpy as np
+
+    dummy_batch = np.zeros((1, IMG_SIZE[0], IMG_SIZE[1], 3), dtype='float32')
+    model(dummy_batch, training=False)
 
 
 def _model_status():
@@ -83,6 +93,7 @@ def _model_status():
     return {
         'configured': bool(model_path and class_names_path),
         'loaded': _model is not None and _class_names is not None,
+        'warmed': _model_warmed,
         'model_path': model_path,
         'class_names_path': class_names_path,
         'treatments_path': treatments_path,
@@ -92,7 +103,6 @@ def _model_status():
 
 def _preprocess_image(uploaded_file):
     import numpy as np
-    import tensorflow as tf
 
     uploaded_file.stream.seek(0, os.SEEK_END)
     size = uploaded_file.stream.tell()
@@ -107,8 +117,7 @@ def _preprocess_image(uploaded_file):
 
     image = image.resize(IMG_SIZE)
     image_array = np.asarray(image, dtype='float32')
-    batch = np.expand_dims(image_array, axis=0)
-    return tf.keras.applications.mobilenet_v2.preprocess_input(batch)
+    return np.expand_dims(image_array, axis=0)
 
 
 def _format_label(label):
@@ -196,7 +205,9 @@ def predict_disease():
     try:
         model, class_names, treatments = _load_model_bundle()
         batch = _preprocess_image(request.files['image'])
-        predictions = model.predict(batch, verbose=0)
+        predictions = model(batch, training=False)
+        if hasattr(predictions, 'numpy'):
+            predictions = predictions.numpy()
 
         scores = predictions[0].tolist()
         predicted_index = max(range(len(scores)), key=lambda index: scores[index])
