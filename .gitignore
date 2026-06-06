@@ -2,3 +2,7 @@
 *.pyc
 __pycache__/
 instance/
+class_names.json
+agricomplete-hub/backend/Dataset/
+agricomplete-hub/backend/uploads/
+agricomplete-hub/backend/dev-server*.log

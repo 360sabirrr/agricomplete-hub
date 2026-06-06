@@ -1,0 +1,200 @@
+{
+  "Apple___Apple_scab": {
+    "cause": "Fungal disease caused by Venturia inaequalis",
+    "treatment": "Apply fungicides like Captan or Myclobutanil. Remove infected leaves.",
+    "prevention": "Prune trees and remove fallen leaves regularly."
+  },
+  "Apple___Black_rot": {
+    "cause": "Fungus Botryosphaeria obtusa",
+    "treatment": "Prune infected branches and apply copper-based fungicides.",
+    "prevention": "Avoid injury to tree bark and maintain orchard hygiene."
+  },
+  "Apple___Cedar_apple_rust": {
+    "cause": "Fungal disease caused by Gymnosporangium juniperi-virginianae",
+    "treatment": "Use fungicides like myclobutanil during early infection stages.",
+    "prevention": "Remove nearby cedar trees if possible."
+  },
+  "Apple___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Maintain proper irrigation and nutrition."
+  },
+
+  "Blueberry___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Maintain soil pH and proper watering."
+  },
+
+  "Cherry___Powdery_mildew": {
+    "cause": "Fungal infection caused by Podosphaera clandestina",
+    "treatment": "Apply sulfur-based fungicides.",
+    "prevention": "Improve air circulation around plants."
+  },
+  "Cherry___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Regular pruning and irrigation."
+  },
+
+  "Corn___Cercospora_leaf_spot Gray_leaf_spot": {
+    "cause": "Fungal infection Cercospora zeae-maydis",
+    "treatment": "Use resistant hybrids and fungicides if severe.",
+    "prevention": "Crop rotation and residue management."
+  },
+  "Corn___Common_rust": {
+    "cause": "Fungus Puccinia sorghi",
+    "treatment": "Apply fungicides like azoxystrobin if needed.",
+    "prevention": "Plant resistant varieties."
+  },
+  "Corn___Northern_Leaf_Blight": {
+    "cause": "Fungus Exserohilum turcicum",
+    "treatment": "Apply foliar fungicides in early stages.",
+    "prevention": "Crop rotation and resistant hybrids."
+  },
+  "Corn___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Balanced fertilization and irrigation."
+  },
+
+  "Grape___Black_rot": {
+    "cause": "Fungal infection Guignardia bidwellii",
+    "treatment": "Apply fungicides like Mancozeb.",
+    "prevention": "Remove infected fruits and leaves."
+  },
+  "Grape___Esca_(Black_Measles)": {
+    "cause": "Complex fungal disease",
+    "treatment": "Prune infected vines and use fungicides.",
+    "prevention": "Avoid vine stress and proper pruning."
+  },
+  "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)": {
+    "cause": "Fungal infection",
+    "treatment": "Use copper fungicides.",
+    "prevention": "Ensure good air circulation."
+  },
+  "Grape___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Regular vineyard maintenance."
+  },
+
+  "Orange___Haunglongbing_(Citrus_greening)": {
+    "cause": "Bacterial disease caused by Candidatus Liberibacter",
+    "treatment": "Remove infected trees and control psyllid insects.",
+    "prevention": "Use disease-free planting material."
+  },
+
+  "Peach___Bacterial_spot": {
+    "cause": "Bacterium Xanthomonas campestris",
+    "treatment": "Apply copper-based bactericides.",
+    "prevention": "Avoid overhead irrigation."
+  },
+  "Peach___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Proper pruning and fertilization."
+  },
+
+  "Pepper,_bell___Bacterial_spot": {
+    "cause": "Bacterium Xanthomonas spp.",
+    "treatment": "Use copper sprays and resistant varieties.",
+    "prevention": "Avoid water splash and infected seeds."
+  },
+  "Pepper,_bell___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Maintain proper irrigation."
+  },
+
+  "Potato___Early_blight": {
+    "cause": "Fungus Alternaria solani",
+    "treatment": "Apply fungicides like chlorothalonil.",
+    "prevention": "Crop rotation and remove infected leaves."
+  },
+  "Potato___Late_blight": {
+    "cause": "Fungus Phytophthora infestans",
+    "treatment": "Apply fungicides like metalaxyl.",
+    "prevention": "Avoid wet conditions."
+  },
+  "Potato___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Proper soil management."
+  },
+
+  "Raspberry___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Regular pruning."
+  },
+
+  "Soybean___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Proper crop rotation."
+  },
+
+  "Squash___Powdery_mildew": {
+    "cause": "Fungal infection",
+    "treatment": "Apply sulfur-based fungicides.",
+    "prevention": "Improve air circulation."
+  },
+
+  "Strawberry___Leaf_scorch": {
+    "cause": "Fungal infection Diplocarpon earliana",
+    "treatment": "Apply fungicides and remove infected leaves.",
+    "prevention": "Avoid overhead irrigation."
+  },
+  "Strawberry___healthy": {
+    "cause": "No disease detected",
+    "treatment": "No treatment needed",
+    "prevention": "Maintain soil health."
+  },
+
+  "Tomato___Bacterial_spot": {
+    "cause": "Bacterium Xanthomonas spp.",
+    "treatment": "Use copper-based bactericides.",
+    "prevention": "Avoid overhead watering."
+  },
+  "Tomato___Early_blight": {
+    "cause": "Fungus Alternaria solani",
+    "treatment": "Apply fungicides like Mancozeb.",
+    "prevention": "Crop rotation."
+  },
+  "Tomato___Late_blight": {
+    "cause": "Fungus Phytophthora infestans",
+    "treatment": "Use fungicides like metalaxyl.",
+    "prevention": "Avoid humidity buildup."
+  },
+  "Tomato___Leaf_Mold": {
+    "cause": "Fungal infection",
+    "treatment": "Improve ventilation and use fungicides.",
+    "prevention": "Reduce humidity."
+  },
+  "Tomato___Septoria_leaf_spot": {
+    "cause": "Fungus Septoria lycopersici",
+    "treatment": "Apply fungicides and remove infected leaves.",
+    "prevention": "Crop rotation."
+  },
+  "Tomato___Spider_mites Two-spotted_spider_mite": {
+    "cause": "Spider mite infestation",
+    "treatment": "Use miticides or neem oil.",
+    "prevention": "Maintain humidity."
+  },
+  "Tomato___Target_Spot": {
+    "cause": "Fungal infection",
+    "treatment": "Use fungicides like chlorothalonil.",
+    "prevention": "Avoid leaf wetness."
+  },
+  "Tomato___Tomato_mosaic_virus": {
+    "cause": "Virus infection",
+    "treatment": "Remove infected plants.",
+    "prevention": "Use virus-free seeds."
+  },
+  "Tomato___Tomato_Yellow_Leaf_Curl_Virus": {
+    "cause": "Virus transmitted by whiteflies",
+    "treatment": "Control whiteflies using insecticides.",
+    "prevention": "Use resistant varieties."
+  }
+}
