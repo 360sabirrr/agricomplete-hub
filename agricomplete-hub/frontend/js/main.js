@@ -4297,6 +4297,7 @@ function normalizeApiUrl(url) {
 }
 
 const LOCAL_API_HOSTS = ['', 'localhost', '127.0.0.1', '::1'];
+const DEFAULT_RENDER_API_URL = 'https://agricomplete-backend.onrender.com/api';
 
 const API_URL = (() => {
  const configuredUrl =
@@ -4312,7 +4313,12 @@ const API_URL = (() => {
 })();
 
 const API_BASE_URLS = (() => {
- return [API_URL];
+ const urls = [API_URL];
+ const isLocal = LOCAL_API_HOSTS.includes(window.location.hostname);
+ if (!isLocal && API_URL !== DEFAULT_RENDER_API_URL) {
+ urls.push(DEFAULT_RENDER_API_URL);
+ }
+ return urls;
 })();
 
 // API Helper
@@ -4344,10 +4350,11 @@ async function apiFetch(endpoint, options = {}) {
  try {
  const res = await fetch(`${baseUrl}${endpoint}`, {...options, headers });
  const contentType = res.headers.get('content-type') || '';
- const data = contentType.includes('application/json')? await res.json(): { msg: (await res.text()) || `API Error: ${res.status}` };
+ const isJson = contentType.includes('application/json');
+ const data = isJson? await res.json(): { msg: (await res.text()) || `API Error: ${res.status}` };
 
- if (index < API_BASE_URLS.length - 1 && isLikelyHtmlResponse(contentType, data)) {
- console.warn(`API response from ${baseUrl} was HTML, retrying backend fallback.`);
+ if (index < API_BASE_URLS.length - 1 && (!isJson || isLikelyHtmlResponse(contentType, data))) {
+ console.warn(`API response from ${baseUrl} was not backend JSON, retrying backend fallback.`);
  continue;
  }
 
@@ -4415,10 +4422,11 @@ async function apiFetchFormData(endpoint, formData, options = {}) {
  body: formData
  });
  const contentType = res.headers.get('content-type') || '';
- const data = contentType.includes('application/json')? await res.json(): { msg: (await res.text()) || `API Error: ${res.status}` };
+ const isJson = contentType.includes('application/json');
+ const data = isJson? await res.json(): { msg: (await res.text()) || `API Error: ${res.status}` };
 
- if (index < API_BASE_URLS.length - 1 && isLikelyHtmlResponse(contentType, data)) {
- console.warn(`API response from ${baseUrl} was HTML, retrying backend fallback.`);
+ if (index < API_BASE_URLS.length - 1 && (!isJson || isLikelyHtmlResponse(contentType, data))) {
+ console.warn(`API response from ${baseUrl} was not backend JSON, retrying backend fallback.`);
  continue;
  }
 
