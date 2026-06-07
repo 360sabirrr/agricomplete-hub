@@ -1,7 +1,14 @@
 import logging
+import hashlib
+import hmac
+import os
 import re
+import secrets
+import smtplib
+from datetime import datetime, timedelta
+from email.message import EmailMessage
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
 
@@ -15,6 +22,9 @@ auth_bp = Blueprint('auth', __name__)
 
 
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+PASSWORD_RESET_TTL_MINUTES = 15
+PASSWORD_RESET_MAX_ATTEMPTS = 5
+PASSWORD_RESET_GENERIC_MSG = "If that email is registered, a reset code has been sent."
 
 
 def _get_json_body():
@@ -56,6 +66,83 @@ def _phone_numbers_match(left, right):
         left_digits.endswith(right_digits) or
         right_digits.endswith(left_digits)
     )
+
+
+def _truthy_env(name):
+    return str(os.getenv(name, '')).strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+def _password_reset_dev_enabled():
+    return _truthy_env('PASSWORD_RESET_DEV_TOKEN') or bool(current_app.debug)
+
+
+def _password_reset_ttl_minutes():
+    try:
+        return max(5, min(60, int(os.getenv('PASSWORD_RESET_TOKEN_MINUTES', PASSWORD_RESET_TTL_MINUTES))))
+    except (TypeError, ValueError):
+        return PASSWORD_RESET_TTL_MINUTES
+
+
+def _hash_reset_token(token):
+    return hashlib.sha256(str(token).encode('utf-8')).hexdigest()
+
+
+def _smtp_settings():
+    host = _clean_text(os.getenv('SMTP_HOST'), 120)
+    username = _clean_text(os.getenv('SMTP_USERNAME'), 120)
+    password = str(os.getenv('SMTP_PASSWORD') or '')
+    sender = _clean_text(os.getenv('SMTP_FROM') or username, 120)
+    use_ssl = _truthy_env('SMTP_USE_SSL')
+    use_tls = not use_ssl and str(os.getenv('SMTP_USE_TLS', 'true')).strip().lower() not in {'0', 'false', 'no', 'off'}
+    try:
+        port = int(os.getenv('SMTP_PORT') or (465 if use_ssl else 587))
+    except (TypeError, ValueError):
+        port = 465 if use_ssl else 587
+    return {
+        'host': host,
+        'port': port,
+        'username': username,
+        'password': password,
+        'sender': sender,
+        'use_tls': use_tls,
+        'use_ssl': use_ssl,
+    }
+
+
+def _smtp_is_configured(settings):
+    return bool(settings['host'] and settings['sender'])
+
+
+def _send_password_reset_email(user, token, expires_minutes):
+    settings = _smtp_settings()
+    if not _smtp_is_configured(settings):
+        raise RuntimeError('SMTP email service is not configured')
+
+    first_name = _clean_text(getattr(user, 'first_name', ''), 50) or 'Farmer'
+    msg = EmailMessage()
+    msg['Subject'] = 'AgriComplete password reset code'
+    msg['From'] = settings['sender']
+    msg['To'] = user.email
+    msg.set_content(
+        '\n'.join([
+            f'Hello {first_name},',
+            '',
+            f'Your AgriComplete password reset code is: {token}',
+            f'This code expires in {expires_minutes} minutes.',
+            '',
+            'If you did not request this, you can ignore this email.',
+            '',
+            'AgriComplete Hub'
+        ])
+    )
+
+    smtp_class = smtplib.SMTP_SSL if settings['use_ssl'] else smtplib.SMTP
+    with smtp_class(settings['host'], settings['port'], timeout=20) as server:
+        if settings['use_tls']:
+            server.starttls()
+        if settings['username']:
+            server.login(settings['username'], settings['password'])
+        server.send_message(msg)
 
 
 def _find_user_by_phone(User, phone):
@@ -218,37 +305,131 @@ def login():
         return jsonify({"msg": "Login failed. Please try again."}), 500
 
 
-@auth_bp.route('/reset-password', methods=['POST'])
-def reset_password():
-    from models import User
+@auth_bp.route('/password-reset/request', methods=['POST'])
+def request_password_reset():
+    from models import PasswordResetToken, User
+    data = _get_json_body()
+    email = _normalize_email(data.get('email'))
+
+    if not email or not EMAIL_RE.match(email):
+        return jsonify({"msg": "Please enter a valid registered email address"}), 400
+
+    settings = _smtp_settings()
+    dev_enabled = _password_reset_dev_enabled()
+    if not _smtp_is_configured(settings) and not dev_enabled:
+        return jsonify({"msg": "Password reset email service is not configured. Please contact support."}), 503
+
+    user = User.query.filter_by(email=email).first()
+    generic_response = {"msg": PASSWORD_RESET_GENERIC_MSG}
+    if not user:
+        return jsonify(generic_response), 200
+
+    now = datetime.utcnow()
+    expires_minutes = _password_reset_ttl_minutes()
+    reset_code = f'{secrets.randbelow(1000000):06d}'
+
+    try:
+        PasswordResetToken.query.filter_by(user_id=user.id, used_at=None).update({"used_at": now})
+        reset_token = PasswordResetToken(
+            user_id=user.id,
+            token_hash=_hash_reset_token(reset_code),
+            expires_at=now + timedelta(minutes=expires_minutes),
+            request_ip=_clean_text(request.remote_addr, 45)
+        )
+        db.session.add(reset_token)
+        db.session.commit()
+
+        if _smtp_is_configured(settings):
+            try:
+                _send_password_reset_email(user, reset_code, expires_minutes)
+            except Exception as err:
+                reset_token.used_at = datetime.utcnow()
+                db.session.commit()
+                logger.error('Password reset email failed for user id %s: %s', user.id, err, exc_info=True)
+                return jsonify({"msg": "Could not send reset email. Please try again later."}), 503
+
+        response = {
+            **generic_response,
+            "expires_in_minutes": expires_minutes,
+        }
+        if dev_enabled and not _smtp_is_configured(settings):
+            response["dev_reset_code"] = reset_code
+        logger.info('Password reset code created for user id: %s', user.id)
+        return jsonify(response), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Password reset request error: {str(e)}', exc_info=True)
+        return jsonify({"msg": "Password reset request failed. Please try again."}), 500
+
+
+@auth_bp.route('/password-reset/confirm', methods=['POST'])
+def confirm_password_reset():
+    from models import PasswordResetToken, User
     try:
         data = _get_json_body()
         email = _normalize_email(data.get('email'))
-        phone = _normalize_phone(data.get('phone'))
+        reset_code = re.sub(r'\s+', '', str(data.get('token') or data.get('code') or ''))
         password = str(data.get('password') or '')
 
-        if not email or not phone or not password:
-            return jsonify({"msg": "Email, registered phone, and new password are required"}), 400
+        if not email or not EMAIL_RE.match(email):
+            return jsonify({"msg": "Please enter a valid registered email address"}), 400
 
-        if not EMAIL_RE.match(email):
-            return jsonify({"msg": "Please enter a valid email address"}), 400
+        if not reset_code:
+            return jsonify({"msg": "Reset code is required"}), 400
 
         if len(password) < 6:
             return jsonify({"msg": "Password must be at least 6 characters"}), 400
 
-        if len(_phone_digits(phone)) < 7:
-            return jsonify({"msg": "Please enter a valid registered phone number"}), 400
-
         user = User.query.filter_by(email=email).first()
-        if not user or not _phone_numbers_match(user.phone, phone):
-            return jsonify({"msg": "Email and phone do not match a registered account"}), 400
+        if not user:
+            return jsonify({"msg": "Invalid or expired reset code"}), 400
+
+        now = datetime.utcnow()
+        active_token = (
+            PasswordResetToken.query
+            .filter(
+                PasswordResetToken.user_id == user.id,
+                PasswordResetToken.used_at.is_(None),
+                PasswordResetToken.expires_at > now
+            )
+            .order_by(PasswordResetToken.created_at.desc())
+            .first()
+        )
+        if not active_token:
+            return jsonify({"msg": "Invalid or expired reset code"}), 400
+
+        if active_token.attempts >= PASSWORD_RESET_MAX_ATTEMPTS:
+            active_token.used_at = now
+            db.session.commit()
+            return jsonify({"msg": "Reset code has too many failed attempts. Request a new code."}), 400
+
+        submitted_hash = _hash_reset_token(reset_code)
+        if not hmac.compare_digest(active_token.token_hash, submitted_hash):
+            active_token.attempts = (active_token.attempts or 0) + 1
+            if active_token.attempts >= PASSWORD_RESET_MAX_ATTEMPTS:
+                active_token.used_at = now
+            db.session.commit()
+            return jsonify({"msg": "Invalid or expired reset code"}), 400
 
         user.set_password(password)
+        active_token.used_at = now
+        active_token.attempts = (active_token.attempts or 0) + 1
+        PasswordResetToken.query.filter(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.id != active_token.id,
+            PasswordResetToken.used_at.is_(None)
+        ).update({"used_at": now})
         db.session.commit()
-        logger.info(f'Password reset successfully for user id: {user.id}')
+        logger.info(f'Password reset confirmed for user id: {user.id}')
         return jsonify({"msg": "Password reset successfully. Please log in with your new password."}), 200
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f'Password reset error: {str(e)}', exc_info=True)
+        logger.error(f'Password reset confirmation error: {str(e)}', exc_info=True)
         return jsonify({"msg": "Password reset failed. Please try again."}), 500
+
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    return confirm_password_reset()

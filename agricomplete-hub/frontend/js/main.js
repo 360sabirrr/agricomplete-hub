@@ -4583,6 +4583,7 @@ function openForgotPasswordModal() {
  if (resetEmail && loginEmail?.value?.includes('@')) {
  resetEmail.value = loginEmail.value.trim();
  }
+ showForgotPasswordRequestStep();
  if (modal) modal.style.display = 'flex';
 }
 
@@ -4591,15 +4592,81 @@ function closeForgotPasswordModal() {
  if (modal) modal.style.display = 'none';
 }
 
-async function handleForgotPassword(e) {
+function showForgotPasswordRequestStep() {
+ const requestForm = document.getElementById('resetRequestForm');
+ const confirmForm = document.getElementById('resetConfirmForm');
+ const codeInput = document.getElementById('resetCode');
+ const passwordInput = document.getElementById('resetPassword');
+ const devCode = document.getElementById('resetDevCode');
+ if (requestForm) requestForm.style.display = 'flex';
+ if (confirmForm) confirmForm.style.display = 'none';
+ if (codeInput) codeInput.value = '';
+ if (passwordInput) passwordInput.value = '';
+ if (devCode) {
+ devCode.style.display = 'none';
+ devCode.textContent = '';
+ }
+}
+
+function showForgotPasswordConfirmStep(email, response = {}) {
+ const requestForm = document.getElementById('resetRequestForm');
+ const confirmForm = document.getElementById('resetConfirmForm');
+ const message = document.getElementById('resetCodeMessage');
+ const codeInput = document.getElementById('resetCode');
+ const modal = document.getElementById('forgotPasswordModal');
+ const devCode = document.getElementById('resetDevCode');
+ if (modal) modal.dataset.resetEmail = email;
+ if (requestForm) requestForm.style.display = 'none';
+ if (confirmForm) confirmForm.style.display = 'flex';
+ if (message) message.textContent = `Enter the reset code sent to ${email}.`;
+ if (devCode) {
+ if (response.dev_reset_code) {
+ devCode.style.display = 'block';
+ devCode.textContent = `Local dev code: ${response.dev_reset_code}`;
+ } else {
+ devCode.style.display = 'none';
+ devCode.textContent = '';
+ }
+ }
+ if (codeInput) codeInput.focus();
+}
+
+async function handleForgotPasswordRequest(e) {
+ e.preventDefault();
+ setAuthSubmitState(e.target, true, '<i class="fas fa-spinner fa-spin"></i> Sending...');
+ const email = e.target.querySelector('#resetEmail')?.value.trim() || '';
+
+ if (!email) {
+ alert('Please enter your registered email address.');
+ setAuthSubmitState(e.target, false);
+ return;
+ }
+
+ try {
+ const data = await apiFetch('/auth/password-reset/request', {
+ method: 'POST',
+ body: JSON.stringify({ email })
+ });
+ showForgotPasswordConfirmStep(email, data);
+ alert(data?.msg || 'If that email is registered, a reset code has been sent.');
+ } catch (err) {
+ console.error('Password reset request error:', err);
+ alert(err.msg || err.message || 'Could not send reset code. Please try again.');
+ } finally {
+ setAuthSubmitState(e.target, false);
+ }
+}
+
+async function handleForgotPasswordConfirm(e) {
  e.preventDefault();
  setAuthSubmitState(e.target, true, '<i class="fas fa-spinner fa-spin"></i> Resetting...');
- const email = e.target.querySelector('#resetEmail')?.value.trim() || '';
- const phone = e.target.querySelector('#resetPhone')?.value.trim() || '';
+ const modal = document.getElementById('forgotPasswordModal');
+ const email = modal?.dataset.resetEmail || document.getElementById('resetEmail')?.value.trim() || '';
+ const token = e.target.querySelector('#resetCode')?.value.trim() || '';
  const password = e.target.querySelector('#resetPassword')?.value || '';
 
- if (!email ||!phone ||!password) {
- alert('Please enter your registered email, phone, and new password.');
+ if (!email ||!token ||!password) {
+ alert('Please enter the reset code and new password.');
  setAuthSubmitState(e.target, false);
  return;
  }
@@ -4611,9 +4678,9 @@ async function handleForgotPassword(e) {
  }
 
  try {
- const data = await apiFetch('/auth/reset-password', {
+ const data = await apiFetch('/auth/password-reset/confirm', {
  method: 'POST',
- body: JSON.stringify({ email, phone, password })
+ body: JSON.stringify({ email, token, password })
  });
  alert(data?.msg || 'Password reset successfully. Please log in with your new password.');
  e.target.reset();
@@ -4627,8 +4694,8 @@ async function handleForgotPassword(e) {
  loginPassword.focus();
  }
  } catch (err) {
- console.error('Password reset error:', err);
- alert(err.msg || err.message || 'Password reset failed. Please check your email and phone.');
+ console.error('Password reset confirmation error:', err);
+ alert(err.msg || err.message || 'Password reset failed. Please check your code.');
  } finally {
  setAuthSubmitState(e.target, false);
  }

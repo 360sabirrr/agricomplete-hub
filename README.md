@@ -140,6 +140,13 @@ OPENROUTER_FALLBACK_MODELS=
 OPENROUTER_TIMEOUT_SECONDS=24
 WEATHERAPI_KEY=your_weatherapi_key
 OPENWEATHER_API_KEY=your_openweathermap_key
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@example.com
+SMTP_PASSWORD=your_email_app_password
+SMTP_FROM=your_email@example.com
+SMTP_USE_TLS=true
+PASSWORD_RESET_TOKEN_MINUTES=15
 FLASK_ENV=development
 FLASK_DEBUG=True
 ```
@@ -180,6 +187,12 @@ When creating the Blueprint, Render provisions the Postgres database and injects
 OPENROUTER_API_KEY=your_openrouter_api_key
 WEATHERAPI_KEY=optional_weatherapi_key
 OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@example.com
+SMTP_PASSWORD=your_email_app_password
+SMTP_FROM=your_email@example.com
+SMTP_USE_TLS=true
 ```
 
 The frontend API URL is deployment-aware in `frontend/js/main.js`:

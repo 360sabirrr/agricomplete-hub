@@ -63,3 +63,13 @@ class DiseaseScan(db.Model):
     severity = db.Column(db.String(30), nullable=False)
     badge_class = db.Column(db.String(40), default='badge-info')
     created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+class PasswordResetToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    token_hash = db.Column(db.String(64), nullable=False, index=True)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    used_at = db.Column(db.DateTime)
+    attempts = db.Column(db.Integer, default=0)
+    request_ip = db.Column(db.String(45))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
