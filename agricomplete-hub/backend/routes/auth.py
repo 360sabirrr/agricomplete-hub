@@ -46,6 +46,18 @@ def _phone_digits(value):
     return re.sub(r'\D+', '', str(value or ''))
 
 
+def _phone_numbers_match(left, right):
+    left_digits = _phone_digits(left)
+    right_digits = _phone_digits(right)
+    if len(left_digits) < 7 or len(right_digits) < 7:
+        return False
+    return (
+        left_digits == right_digits or
+        left_digits.endswith(right_digits) or
+        right_digits.endswith(left_digits)
+    )
+
+
 def _find_user_by_phone(User, phone):
     digits = _phone_digits(phone)
     if not digits:
@@ -204,3 +216,39 @@ def login():
     except Exception as e:
         logger.error(f'Login error: {str(e)}', exc_info=True)
         return jsonify({"msg": "Login failed. Please try again."}), 500
+
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    from models import User
+    try:
+        data = _get_json_body()
+        email = _normalize_email(data.get('email'))
+        phone = _normalize_phone(data.get('phone'))
+        password = str(data.get('password') or '')
+
+        if not email or not phone or not password:
+            return jsonify({"msg": "Email, registered phone, and new password are required"}), 400
+
+        if not EMAIL_RE.match(email):
+            return jsonify({"msg": "Please enter a valid email address"}), 400
+
+        if len(password) < 6:
+            return jsonify({"msg": "Password must be at least 6 characters"}), 400
+
+        if len(_phone_digits(phone)) < 7:
+            return jsonify({"msg": "Please enter a valid registered phone number"}), 400
+
+        user = User.query.filter_by(email=email).first()
+        if not user or not _phone_numbers_match(user.phone, phone):
+            return jsonify({"msg": "Email and phone do not match a registered account"}), 400
+
+        user.set_password(password)
+        db.session.commit()
+        logger.info(f'Password reset successfully for user id: {user.id}')
+        return jsonify({"msg": "Password reset successfully. Please log in with your new password."}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f'Password reset error: {str(e)}', exc_info=True)
+        return jsonify({"msg": "Password reset failed. Please try again."}), 500

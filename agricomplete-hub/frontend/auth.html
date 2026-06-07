@@ -80,7 +80,7 @@
  </div>
  <div class="auth-options">
  <label><input type="checkbox" checked> Remember me</label>
- <a href="#">Forgot password?</a>
+ <button type="button" onclick="openForgotPasswordModal()" style="color:var(--color-primary);font-weight:600;">Forgot password?</button>
  </div>
  <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;">
  <i class="fas fa-sign-in-alt"></i> Sign In
@@ -148,6 +148,37 @@
  </div>
  </div>
 
- <script src="js/main.js?v=deploy-auth-20260608b"></script>
+ <div id="forgotPasswordModal" class="market-report-modal" style="display:none;">
+ <div class="market-report-card">
+ <div class="market-report-header">
+ <div>
+ <span><i class="fas fa-key"></i> Account Recovery</span>
+ <h3>Reset Password</h3>
+ <p>Verify your registered email and phone number to set a new password.</p>
+ </div>
+ <button type="button" class="market-report-close" onclick="closeForgotPasswordModal()" aria-label="Close reset password dialog"><i class="fas fa-times"></i></button>
+ </div>
+ <form class="market-report-form" onsubmit="handleForgotPassword(event)">
+ <div class="input-group">
+ <label for="resetEmail"><i class="fas fa-envelope"></i> Registered Email</label>
+ <input class="input-field" type="email" id="resetEmail" placeholder="your@email.com" required>
+ </div>
+ <div class="input-group">
+ <label for="resetPhone"><i class="fas fa-phone"></i> Registered Phone</label>
+ <input class="input-field" type="tel" id="resetPhone" placeholder="+91 XXXXX XXXXX" required>
+ </div>
+ <div class="input-group">
+ <label for="resetPassword"><i class="fas fa-lock"></i> New Password</label>
+ <input class="input-field" type="password" id="resetPassword" placeholder="Minimum 6 characters" required minlength="6">
+ </div>
+ <div class="market-report-actions">
+ <button type="button" class="btn btn-secondary" onclick="closeForgotPasswordModal()">Cancel</button>
+ <button type="submit" class="btn btn-primary"><i class="fas fa-key"></i> Reset Password</button>
+ </div>
+ </form>
+ </div>
+ </div>
+
+ <script src="js/main.js?v=forgot-password-20260608"></script>
 </body>
 </html>

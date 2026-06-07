@@ -4576,6 +4576,64 @@ async function handleRegister(e) {
  }
 }
 
+function openForgotPasswordModal() {
+ const modal = document.getElementById('forgotPasswordModal');
+ const loginEmail = document.getElementById('loginEmail');
+ const resetEmail = document.getElementById('resetEmail');
+ if (resetEmail && loginEmail?.value?.includes('@')) {
+ resetEmail.value = loginEmail.value.trim();
+ }
+ if (modal) modal.style.display = 'flex';
+}
+
+function closeForgotPasswordModal() {
+ const modal = document.getElementById('forgotPasswordModal');
+ if (modal) modal.style.display = 'none';
+}
+
+async function handleForgotPassword(e) {
+ e.preventDefault();
+ setAuthSubmitState(e.target, true, '<i class="fas fa-spinner fa-spin"></i> Resetting...');
+ const email = e.target.querySelector('#resetEmail')?.value.trim() || '';
+ const phone = e.target.querySelector('#resetPhone')?.value.trim() || '';
+ const password = e.target.querySelector('#resetPassword')?.value || '';
+
+ if (!email ||!phone ||!password) {
+ alert('Please enter your registered email, phone, and new password.');
+ setAuthSubmitState(e.target, false);
+ return;
+ }
+
+ if (password.length < 6) {
+ alert('Password must be at least 6 characters long');
+ setAuthSubmitState(e.target, false);
+ return;
+ }
+
+ try {
+ const data = await apiFetch('/auth/reset-password', {
+ method: 'POST',
+ body: JSON.stringify({ email, phone, password })
+ });
+ alert(data?.msg || 'Password reset successfully. Please log in with your new password.');
+ e.target.reset();
+ closeForgotPasswordModal();
+ switchAuthTab('login');
+ const loginEmail = document.getElementById('loginEmail');
+ const loginPassword = document.getElementById('loginPassword');
+ if (loginEmail) loginEmail.value = email;
+ if (loginPassword) {
+ loginPassword.value = '';
+ loginPassword.focus();
+ }
+ } catch (err) {
+ console.error('Password reset error:', err);
+ alert(err.msg || err.message || 'Password reset failed. Please check your email and phone.');
+ } finally {
+ setAuthSubmitState(e.target, false);
+ }
+}
+
 
 // ============ WEATHER API ============
 async function fetchJson(url, options = {}) {
@@ -4629,7 +4687,7 @@ async function fetchWeather() {
  if (!city) return;
 
  try {
- const backendData = await fetchJson(`${API_URL}/weather/current?city=${encodeURIComponent(city)}`);
+ const backendData = await apiFetch(`/weather/current?city=${encodeURIComponent(city)}`);
  const weatherData = {
  provider: backendData.provider,
  location: backendData.location || city,
