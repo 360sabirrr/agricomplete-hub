@@ -4785,6 +4785,7 @@ async function fetchWeather() {
 const DISEASE_LOCAL_SCANS_KEY = 'agri_recent_disease_scans';
 let diseaseRecentScans = [];
 let diseaseScansRefreshTimer = null;
+let latestDiseaseReport = null;
 
 function normalizeDiseaseScan(scan = {}) {
  return {
@@ -4945,9 +4946,149 @@ function resetUpload() {
  
  const result = document.getElementById('diagnosisResult');
  const placeholder = document.getElementById('diagnosisPlaceholder');
+ const reportBtn = document.getElementById('printDiseaseReportBtn');
  if (result) result.style.display = 'none';
  if (placeholder) placeholder.style.display = 'block';
+ if (reportBtn) reportBtn.style.display = 'none';
+ latestDiseaseReport = null;
 }
+
+function getDiseaseReportCity() {
+ const weatherInput = document.getElementById('weatherCityInput');
+ const storedUser = getStoredUser() || {};
+ return weatherInput?.value?.trim() || storedUser.district || storedUser.state || 'Pune';
+}
+
+async function getDiseaseReportWeather(city) {
+ try {
+ return await apiFetch(`/weather/current?city=${encodeURIComponent(city)}`);
+ } catch (err) {
+ console.warn('Could not include live weather in disease report:', err);
+ return {
+ location: city,
+ condition: 'Weather unavailable',
+ temperature: null,
+ humidity: null,
+ wind_kph: null,
+ pressure_mb: null,
+ aqi: null
+ };
+ }
+}
+
+function buildDiseaseReportList(title, items) {
+ const safeItems = Array.isArray(items)? items.filter(Boolean): [];
+ return `
+ <section>
+ <h2>${escapeHtml(title)}</h2>
+ ${safeItems.length? `<ul>${safeItems.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`: '<p>No details available.</p>'}
+ </section>
+ `;
+}
+
+function diseaseReportWeatherHtml(weather) {
+ const temperatureValue = Number(weather.temperature);
+ const temp = Number.isFinite(temperatureValue)? `${Math.round(temperatureValue)} C`: '--';
+ const humidity = weather.humidity === null || weather.humidity === undefined? '--': `${weather.humidity}%`;
+ const wind = formatWeatherNumber(weather.wind_kph, 1, 'km/h');
+ const pressure = weather.pressure_mb === null || weather.pressure_mb === undefined? '--': `${weather.pressure_mb} mb`;
+ const aqi = getAqiLabel(weather.aqi);
+ return `
+ <section>
+ <h2>Weather Context</h2>
+ <div class="report-grid">
+ <div><span>Location</span><strong>${escapeHtml(weather.location || 'Selected farm')}</strong></div>
+ <div><span>Condition</span><strong>${escapeHtml(weather.condition || 'Weather unavailable')}</strong></div>
+ <div><span>Temperature</span><strong>${escapeHtml(temp)}</strong></div>
+ <div><span>Humidity</span><strong>${escapeHtml(humidity)}</strong></div>
+ <div><span>Wind</span><strong>${escapeHtml(wind)}</strong></div>
+ <div><span>Pressure</span><strong>${escapeHtml(pressure)}</strong></div>
+ <div><span>AQI</span><strong>${escapeHtml(aqi)}</strong></div>
+ </div>
+ </section>
+ `;
+}
+
+function openPrintableDiseaseReport(report, weather) {
+ const reportWindow = window.open('', '_blank');
+ if (!reportWindow) {
+ alert('Please allow pop-ups to print the disease report.');
+ return;
+ }
+
+ const generatedAt = new Date(report.timestamp).toLocaleString('en-IN');
+ const imageHtml = report.imageData? `<img class="leaf-photo" src="${report.imageData}" alt="Uploaded leaf photo">`: '';
+ reportWindow.document.write(`<!DOCTYPE html>
+ <html lang="en">
+ <head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Disease Advisory Report</title>
+ <style>
+ body { font-family: Arial, sans-serif; color:#1A2E1A; margin:0; background:#F1F5F0; }
+ main { max-width:820px; margin:0 auto; padding:28px; background:#fff; min-height:100vh; }
+ header { border-bottom:3px solid #1B5E20; padding-bottom:16px; margin-bottom:22px; }
+ h1 { margin:0 0 6px; font-size:28px; color:#1B5E20; }
+ h2 { margin:22px 0 10px; font-size:17px; color:#0D3B13; }
+ p { color:#4E6B4E; line-height:1.55; }
+ .summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:18px 0; }
+ .summary div,.report-grid div { border:1px solid #D5E8D4; border-radius:8px; padding:10px 12px; background:#F8FFF8; }
+ span { display:block; color:#4E6B4E; font-size:12px; margin-bottom:3px; }
+ strong { font-size:15px; }
+ .badge { display:inline-block; padding:4px 9px; border-radius:999px; background:#E8F5E9; color:#1B5E20; font-weight:700; font-size:12px; }
+ .leaf-photo { width:100%; max-height:280px; object-fit:contain; border:1px solid #D5E8D4; border-radius:8px; background:#F8FFF8; margin-top:12px; }
+ ul { margin:0; padding-left:20px; color:#4E6B4E; }
+ li { margin-bottom:6px; }
+ .report-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+ footer { margin-top:28px; padding-top:12px; border-top:1px solid #D5E8D4; font-size:12px; color:#4E6B4E; }
+ .actions { display:flex; justify-content:flex-end; gap:10px; margin-bottom:18px; }
+ button { border:0; border-radius:999px; padding:10px 16px; font-weight:700; cursor:pointer; }
+ .print { background:#1B5E20; color:#fff; }
+ .close { background:#E8F5E9; color:#1B5E20; }
+ @media print { body { background:#fff; } main { padding:0; } .actions { display:none; } }
+ </style>
+ </head>
+ <body>
+ <main>
+ <div class="actions"><button class="close" onclick="window.close()">Close</button><button class="print" onclick="window.print()">Print / Download PDF</button></div>
+ <header>
+ <h1>AgriComplete Disease Advisory Report</h1>
+ <p>Generated on ${escapeHtml(generatedAt)}</p>
+ </header>
+ ${imageHtml}
+ <section>
+ <h2>Diagnosis Summary</h2>
+ <div class="summary">
+ <div><span>Disease Result</span><strong>${escapeHtml(report.name)}</strong></div>
+ <div><span>Confidence</span><strong>${escapeHtml(String(report.confidence))}%</strong></div>
+ <div><span>Severity</span><strong><span class="badge">${escapeHtml(report.severity)}</span></strong></div>
+ <div><span>Source</span><strong>AI leaf image analysis</strong></div>
+ </div>
+ <p>${escapeHtml(report.description)}</p>
+ </section>
+ ${buildDiseaseReportList('Symptoms', report.symptoms)}
+ ${buildDiseaseReportList('Treatment', report.treatment)}
+ ${buildDiseaseReportList('Prevention', report.prevention)}
+ ${diseaseReportWeatherHtml(weather)}
+ <footer>This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.</footer>
+ </main>
+ </body>
+ </html>`);
+ reportWindow.document.close();
+ reportWindow.focus();
+}
+
+async function printDiseaseReport() {
+ if (!latestDiseaseReport) {
+ alert('Analyze a leaf image before printing a report.');
+ return;
+ }
+ const city = getDiseaseReportCity();
+ const weather = await getDiseaseReportWeather(city);
+ openPrintableDiseaseReport(latestDiseaseReport, weather);
+}
+
+window.printDiseaseReport = printDiseaseReport;
 
 function renderDiseaseResult(disease) {
  const result = document.getElementById('diagnosisResult');
@@ -4958,9 +5099,11 @@ function renderDiseaseResult(disease) {
  const symptoms = Array.isArray(disease.symptoms)? disease.symptoms: [];
  const treatment = Array.isArray(disease.treatment)? disease.treatment: [];
  const prevention = Array.isArray(disease.prevention)? disease.prevention: [];
+ const reportBtn = document.getElementById('printDiseaseReportBtn');
 
  if (placeholder) placeholder.style.display = 'none';
  if (result) result.style.display = 'block';
+ if (reportBtn) reportBtn.style.display = 'inline-flex';
  if (badge) {
  badge.className = `badge ${disease.badgeClass || 'badge-info'}`;
  badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${escapeHtml(disease.severity || 'Unknown')} Severity`;
@@ -5036,6 +5179,12 @@ async function analyzeDisease() {
  prevention: data.prevention || []
  };
 
+ latestDiseaseReport = {
+ ...diseaseResult,
+ confidence: Math.max(0, Math.min(100, Number(diseaseResult.confidence) || 0)),
+ timestamp: new Date().toISOString(),
+ imageData: document.getElementById('leafPreviewImg')?.src || ''
+ };
  renderDiseaseResult(diseaseResult);
  const scan = data.scan || { ...diseaseResult, created_at: new Date().toISOString() };
  prependRecentDiseaseScan(scan);

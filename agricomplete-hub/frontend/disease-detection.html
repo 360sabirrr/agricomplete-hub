@@ -97,9 +97,14 @@
  <!-- Result Section -->
  <div style="display:flex;flex-direction:column;gap:var(--space-lg);">
  <div class="card" id="diagnosisResult" style="display:none;">
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-md);">
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:var(--space-md);">
+ <div style="display:flex;align-items:center;gap:8px;">
  <h4><i class="fas fa-stethoscope" style="color:var(--color-primary);margin-right:8px;"></i>Diagnosis Result</h4>
  <span class="badge" id="resultBadge">AI Analysis</span>
+ </div>
+ <button class="btn btn-secondary btn-sm" id="printDiseaseReportBtn" type="button" onclick="printDiseaseReport()" style="display:none;">
+ <i class="fas fa-print"></i> Print Report
+ </button>
  </div>
  <div class="disease-result" id="diseaseInfo">
  <!-- Filled by JS -->
@@ -178,6 +183,6 @@
  </div>
  </div>
 
- <script src="js/main.js?v=weather-api-20260608"></script>
+ <script src="js/main.js?v=disease-report-20260608"></script>
 </body>
 </html>
