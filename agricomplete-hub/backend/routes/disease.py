@@ -36,6 +36,8 @@ TREATMENTS_PATHS = [
 IMG_SIZE = (128, 128)
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'false').lower() == 'true'
+INFERENCE_VERSION = 'raw-pixel-input-v2'
+MODEL_INPUT_PREPROCESSING = 'embedded_in_saved_model'
 
 _model = None
 _class_names = None
@@ -173,6 +175,8 @@ def _model_status():
         'class_names_path': class_names_path,
         'treatments_path': treatments_path,
         'preload_enabled': PRELOAD_MODEL,
+        'inference_version': INFERENCE_VERSION,
+        'model_input_preprocessing': MODEL_INPUT_PREPROCESSING,
     }
 
 
@@ -302,12 +306,8 @@ def predict_disease():
         return jsonify({'msg': 'Leaf image is required'}), 400
 
     try:
-        import tensorflow as tf
         model, class_names, treatments = _load_model_bundle()
         batch = _preprocess_image(request.files['image'])
-        
-        # Apply normalization/preprocessing to match training pipeline
-        batch = tf.keras.applications.mobilenet_v2.preprocess_input(batch)
         
         predictions = model(batch, training=False)
         if hasattr(predictions, 'numpy'):
@@ -350,6 +350,8 @@ def predict_disease():
             'treatment': guidance['treatment'],
             'prevention': guidance['prevention'],
             'top_predictions': top_predictions,
+            'inference_version': INFERENCE_VERSION,
+            'model_input_preprocessing': MODEL_INPUT_PREPROCESSING,
         }
         if saved_scan:
             response['scan'] = _serialize_scan(saved_scan)

@@ -22,9 +22,6 @@ def predict_disease(img_path):
     img_array = image.img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Preprocess (same as training MobileNetV2)
-    img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
-
     predictions = model.predict(img_array)
 
     predicted_index = np.argmax(predictions[0])
