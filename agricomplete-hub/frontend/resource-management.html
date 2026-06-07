@@ -358,7 +358,7 @@
  </div>
  </div>
 
- <script src="js/main.js?v=deploy-auth-20260608b"></script>
+ <script src="js/main.js?v=weather-api-20260608"></script>
  <script>
  const RESOURCE_I18N = {
  en: {
@@ -2285,9 +2285,9 @@
  resourceSetText('rmWeatherCondition', resourceT('fetching_weather'));
  resourceSetChip('rmPriorityBadge', 'neutral', resourceT('loading'));
  try {
- const response = await fetch(`${resourceApiBase()}/weather/current?city=${encodeURIComponent(city)}`);
- const data = await response.json();
- if (!response.ok) throw new Error(data.msg || data.message || 'Weather data unavailable');
+ const data = typeof apiFetch === 'function'
+ ? await apiFetch(`/weather/current?city=${encodeURIComponent(city)}`)
+ : await resourceFetchWeather(city);
  resourceCurrentWeather = resourceNormalizeWeather(data, city);
  resourceUpdateWeatherDisplay(resourceCurrentWeather);
  resourceRenderRecommendations();
@@ -2308,6 +2308,14 @@
  resourceSetText('rmWeatherCondition', resourceT('offline_planning_mode'));
  resourceSetText('rmPriorityText', resourceT('offline_priority_text'));
  }
+ }
+
+ async function resourceFetchWeather(city) {
+ const response = await fetch(`${resourceApiBase()}/weather/current?city=${encodeURIComponent(city)}`);
+ const contentType = response.headers.get('content-type') || '';
+ const data = contentType.includes('application/json')? await response.json(): { msg: await response.text() };
+ if (!response.ok) throw new Error(data.msg || data.message || 'Weather data unavailable');
+ return data;
  }
 
  window.resourceUpdateWeather = resourceUpdateWeather;
