@@ -3360,7 +3360,7 @@ async function renderMarketplaceListings() {
  buyGrid.innerHTML = '';
 
  try {
- const listings = await apiFetch('/market/listings');
+ const listings = await apiFetch('/market/listings?include_images=true');
  const safeListings = Array.isArray(listings)? listings.map(normalizeMarketplaceListing): [];
  marketplaceAllListings = safeListings;
  marketplaceListingsById = new Map(safeListings.map(listing => [String(listing.id), listing]));
@@ -3754,7 +3754,7 @@ async function editListing(id) {
  }
 
  try {
- const listings = await apiFetch('/market/listings');
+ const listings = await apiFetch('/market/listings?include_images=true');
  const listing = listings.find(l => String(l.id) === String(id));
  if (!listing) return;
  if (!isListingOwnedByCurrentUser(listing)) {
