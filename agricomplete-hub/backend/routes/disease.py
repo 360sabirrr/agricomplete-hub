@@ -35,7 +35,9 @@ TREATMENTS_PATHS = [
 
 IMG_SIZE = (128, 128)
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+RECENT_SCAN_LIMIT = 4
 PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'false').lower() == 'true'
+BACKGROUND_WARMUP = os.getenv('DISEASE_BACKGROUND_WARMUP', 'true').lower() == 'true'
 INFERENCE_VERSION = 'raw-pixel-input-v2'
 MODEL_INPUT_PREPROCESSING = 'embedded_in_saved_model'
 
@@ -43,6 +45,7 @@ _model = None
 _class_names = None
 _treatments = None
 _model_warmed = False
+_warmup_started = False
 _model_lock = threading.Lock()
 
 
@@ -163,6 +166,24 @@ def _warm_model(model):
     model(dummy_batch, training=False)
 
 
+def _start_background_warmup():
+    global _warmup_started
+
+    if _warmup_started or _model_warmed:
+        return
+
+    _warmup_started = True
+
+    def warmup():
+        try:
+            _load_model_bundle()
+            logger.info('Disease prediction model warmed in background.')
+        except Exception as err:
+            logger.warning('Disease prediction background warmup failed: %s', err)
+
+    threading.Thread(target=warmup, name='disease-model-warmup', daemon=True).start()
+
+
 def _model_status():
     model_path = _first_existing_path(MODEL_PATHS)
     class_names_path = _first_existing_path(CLASS_NAMES_PATHS)
@@ -175,6 +196,7 @@ def _model_status():
         'class_names_path': class_names_path,
         'treatments_path': treatments_path,
         'preload_enabled': PRELOAD_MODEL,
+        'background_warmup_enabled': BACKGROUND_WARMUP,
         'inference_version': INFERENCE_VERSION,
         'model_input_preprocessing': MODEL_INPUT_PREPROCESSING,
     }
@@ -285,10 +307,10 @@ def recent_scans():
         return jsonify({'msg': 'Invalid authentication token'}), 401
 
     try:
-        limit = int(request.args.get('limit', 8))
+        limit = int(request.args.get('limit', RECENT_SCAN_LIMIT))
     except (TypeError, ValueError):
-        limit = 8
-    limit = max(1, min(limit, 30))
+        limit = RECENT_SCAN_LIMIT
+    limit = max(1, min(limit, RECENT_SCAN_LIMIT))
 
     scans = (
         DiseaseScan.query
@@ -373,3 +395,5 @@ if PRELOAD_MODEL:
         logger.info('Disease prediction model loaded during startup.')
     except Exception as err:
         logger.warning('Disease prediction model was not preloaded: %s', err)
+elif BACKGROUND_WARMUP:
+    _start_background_warmup()

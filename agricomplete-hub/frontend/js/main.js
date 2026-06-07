@@ -4850,6 +4850,7 @@ async function fetchWeather() {
 
 // ============ DISEASE DETECTION ============
 const DISEASE_LOCAL_SCANS_KEY = 'agri_recent_disease_scans';
+const RECENT_DISEASE_SCAN_LIMIT = 4;
 let diseaseRecentScans = [];
 let diseaseScansRefreshTimer = null;
 let latestDiseaseReport = null;
@@ -4868,7 +4869,7 @@ function normalizeDiseaseScan(scan = {}) {
 function getLocalDiseaseScans() {
  try {
  const scans = JSON.parse(localStorage.getItem(DISEASE_LOCAL_SCANS_KEY) || '[]');
- return Array.isArray(scans)? scans.map(normalizeDiseaseScan).slice(0, 8): [];
+ return Array.isArray(scans)? scans.map(normalizeDiseaseScan).slice(0, RECENT_DISEASE_SCAN_LIMIT): [];
  } catch (err) {
  return [];
  }
@@ -4879,7 +4880,7 @@ function saveLocalDiseaseScan(scan) {
  const scans = [
  normalized,
  ...getLocalDiseaseScans().filter(item => item.id !== normalized.id)
- ].slice(0, 8);
+ ].slice(0, RECENT_DISEASE_SCAN_LIMIT);
  localStorage.setItem(DISEASE_LOCAL_SCANS_KEY, JSON.stringify(scans));
  return scans;
 }
@@ -4914,7 +4915,7 @@ function renderRecentDiseaseScans(scans, emptyMessage = 'No recent scans yet.') 
  const list = document.getElementById('recentScansList');
  if (!list) return;
 
- diseaseRecentScans = (Array.isArray(scans)? scans: []).map(normalizeDiseaseScan).slice(0, 8);
+ diseaseRecentScans = (Array.isArray(scans)? scans: []).map(normalizeDiseaseScan).slice(0, RECENT_DISEASE_SCAN_LIMIT);
  if (!diseaseRecentScans.length) {
  list.innerHTML = recentScansMessageHtml(emptyMessage);
  return;
@@ -4951,7 +4952,7 @@ async function loadRecentDiseaseScans(options = {}) {
  }
 
  try {
- const data = await apiFetch('/disease/scans?limit=8');
+ const data = await apiFetch(`/disease/scans?limit=${RECENT_DISEASE_SCAN_LIMIT}`);
  const scans = Array.isArray(data?.scans)? data.scans: [];
  setRecentScansStatus('Live', 'badge badge-info');
  renderRecentDiseaseScans(scans);
@@ -4968,7 +4969,7 @@ function prependRecentDiseaseScan(scan) {
  const scans = [
  normalized,
  ...diseaseRecentScans.filter(item => item.id !== normalized.id)
- ].slice(0, 8);
+ ].slice(0, RECENT_DISEASE_SCAN_LIMIT);
  renderRecentDiseaseScans(scans);
 
  if (!localStorage.getItem('agri_token')) {
@@ -5208,32 +5209,107 @@ function renderDiseaseResult(disease) {
  }
 }
 
+function compressDiseaseImageForUpload(file) {
+ return new Promise((resolve, reject) => {
+ if (!file) {
+ resolve(file);
+ return;
+ }
+ if (!file.type.startsWith('image/')) {
+ reject(new Error('Please upload an image file.'));
+ return;
+ }
+ if (file.size <= 900 * 1024) {
+ resolve(file);
+ return;
+ }
+
+ const objectUrl = URL.createObjectURL(file);
+ const img = new Image();
+ img.onload = () => {
+ URL.revokeObjectURL(objectUrl);
+ const maxSize = 900;
+ const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+ const width = Math.max(1, Math.round(img.width * scale));
+ const height = Math.max(1, Math.round(img.height * scale));
+ const canvas = document.createElement('canvas');
+ canvas.width = width;
+ canvas.height = height;
+ const ctx = canvas.getContext('2d');
+ ctx.fillStyle = '#ffffff';
+ ctx.fillRect(0, 0, width, height);
+ ctx.drawImage(img, 0, 0, width, height);
+ canvas.toBlob((blob) => {
+ if (!blob) {
+ resolve(file);
+ return;
+ }
+ const baseName = String(file.name || 'leaf-image').replace(/\.[^.]+$/, '') || 'leaf-image';
+ resolve(new File([blob], `${baseName}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
+ }, 'image/jpeg', 0.86);
+ };
+ img.onerror = () => {
+ URL.revokeObjectURL(objectUrl);
+ reject(new Error('Could not read the uploaded image.'));
+ };
+ img.src = objectUrl;
+ });
+}
+
 async function analyzeDisease() {
  const input = document.getElementById('leafInput');
  const result = document.getElementById('diagnosisResult');
  const placeholder = document.getElementById('diagnosisPlaceholder');
  const info = document.getElementById('diseaseInfo');
  const badge = document.getElementById('resultBadge');
+ const analyzeBtn = document.getElementById('analyzeDiseaseBtn');
 
  if (!input?.files?.length) {
  alert('Please upload a leaf image first.');
  return;
  }
+ const selectedFile = input.files[0];
+ const originalButtonHtml = analyzeBtn?.innerHTML || '<i class="fas fa-search-plus"></i> Analyze Disease';
 
  if (placeholder) placeholder.style.display = 'none';
  if (result) result.style.display = 'block';
+ if (analyzeBtn) {
+ analyzeBtn.disabled = true;
+ analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+ }
  if (badge) {
  badge.className = 'badge badge-info';
  badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking model';
  }
  if (info) {
- info.innerHTML = '<p style="font-size:.9rem;">Uploading image to disease prediction API...</p>';
+ info.innerHTML = `
+ <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Preparing your leaf image...</strong></p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">First scan after deployment can take longer while the AI model wakes up.</p>
+ `;
  }
 
- const formData = new FormData();
- formData.append('image', input.files[0]);
+ const slowScanTimer = window.setTimeout(() => {
+ if (info) {
+ info.innerHTML = `
+ <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Still analyzing...</strong></p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">The first scan after Render restarts may take 30-90 seconds. Later scans should be faster.</p>
+ `;
+ }
+ }, 12000);
 
  try {
+ const uploadFile = await compressDiseaseImageForUpload(selectedFile);
+ const formData = new FormData();
+ formData.append('image', uploadFile, uploadFile.name || selectedFile.name || 'leaf-image.jpg');
+ if (badge) {
+ badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing leaf';
+ }
+ if (info) {
+ info.innerHTML = `
+ <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>AI model is analyzing the leaf...</strong></p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">Please keep this page open until the diagnosis appears.</p>
+ `;
+ }
  const data = await apiFetchFormData('/disease/predict', formData);
  const diseaseResult = {
  name: data.name || data.disease || 'Detected Disease',
@@ -5275,6 +5351,13 @@ async function analyzeDisease() {
  After training, connect the exported model inside the backend <code>/api/disease/predict</code> route.
  </p>
  `;
+ }
+ }
+ finally {
+ window.clearTimeout(slowScanTimer);
+ if (analyzeBtn) {
+ analyzeBtn.disabled = false;
+ analyzeBtn.innerHTML = originalButtonHtml;
  }
  }
 }
