@@ -4297,7 +4297,6 @@ function normalizeApiUrl(url) {
 }
 
 const LOCAL_API_HOSTS = ['', 'localhost', '127.0.0.1', '::1'];
-const DEFAULT_RENDER_API_URL = 'https://agricomplete-backend.onrender.com/api';
 
 const API_URL = (() => {
  const configuredUrl =
@@ -4313,12 +4312,7 @@ const API_URL = (() => {
 })();
 
 const API_BASE_URLS = (() => {
- const urls = [API_URL];
- const isLocal = LOCAL_API_HOSTS.includes(window.location.hostname);
- if (!isLocal && API_URL !== DEFAULT_RENDER_API_URL) {
- urls.push(DEFAULT_RENDER_API_URL);
- }
- return urls;
+ return [API_URL];
 })();
 
 // API Helper
@@ -4503,13 +4497,16 @@ async function handleLogin(e) {
  method: 'POST',
  body: JSON.stringify({ email, password })
  });
+ const accessToken = data?.access_token || data?.accessToken || data?.token;
+ const user = data?.user || data?.profile || data?.account;
 
- if (!data.access_token ||!data.user) {
- throw { msg: 'Login response was incomplete. Please try again.' };
+ if (!accessToken ||!user) {
+ console.warn('Incomplete login response:', data);
+ throw { msg: data?.msg || data?.message || 'Login response was incomplete. Please try again.' };
  }
 
- localStorage.setItem('agri_token', data.access_token);
- localStorage.setItem('agri_user', JSON.stringify(data.user));
+ localStorage.setItem('agri_token', accessToken);
+ localStorage.setItem('agri_user', JSON.stringify(user));
  window.location.href = 'dashboard.html';
  } catch (err) {
  console.error('Login error:', err);
