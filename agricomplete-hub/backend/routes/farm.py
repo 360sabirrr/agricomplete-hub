@@ -30,13 +30,16 @@ def get_crops():
 @jwt_required()
 def add_crop():
     from models import Crop
-    data = request.get_json()
+    data = request.get_json(silent=True)
+    if not data or 'name' not in data:
+        return jsonify({"msg": "Crop name is required"}), 400
+
     user_id = _get_current_user_id()
     if user_id is None:
         return jsonify({"msg": "Invalid authentication token"}), 401
 
     new_crop = Crop(
-        name=data['name'],
+        name=str(data['name']).strip(),
         user_id=user_id,
         status=data.get('status', 'Active')
     )

@@ -168,28 +168,23 @@ Weather data is used for:
 
 ## Deployment Notes
 
-Render backend start command:
+This repo includes a `render.yaml` Blueprint for deploying the Flask backend, static frontend, and a Render Postgres database together.
+
+Render start command:
 ```bash
-cd agricomplete-hub/backend && gunicorn app:app
+cd agricomplete-hub/backend && gunicorn --workers 1 --timeout 300 app:app
 ```
 
-Set these Render environment variables:
+When creating the Blueprint, Render provisions the Postgres database and injects `DATABASE_URL` automatically. Enter values for the secrets Render prompts for:
 ```env
-DATABASE_URL=your_render_postgresql_external_or_internal_url
-JWT_SECRET_KEY=generate_a_long_secret
 OPENROUTER_API_KEY=your_openrouter_api_key
-OPENROUTER_MODEL=openrouter/auto
-OPENROUTER_FALLBACK_MODELS=
-OPENROUTER_TIMEOUT_SECONDS=24
 WEATHERAPI_KEY=optional_weatherapi_key
 OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
-FLASK_ENV=production
-FLASK_DEBUG=False
 ```
 
 The frontend API URL is deployment-aware in `frontend/js/main.js`:
 - local browser uses `http://localhost:5000/api`
-- deployed frontend uses `https://agricomplete-backend.onrender.com/api`
+- deployed frontend uses the current service origin plus `/api`
 - you can override it with `window.AGRICOMPLETE_API_URL` or a `<meta name="api-url">` tag
 
 ## Backend

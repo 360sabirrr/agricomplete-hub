@@ -3,7 +3,6 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <meta name="api-url" content="https://agricomplete-backend.onrender.com/api">
  <title>Disease Detection - AgriComplete Hub</title>
  <meta name="description" content="Upload a leaf image and get instant AI-powered plant disease diagnosis with treatment recommendations.">
  <link rel="stylesheet" href="css/style.css?v=price-controls-20260604">
@@ -118,32 +117,12 @@
 
  <!-- Recent Scans -->
  <div class="card">
- <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-history" style="color:var(--color-accent);margin-right:8px;"></i> Recent Scans</h4>
- <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
- <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
- <div style="width:40px;height:40px;background:#FFEBEE;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;"><i class="fas fa-leaf" style="color:#C62828;"></i></div>
- <div style="flex:1;">
- <strong style="font-size:.88rem;">Late Blight - Tomato</strong>
- <p style="font-size:.75rem;">Confidence: 94% - 2 days ago</p>
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-sm);margin-bottom:var(--space-md);">
+ <h4><i class="fas fa-history" style="color:var(--color-accent);margin-right:8px;"></i> Recent Scans</h4>
+ <span class="badge badge-info" id="recentScansStatus">Live</span>
  </div>
- <span class="badge badge-danger">Critical</span>
- </div>
- <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
- <div style="width:40px;height:40px;background:#FFF8E1;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;"><i class="fas fa-leaf" style="color:#F57F17;"></i></div>
- <div style="flex:1;">
- <strong style="font-size:.88rem;">Powdery Mildew - Wheat</strong>
- <p style="font-size:.75rem;">Confidence: 87% - 5 days ago</p>
- </div>
- <span class="badge badge-warning">Moderate</span>
- </div>
- <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
- <div style="width:40px;height:40px;background:#E8F5E9;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;"><i class="fas fa-leaf" style="color:var(--color-primary);"></i></div>
- <div style="flex:1;">
- <strong style="font-size:.88rem;">Healthy - Rice</strong>
- <p style="font-size:.75rem;">Confidence: 98% - 1 week ago</p>
- </div>
- <span class="badge">Healthy</span>
- </div>
+ <div id="recentScansList" style="display:flex;flex-direction:column;gap:var(--space-sm);">
+ <div style="padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text-secondary);">Loading recent scans...</div>
  </div>
  </div>
  </div>
@@ -202,4 +181,3 @@
  <script src="js/main.js?v=market-chart-20260604"></script>
 </body>
 </html>
-

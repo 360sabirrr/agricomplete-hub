@@ -4403,6 +4403,59 @@ async function apiFetchWithTimeout(endpoint, options = {}, timeoutMs = 5000) {
  }
 }
 
+async function apiFetchFormData(endpoint, formData, options = {}) {
+ const token = localStorage.getItem('agri_token');
+ const headers = {
+ ...(token && { 'Authorization': `Bearer ${token}` }),
+ ...options.headers
+ };
+
+ let lastError = null;
+ for (let index = 0; index < API_BASE_URLS.length; index += 1) {
+ const baseUrl = API_BASE_URLS[index];
+ try {
+ const res = await fetch(`${baseUrl}${endpoint}`, {
+ ...options,
+ method: options.method || 'POST',
+ headers,
+ body: formData
+ });
+ const contentType = res.headers.get('content-type') || '';
+ const data = contentType.includes('application/json')? await res.json(): { msg: (await res.text()) || `API Error: ${res.status}` };
+
+ if (index < API_BASE_URLS.length - 1 && isLikelyHtmlResponse(contentType, data)) {
+ console.warn(`API response from ${baseUrl} was HTML, retrying backend fallback.`);
+ continue;
+ }
+
+ if (!res.ok) {
+ const errorMsg = data.msg || data.message || `API Error: ${res.status}`;
+ if (index < API_BASE_URLS.length - 1 && (res.status === 404 || isLikelyHtmlResponse(contentType, data))) {
+ continue;
+ }
+ if (res.status === 401 && isAuthExpiredMessage(errorMsg)) {
+ clearExpiredSession();
+ throw { msg: 'Session expired. Please log in again.', status: res.status, data };
+ }
+ throw { msg: errorMsg, status: res.status, data };
+ }
+ return data;
+ } catch (err) {
+ console.error(`API Error (${endpoint}):`, err);
+ lastError = err;
+ if (err instanceof TypeError && index < API_BASE_URLS.length - 1) {
+ continue;
+ }
+ if (err instanceof TypeError) {
+ throw { msg: `Cannot connect to backend at ${baseUrl}. Please ensure the server is running.` };
+ }
+ throw err;
+ }
+ }
+
+ throw lastError || { msg: 'API request failed. Please try again.' };
+}
+
 function setAuthSubmitState(form, isSubmitting, loadingHtml) {
  const button = form?.querySelector('button[type="submit"]');
  if (!button) return;
@@ -4666,6 +4719,141 @@ async function fetchWeather() {
 }
 
 // ============ DISEASE DETECTION ============
+const DISEASE_LOCAL_SCANS_KEY = 'agri_recent_disease_scans';
+let diseaseRecentScans = [];
+let diseaseScansRefreshTimer = null;
+
+function normalizeDiseaseScan(scan = {}) {
+ return {
+ id: scan.id || `${scan.name || scan.disease || 'scan'}-${scan.created_at || Date.now()}`,
+ name: scan.name || scan.display_name || scan.disease || scan.class_name || 'Detected Disease',
+ confidence: Math.max(0, Math.min(100, Number(scan.confidence) || 0)),
+ severity: scan.severity || 'Unknown',
+ badgeClass: scan.badgeClass || scan.badge_class || 'badge-info',
+ created_at: scan.created_at || new Date().toISOString()
+ };
+}
+
+function getLocalDiseaseScans() {
+ try {
+ const scans = JSON.parse(localStorage.getItem(DISEASE_LOCAL_SCANS_KEY) || '[]');
+ return Array.isArray(scans)? scans.map(normalizeDiseaseScan).slice(0, 8): [];
+ } catch (err) {
+ return [];
+ }
+}
+
+function saveLocalDiseaseScan(scan) {
+ const normalized = normalizeDiseaseScan(scan);
+ const scans = [
+ normalized,
+ ...getLocalDiseaseScans().filter(item => item.id !== normalized.id)
+ ].slice(0, 8);
+ localStorage.setItem(DISEASE_LOCAL_SCANS_KEY, JSON.stringify(scans));
+ return scans;
+}
+
+function diseaseScanTone(scan) {
+ const text = `${scan.name} ${scan.severity}`.toLowerCase();
+ if (text.includes('healthy')) return { bg: '#E8F5E9', color: 'var(--color-primary)', badge: 'badge' };
+ if (text.includes('high') || text.includes('critical')) return { bg: '#FFEBEE', color: '#C62828', badge: 'badge-danger' };
+ if (text.includes('moderate') || text.includes('medium')) return { bg: '#FFF8E1', color: '#F57F17', badge: 'badge-warning' };
+ return { bg: '#E3F2FD', color: '#1565C0', badge: 'badge-info' };
+}
+
+function diseaseScanStatusText(scan) {
+ const name = String(scan.name || '').toLowerCase();
+ if (name.includes('healthy')) return 'Healthy';
+ if (scan.severity === 'High') return 'Critical';
+ return scan.severity || 'Unknown';
+}
+
+function setRecentScansStatus(text, className = 'badge badge-info') {
+ const status = document.getElementById('recentScansStatus');
+ if (!status) return;
+ status.className = className;
+ status.textContent = text;
+}
+
+function recentScansMessageHtml(message) {
+ return `<div style="padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text-secondary);">${escapeHtml(message)}</div>`;
+}
+
+function renderRecentDiseaseScans(scans, emptyMessage = 'No recent scans yet.') {
+ const list = document.getElementById('recentScansList');
+ if (!list) return;
+
+ diseaseRecentScans = (Array.isArray(scans)? scans: []).map(normalizeDiseaseScan).slice(0, 8);
+ if (!diseaseRecentScans.length) {
+ list.innerHTML = recentScansMessageHtml(emptyMessage);
+ return;
+ }
+
+ list.innerHTML = diseaseRecentScans.map(scan => {
+ const tone = diseaseScanTone(scan);
+ const badgeClass = tone.badge || scan.badgeClass || 'badge-info';
+ return `
+ <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
+ <div style="width:40px;height:40px;background:${tone.bg};border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex:0 0 40px;"><i class="fas fa-leaf" style="color:${tone.color};"></i></div>
+ <div style="flex:1;min-width:0;">
+ <strong style="font-size:.88rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(scan.name)}</strong>
+ <p style="font-size:.75rem;">Confidence: ${Math.round(scan.confidence)}% - ${escapeHtml(formatListingTime(scan.created_at))}</p>
+ </div>
+ <span class="badge ${escapeHtml(badgeClass)}">${escapeHtml(diseaseScanStatusText(scan))}</span>
+ </div>
+ `;
+ }).join('');
+}
+
+async function loadRecentDiseaseScans(options = {}) {
+ const list = document.getElementById('recentScansList');
+ if (!list) return;
+
+ if (!options.silent) {
+ list.innerHTML = recentScansMessageHtml('Loading recent scans...');
+ }
+
+ if (!localStorage.getItem('agri_token')) {
+ setRecentScansStatus('Local', 'badge badge-warning');
+ renderRecentDiseaseScans(getLocalDiseaseScans(), 'Analyze a leaf photo to see recent scans here.');
+ return;
+ }
+
+ try {
+ const data = await apiFetch('/disease/scans?limit=8');
+ const scans = Array.isArray(data?.scans)? data.scans: [];
+ setRecentScansStatus('Live', 'badge badge-info');
+ renderRecentDiseaseScans(scans);
+ } catch (err) {
+ console.warn('Failed to load recent disease scans:', err);
+ const localScans = getLocalDiseaseScans();
+ setRecentScansStatus('Offline', 'badge badge-warning');
+ renderRecentDiseaseScans(localScans, err.msg || 'Recent scans are unavailable right now.');
+ }
+}
+
+function prependRecentDiseaseScan(scan) {
+ const normalized = normalizeDiseaseScan(scan);
+ const scans = [
+ normalized,
+ ...diseaseRecentScans.filter(item => item.id !== normalized.id)
+ ].slice(0, 8);
+ renderRecentDiseaseScans(scans);
+
+ if (!localStorage.getItem('agri_token')) {
+ setRecentScansStatus('Local', 'badge badge-warning');
+ saveLocalDiseaseScan(normalized);
+ }
+}
+
+function startRecentDiseaseScansLiveRefresh() {
+ if (!document.getElementById('recentScansList') || diseaseScansRefreshTimer) return;
+ loadRecentDiseaseScans();
+ diseaseScansRefreshTimer = window.setInterval(() => {
+ loadRecentDiseaseScans({ silent: true });
+ }, 20000);
+}
+
 function previewLeafImage(event) {
  const file = event.target.files[0];
  if (!file) return;
@@ -4703,41 +4891,45 @@ function renderDiseaseResult(disease) {
  const placeholder = document.getElementById('diagnosisPlaceholder');
  const info = document.getElementById('diseaseInfo');
  const badge = document.getElementById('resultBadge');
+ const confidence = Math.max(0, Math.min(100, Number(disease.confidence) || 0));
+ const symptoms = Array.isArray(disease.symptoms)? disease.symptoms: [];
+ const treatment = Array.isArray(disease.treatment)? disease.treatment: [];
+ const prevention = Array.isArray(disease.prevention)? disease.prevention: [];
 
  if (placeholder) placeholder.style.display = 'none';
  if (result) result.style.display = 'block';
  if (badge) {
  badge.className = `badge ${disease.badgeClass || 'badge-info'}`;
- badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${disease.severity} Severity`;
+ badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${escapeHtml(disease.severity || 'Unknown')} Severity`;
  }
  
  if (info) {
  info.innerHTML = `
- <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${disease.name}</h3>
+ <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${escapeHtml(disease.name || 'Detected Disease')}</h3>
  <div style="margin-bottom:var(--space-md);">
  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;">
  <span>Confidence Score</span>
- <strong style="color:var(--color-primary);">${disease.confidence}%</strong>
+ <strong style="color:var(--color-primary);">${confidence}%</strong>
  </div>
  <div class="confidence-bar">
- <div class="confidence-fill" style="width:${disease.confidence}%;"></div>
+ <div class="confidence-fill" style="width:${confidence}%;"></div>
  </div>
  </div>
- <p style="font-size:.88rem;margin-bottom:var(--space-md);">${disease.description}</p>
+ <p style="font-size:.88rem;margin-bottom:var(--space-md);">${escapeHtml(disease.description || 'The model returned a prediction without detailed notes.')}</p>
  
  <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-exclamation-circle" style="color:#C62828;margin-right:6px;"></i>Symptoms</h4>
  <ul style="font-size:.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);padding-left:16px;">
- ${disease.symptoms.map(s => `<li style="margin-bottom:4px;list-style:disc;">${s}</li>`).join('')}
+ ${symptoms.map(s => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(s)}</li>`).join('')}
  </ul>
  
  <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-prescription-bottle-alt" style="color:var(--color-primary);margin-right:6px;"></i>Treatment</h4>
  <ul style="font-size:.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);padding-left:16px;">
- ${disease.treatment.map(t => `<li style="margin-bottom:4px;list-style:disc;">${t}</li>`).join('')}
+ ${treatment.map(t => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(t)}</li>`).join('')}
  </ul>
  
  <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-shield-alt" style="color:var(--color-accent);margin-right:6px;"></i>Prevention</h4>
  <ul style="font-size:.85rem;color:var(--text-secondary);padding-left:16px;">
- ${disease.prevention.map(p => `<li style="margin-bottom:4px;list-style:disc;">${p}</li>`).join('')}
+ ${prevention.map(p => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(p)}</li>`).join('')}
  </ul>
  `;
  }
@@ -4769,17 +4961,8 @@ async function analyzeDisease() {
  formData.append('image', input.files[0]);
 
  try {
- const res = await fetch(`${API_URL}/disease/predict`, {
- method: 'POST',
- body: formData
- });
- const data = await res.json();
-
- if (!res.ok) {
- throw new Error(data.msg || 'Disease prediction failed');
- }
-
- renderDiseaseResult({
+ const data = await apiFetchFormData('/disease/predict', formData);
+ const diseaseResult = {
  name: data.name || data.disease || 'Detected Disease',
  confidence: data.confidence || 0,
  severity: data.severity || 'Unknown',
@@ -4788,7 +4971,16 @@ async function analyzeDisease() {
  symptoms: data.symptoms || [],
  treatment: data.treatment || [],
  prevention: data.prevention || []
- });
+ };
+
+ renderDiseaseResult(diseaseResult);
+ const scan = data.scan || { ...diseaseResult, created_at: new Date().toISOString() };
+ prependRecentDiseaseScan(scan);
+ if (!data.scan) {
+ saveLocalDiseaseScan(scan);
+ } else if (localStorage.getItem('agri_token')) {
+ window.setTimeout(() => loadRecentDiseaseScans({ silent: true }), 500);
+ }
  } catch (err) {
  if (badge) {
  badge.className = 'badge badge-warning';
@@ -4834,6 +5026,7 @@ document.addEventListener('DOMContentLoaded', () => {
  loadProfileData();
  initMarketplaceListingFlow();
  initNotifications();
+ startRecentDiseaseScansLiveRefresh();
  initHelpMenu();
  initChatbotAssistant();
  if (window.location.hash === '#weatherWidget') {

@@ -1,5 +1,8 @@
 from flask import Blueprint, jsonify, request
-from PIL import Image, UnidentifiedImageError
+from flask_jwt_extended import get_jwt_identity, jwt_required, verify_jwt_in_request
+from datetime import timezone
+from extensions import db
+from models import DiseaseScan
 import json
 import logging
 import os
@@ -32,13 +35,74 @@ TREATMENTS_PATHS = [
 
 IMG_SIZE = (128, 128)
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
-PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'true').lower() == 'true'
+PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'false').lower() == 'true'
 
 _model = None
 _class_names = None
 _treatments = None
 _model_warmed = False
 _model_lock = threading.Lock()
+
+
+def _get_current_user_id():
+    try:
+        return int(get_jwt_identity())
+    except (TypeError, ValueError):
+        return None
+
+
+def _get_optional_current_user_id():
+    try:
+        verify_jwt_in_request(optional=True)
+        identity = get_jwt_identity()
+        return int(identity) if identity is not None else None
+    except Exception as err:
+        logger.warning('Ignoring disease scan history auth token: %s', err)
+        return None
+
+
+def _scan_created_at_utc(scan):
+    if not scan.created_at:
+        return None
+    created_at = scan.created_at
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=timezone.utc)
+    return created_at.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
+
+
+def _serialize_scan(scan):
+    return {
+        'id': scan.id,
+        'class_name': scan.class_name,
+        'name': scan.display_name,
+        'confidence': round(float(scan.confidence or 0), 2),
+        'severity': scan.severity or 'Unknown',
+        'badgeClass': scan.badge_class or 'badge-info',
+        'created_at': _scan_created_at_utc(scan),
+    }
+
+
+def _record_disease_scan(label, confidence, severity, badge_class):
+    user_id = _get_optional_current_user_id()
+    if user_id is None:
+        return None
+
+    scan = DiseaseScan(
+        user_id=user_id,
+        class_name=str(label or '')[:150],
+        display_name=_format_label(label)[:150],
+        confidence=float(confidence or 0),
+        severity=str(severity or 'Unknown')[:30],
+        badge_class=str(badge_class or 'badge-info')[:40],
+    )
+    try:
+        db.session.add(scan)
+        db.session.commit()
+        return scan
+    except Exception as err:
+        db.session.rollback()
+        logger.error('Failed to save disease scan history: %s', err, exc_info=True)
+        return None
 
 
 def _first_existing_path(paths):
@@ -114,6 +178,7 @@ def _model_status():
 
 def _preprocess_image(uploaded_file):
     import numpy as np
+    from PIL import Image, UnidentifiedImageError
 
     uploaded_file.stream.seek(0, os.SEEK_END)
     size = uploaded_file.stream.tell()
@@ -208,14 +273,42 @@ def disease_status():
     return jsonify(_model_status()), 200
 
 
+@disease_bp.route('/scans', methods=['GET'])
+@jwt_required()
+def recent_scans():
+    user_id = _get_current_user_id()
+    if user_id is None:
+        return jsonify({'msg': 'Invalid authentication token'}), 401
+
+    try:
+        limit = int(request.args.get('limit', 8))
+    except (TypeError, ValueError):
+        limit = 8
+    limit = max(1, min(limit, 30))
+
+    scans = (
+        DiseaseScan.query
+        .filter_by(user_id=user_id)
+        .order_by(DiseaseScan.created_at.desc(), DiseaseScan.id.desc())
+        .limit(limit)
+        .all()
+    )
+    return jsonify({'scans': [_serialize_scan(scan) for scan in scans]}), 200
+
+
 @disease_bp.route('/predict', methods=['POST'])
 def predict_disease():
     if 'image' not in request.files:
         return jsonify({'msg': 'Leaf image is required'}), 400
 
     try:
+        import tensorflow as tf
         model, class_names, treatments = _load_model_bundle()
         batch = _preprocess_image(request.files['image'])
+        
+        # Apply normalization/preprocessing to match training pipeline
+        batch = tf.keras.applications.mobilenet_v2.preprocess_input(batch)
+        
         predictions = model(batch, training=False)
         if hasattr(predictions, 'numpy'):
             predictions = predictions.numpy()
@@ -243,7 +336,8 @@ def predict_disease():
             reverse=True
         )[:3]
 
-        return jsonify({
+        saved_scan = _record_disease_scan(label, confidence, severity, badge_class)
+        response = {
             'status': 'ok',
             'disease': label,
             'class_name': label,
@@ -256,7 +350,11 @@ def predict_disease():
             'treatment': guidance['treatment'],
             'prevention': guidance['prevention'],
             'top_predictions': top_predictions,
-        }), 200
+        }
+        if saved_scan:
+            response['scan'] = _serialize_scan(saved_scan)
+
+        return jsonify(response), 200
     except ValueError as err:
         return jsonify({'msg': str(err), 'status': 'invalid_image'}), 400
     except Exception as err:

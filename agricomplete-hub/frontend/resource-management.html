@@ -3,7 +3,6 @@
 <head>
  <meta charset="UTF-8">
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <meta name="api-url" content="https://agricomplete-backend.onrender.com/api">
  <title>Resource Management - AgriComplete Hub</title>
  <meta name="description" content="Weather-led water, fertilizer, and pesticide resource planning for smarter farm operations.">
  <link rel="stylesheet" href="css/style.css?v=resource-management-20260605">
@@ -1773,7 +1772,7 @@
  let resourceCurrentWeather = null;
 
  function resourceApiBase() {
- const configured = document.querySelector('meta[name="api-url"]')?.content || 'https://agricomplete-backend.onrender.com/api';
+ const configured = document.querySelector('meta[name="api-url"]')?.content || '/api';
  const base = (typeof API_URL !== 'undefined' && API_URL)? API_URL: configured;
  const clean = String(base).replace(/\/+$/, '');
  return clean.endsWith('/api')? clean: `${clean}/api`;

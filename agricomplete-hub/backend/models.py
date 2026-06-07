@@ -53,3 +53,13 @@ class FarmAlert(db.Model):
     message = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_read = db.Column(db.Boolean, default=False)
+
+class DiseaseScan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, index=True)
+    class_name = db.Column(db.String(150), nullable=False)
+    display_name = db.Column(db.String(150), nullable=False)
+    confidence = db.Column(db.Float, nullable=False)
+    severity = db.Column(db.String(30), nullable=False)
+    badge_class = db.Column(db.String(40), default='badge-info')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)

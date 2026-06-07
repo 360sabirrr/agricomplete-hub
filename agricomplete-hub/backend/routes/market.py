@@ -94,43 +94,51 @@ def seller_display_name(user):
     full = f"{first} {last}".strip()
     return full or user.username or "Farmer"
 
-def _serialize_listing(listing, seller):
-    return {
+def _truthy_query_arg(name):
+    return str(request.args.get(name, '')).strip().lower() in {'1', 'true', 'yes', 'on'}
+
+def _serialize_listing(listing, seller, include_image=False):
+    serialized = {
         "id": listing.id,
         "crop_name": listing.crop_name,
         "price": listing.price,
         "quantity": listing.quantity,
         "location": listing.location,
         "category": _listing_category(listing),
-        "image_data": listing.image_data or '',
+        "has_image": bool(listing.image_data),
         "seller_name": seller_display_name(seller),
         "seller_phone": getattr(seller, 'phone', '') or '',
         "seller_email": getattr(seller, 'email', '') or '',
         "seller_id": listing.seller_id,
         "created_at": _listing_created_at_utc(listing)
     }
+    if include_image:
+        serialized["image_data"] = listing.image_data or ''
+    return serialized
 
 @market_bp.route('/listings', methods=['GET'])
 def get_listings():
     from models import MarketListing, User
+    include_images = _truthy_query_arg('include_images') or _truthy_query_arg('include_image')
     listings = MarketListing.query.order_by(MarketListing.created_at.desc()).all()
-    categories_changed = False
-    for listing in listings:
-        if not _clean_category(getattr(listing, 'category', '')):
-            listing.category = _infer_category(listing.crop_name)
-            categories_changed = True
-    if categories_changed:
-        db.session.commit()
-
-    users_by_id = {}
-    for listing in listings:
-        if listing.seller_id not in users_by_id:
-            users_by_id[listing.seller_id] = User.query.get(listing.seller_id)
+    seller_ids = {listing.seller_id for listing in listings if listing.seller_id is not None}
+    users_by_id = {
+        user.id: user
+        for user in User.query.filter(User.id.in_(seller_ids)).all()
+    } if seller_ids else {}
 
     return jsonify([
-        _serialize_listing(l, users_by_id.get(l.seller_id))
+        _serialize_listing(l, users_by_id.get(l.seller_id), include_image=include_images)
         for l in listings
     ]), 200
+
+@market_bp.route('/listings/<int:id>', methods=['GET'])
+def get_listing(id):
+    from models import MarketListing, User
+    listing = MarketListing.query.get_or_404(id)
+    seller = User.query.get(listing.seller_id) if listing.seller_id is not None else None
+    include_image = _truthy_query_arg('include_images') or _truthy_query_arg('include_image')
+    return jsonify(_serialize_listing(listing, seller, include_image=include_image)), 200
 
 @market_bp.route('/listings', methods=['POST'])
 @jwt_required()

@@ -1,7 +1,7 @@
 services:
   - type: web
     name: agricomplete-backend
-    env: python
+    runtime: python
     region: oregon
     plan: free
     buildCommand: cd agricomplete-hub/backend && pip install -r requirements.txt
@@ -10,7 +10,9 @@ services:
       - key: PYTHON_VERSION
         value: 3.13.0
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: agricomplete-db
+          property: connectionString
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: OPENROUTER_API_KEY
@@ -28,7 +30,7 @@ services:
       - key: DISEASE_TREATMENTS_PATH
         value: recommendations/treatments.json
       - key: DISEASE_PRELOAD_MODEL
-        value: "true"
+        value: "false"
       - key: TF_CPP_MIN_LOG_LEVEL
         value: "2"
       - key: TF_NUM_INTRAOP_THREADS
@@ -47,3 +49,10 @@ services:
         value: production
       - key: FLASK_DEBUG
         value: "False"
+
+databases:
+  - name: agricomplete-db
+    region: oregon
+    plan: free
+    databaseName: agricomplete
+    user: agricomplete

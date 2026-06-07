@@ -6,7 +6,7 @@ flask-bcrypt
 python-dotenv
 psycopg2-binary
 gunicorn
-tensorflow==2.21.0
+tensorflow-cpu==2.21.0
 keras==3.13.2
 numpy
 Pillow
