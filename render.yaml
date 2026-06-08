@@ -47,6 +47,12 @@ services:
         sync: false
       - key: OPENWEATHER_API_KEY
         sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_FROM_NAME
+        value: AgriComplete Hub
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT

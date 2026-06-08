@@ -140,6 +140,9 @@ OPENROUTER_FALLBACK_MODELS=
 OPENROUTER_TIMEOUT_SECONDS=24
 WEATHERAPI_KEY=your_weatherapi_key
 OPENWEATHER_API_KEY=your_openweathermap_key
+BREVO_API_KEY=your_brevo_api_key
+EMAIL_FROM=your_email@example.com
+EMAIL_FROM_NAME=AgriComplete Hub
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your_email@example.com
@@ -187,6 +190,9 @@ When creating the Blueprint, Render provisions the Postgres database and injects
 OPENROUTER_API_KEY=your_openrouter_api_key
 WEATHERAPI_KEY=optional_weatherapi_key
 OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
+BREVO_API_KEY=recommended_for_password_reset_on_render
+EMAIL_FROM=your_email@example.com
+EMAIL_FROM_NAME=AgriComplete Hub
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your_email@example.com
@@ -199,6 +205,8 @@ The frontend API URL is deployment-aware in `frontend/js/main.js`:
 - local browser uses `http://localhost:5000/api`
 - deployed frontend uses the current service origin plus `/api`
 - you can override it with `window.AGRICOMPLETE_API_URL` or a `<meta name="api-url">` tag
+
+For password reset email on Render, use `BREVO_API_KEY` when possible. Render free services can fail on direct SMTP ports like Gmail `587`/`465`, while Brevo's API sends over HTTPS.
 
 ## Backend
 
