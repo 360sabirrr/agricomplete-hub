@@ -4477,6 +4477,99 @@ function setAuthSubmitState(form, isSubmitting, loadingHtml) {
  }
 }
 
+function completeAuthentication(data) {
+ const accessToken = data?.access_token || data?.accessToken || data?.token;
+ const user = data?.user || data?.profile || data?.account;
+
+ if (!accessToken ||!user) {
+ throw { msg: data?.msg || data?.message || 'Login response was incomplete. Please try again.' };
+ }
+
+ localStorage.setItem('agri_token', accessToken);
+ localStorage.setItem('agri_user', JSON.stringify(user));
+ window.location.href = 'dashboard.html';
+}
+
+function loadGoogleIdentityLibrary() {
+ if (window.google?.accounts?.id) return Promise.resolve();
+
+ return new Promise((resolve, reject) => {
+ const existingScript = document.querySelector('script[data-google-identity]');
+ if (existingScript) {
+ existingScript.addEventListener('load', resolve, { once:true });
+ existingScript.addEventListener('error', reject, { once:true });
+ return;
+ }
+
+ const script = document.createElement('script');
+ script.src = 'https://accounts.google.com/gsi/client';
+ script.async = true;
+ script.dataset.googleIdentity = 'true';
+ script.addEventListener('load', resolve, { once:true });
+ script.addEventListener('error', reject, { once:true });
+ document.head.appendChild(script);
+ });
+}
+
+async function handleGoogleCredential(response) {
+ const status = document.getElementById('googleAuthStatus');
+ if (!response?.credential) {
+ if (status) status.textContent = 'Google did not return a sign-in credential.';
+ return;
+ }
+
+ if (status) status.textContent = 'Signing in securely...';
+ try {
+ localStorage.removeItem('agri_token');
+ localStorage.removeItem('agri_user');
+ const data = await apiFetch('/auth/google', {
+ method:'POST',
+ body:JSON.stringify({ credential:response.credential })
+ });
+ completeAuthentication(data);
+ } catch (err) {
+ console.error('Google login error:', err);
+ if (status) status.textContent = err.msg || err.message || 'Google sign-in failed. Please try again.';
+ }
+}
+
+async function initializeGoogleSignIn() {
+ const section = document.getElementById('googleAuthSection');
+ const buttonContainer = document.getElementById('googleSignInButton');
+ const status = document.getElementById('googleAuthStatus');
+ if (!section ||!buttonContainer) return;
+
+ try {
+ const config = await apiFetch('/auth/google/config');
+ if (!config?.enabled ||!config?.client_id) return;
+
+ await loadGoogleIdentityLibrary();
+ if (!window.google?.accounts?.id) throw new Error('Google Identity Services did not load');
+
+ section.hidden = false;
+ buttonContainer.replaceChildren();
+ window.google.accounts.id.initialize({
+ client_id:config.client_id,
+ callback:handleGoogleCredential,
+ auto_select:false,
+ cancel_on_tap_outside:true,
+ });
+ window.google.accounts.id.renderButton(buttonContainer, {
+ type:'standard',
+ theme:'outline',
+ size:'large',
+ text:'continue_with',
+ shape:'rectangular',
+ logo_alignment:'left',
+ width:Math.min(400, Math.max(240, buttonContainer.clientWidth || 400)),
+ });
+ } catch (err) {
+ console.error('Google sign-in initialization error:', err);
+ section.hidden = true;
+ if (status) status.textContent = '';
+ }
+}
+
 async function handleLogin(e) {
  e.preventDefault();
  setAuthSubmitState(e.target, true, '<i class="fas fa-spinner fa-spin"></i> Signing In...');
@@ -4506,17 +4599,7 @@ async function handleLogin(e) {
  method: 'POST',
  body: JSON.stringify({ email, password })
  });
- const accessToken = data?.access_token || data?.accessToken || data?.token;
- const user = data?.user || data?.profile || data?.account;
-
- if (!accessToken ||!user) {
- console.warn('Incomplete login response:', data);
- throw { msg: data?.msg || data?.message || 'Login response was incomplete. Please try again.' };
- }
-
- localStorage.setItem('agri_token', accessToken);
- localStorage.setItem('agri_user', JSON.stringify(user));
- window.location.href = 'dashboard.html';
+ completeAuthentication(data);
  } catch (err) {
  console.error('Login error:', err);
  const errorMsg = err.msg || err.message || 'Login failed. Please check your credentials and try again.';
@@ -4576,6 +4659,8 @@ async function handleRegister(e) {
  setAuthSubmitState(e.target, false);
  }
 }
+
+document.addEventListener('DOMContentLoaded', initializeGoogleSignIn);
 
 let resetResendTimer = null;
 
