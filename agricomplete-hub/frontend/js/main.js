@@ -4577,13 +4577,51 @@ async function handleRegister(e) {
  }
 }
 
+let resetResendTimer = null;
+
+function getPasswordResetChannel() {
+ return 'email';
+}
+
+function maskPasswordResetDestination(identifier, channel) {
+ const value = String(identifier || '').trim();
+ const [localPart, domain] = value.split('@');
+ if (!domain) return 'your registered email';
+ const visible = localPart? localPart.charAt(0): '';
+ return `${visible}${'*'.repeat(Math.min(4, Math.max(1, localPart.length - 1)))}@${domain}`;
+}
+
+function setPasswordResetResendCooldown(seconds = 60) {
+ const button = document.getElementById('resetResendBtn');
+ if (resetResendTimer) {
+ window.clearInterval(resetResendTimer);
+ resetResendTimer = null;
+ }
+ let remaining = Math.max(0, Number(seconds) || 0);
+ const updateButton = () => {
+ if (!button) return;
+ button.disabled = remaining > 0;
+ button.innerHTML = remaining > 0
+ ? `<i class="fas fa-clock"></i> Send new OTP in ${remaining}s`
+ : '<i class="fas fa-rotate-right"></i> Send new OTP';
+ };
+ updateButton();
+ if (!remaining) return;
+ resetResendTimer = window.setInterval(() => {
+ remaining -= 1;
+ updateButton();
+ if (remaining <= 0) {
+ window.clearInterval(resetResendTimer);
+ resetResendTimer = null;
+ }
+ }, 1000);
+}
+
 function openForgotPasswordModal() {
  const modal = document.getElementById('forgotPasswordModal');
- const loginEmail = document.getElementById('loginEmail');
- const resetEmail = document.getElementById('resetEmail');
- if (resetEmail && loginEmail?.value?.includes('@')) {
- resetEmail.value = loginEmail.value.trim();
- }
+ const loginIdentifier = document.getElementById('loginEmail')?.value.trim() || '';
+ const resetIdentifier = document.getElementById('resetIdentifier');
+ if (resetIdentifier && loginIdentifier.includes('@')) resetIdentifier.value = loginIdentifier;
  showForgotPasswordRequestStep();
  if (modal) modal.style.display = 'flex';
 }
@@ -4591,6 +4629,10 @@ function openForgotPasswordModal() {
 function closeForgotPasswordModal() {
  const modal = document.getElementById('forgotPasswordModal');
  if (modal) modal.style.display = 'none';
+ if (resetResendTimer) {
+ window.clearInterval(resetResendTimer);
+ resetResendTimer = null;
+ }
 }
 
 function showForgotPasswordRequestStep() {
@@ -4609,47 +4651,62 @@ function showForgotPasswordRequestStep() {
  }
 }
 
-function showForgotPasswordConfirmStep(email, response = {}) {
+function showForgotPasswordConfirmStep(identifier, channel, response = {}) {
  const requestForm = document.getElementById('resetRequestForm');
  const confirmForm = document.getElementById('resetConfirmForm');
  const message = document.getElementById('resetCodeMessage');
  const codeInput = document.getElementById('resetCode');
  const modal = document.getElementById('forgotPasswordModal');
  const devCode = document.getElementById('resetDevCode');
- if (modal) modal.dataset.resetEmail = email;
+ if (modal) {
+ modal.dataset.resetIdentifier = identifier;
+ modal.dataset.resetChannel = channel;
+ }
  if (requestForm) requestForm.style.display = 'none';
  if (confirmForm) confirmForm.style.display = 'flex';
- if (message) message.textContent = `Enter the reset code sent to ${email}.`;
+ if (message) {
+ message.textContent = `Enter the 6-digit OTP sent to ${maskPasswordResetDestination(identifier, channel)}.`;
+ }
  if (devCode) {
  if (response.dev_reset_code) {
  devCode.style.display = 'block';
- devCode.textContent = `Local dev code: ${response.dev_reset_code}`;
+ devCode.textContent = `Local dev OTP: ${response.dev_reset_code}`;
  } else {
  devCode.style.display = 'none';
  devCode.textContent = '';
  }
  }
+ setPasswordResetResendCooldown(response.retry_after_seconds || 60);
  if (codeInput) codeInput.focus();
+}
+
+function validatePasswordResetIdentifier(identifier, channel) {
+ return channel === 'email' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(identifier);
+}
+
+async function requestPasswordResetCode(identifier, channel) {
+ return apiFetch('/auth/password-reset/request', {
+ method: 'POST',
+ body: JSON.stringify({ identifier, channel })
+ });
 }
 
 async function handleForgotPasswordRequest(e) {
  e.preventDefault();
  setAuthSubmitState(e.target, true, '<i class="fas fa-spinner fa-spin"></i> Sending...');
- const email = e.target.querySelector('#resetEmail')?.value.trim() || '';
+ const identifier = e.target.querySelector('#resetIdentifier')?.value.trim() || '';
+ const channel = getPasswordResetChannel();
 
- if (!email) {
+ if (!validatePasswordResetIdentifier(identifier, channel)) {
  alert('Please enter your registered email address.');
  setAuthSubmitState(e.target, false);
  return;
  }
 
  try {
- const data = await apiFetch('/auth/password-reset/request', {
- method: 'POST',
- body: JSON.stringify({ email })
- });
- showForgotPasswordConfirmStep(email, data);
- alert(data?.msg || 'If that email is registered, a reset code has been sent.');
+ const data = await requestPasswordResetCode(identifier, channel);
+ showForgotPasswordConfirmStep(identifier, channel, data);
+ alert(data?.msg || 'If that account is registered, a reset code has been sent.');
  } catch (err) {
  console.error('Password reset request error:', err);
  alert(err.msg || err.message || 'Could not send reset code. Please try again.');
@@ -4658,16 +4715,39 @@ async function handleForgotPasswordRequest(e) {
  }
 }
 
+async function resendPasswordResetCode() {
+ const modal = document.getElementById('forgotPasswordModal');
+ const identifier = modal?.dataset.resetIdentifier || '';
+ const channel = modal?.dataset.resetChannel || 'email';
+ const button = document.getElementById('resetResendBtn');
+ if (!identifier || button?.disabled) return;
+
+ if (button) {
+ button.disabled = true;
+ button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending OTP...';
+ }
+ try {
+ const data = await requestPasswordResetCode(identifier, channel);
+ setPasswordResetResendCooldown(data.retry_after_seconds || 60);
+ alert(data?.msg || 'A new OTP has been requested.');
+ } catch (err) {
+ console.error('Password reset resend error:', err);
+ setPasswordResetResendCooldown(0);
+ alert(err.msg || err.message || 'Could not send a new OTP. Please try again.');
+ }
+}
+
 async function handleForgotPasswordConfirm(e) {
  e.preventDefault();
  setAuthSubmitState(e.target, true, '<i class="fas fa-spinner fa-spin"></i> Resetting...');
  const modal = document.getElementById('forgotPasswordModal');
- const email = modal?.dataset.resetEmail || document.getElementById('resetEmail')?.value.trim() || '';
+ const identifier = modal?.dataset.resetIdentifier || document.getElementById('resetIdentifier')?.value.trim() || '';
+ const channel = modal?.dataset.resetChannel || getPasswordResetChannel();
  const token = e.target.querySelector('#resetCode')?.value.trim() || '';
  const password = e.target.querySelector('#resetPassword')?.value || '';
 
- if (!email ||!token ||!password) {
- alert('Please enter the reset code and new password.');
+ if (!identifier ||!/^\d{6}$/.test(token) ||!password) {
+ alert('Please enter the 6-digit OTP and your new password.');
  setAuthSubmitState(e.target, false);
  return;
  }
@@ -4681,7 +4761,7 @@ async function handleForgotPasswordConfirm(e) {
  try {
  const data = await apiFetch('/auth/password-reset/confirm', {
  method: 'POST',
- body: JSON.stringify({ email, token, password })
+ body: JSON.stringify({ identifier, channel, token, password })
  });
  alert(data?.msg || 'Password reset successfully. Please log in with your new password.');
  e.target.reset();
@@ -4689,14 +4769,14 @@ async function handleForgotPasswordConfirm(e) {
  switchAuthTab('login');
  const loginEmail = document.getElementById('loginEmail');
  const loginPassword = document.getElementById('loginPassword');
- if (loginEmail) loginEmail.value = email;
+ if (loginEmail) loginEmail.value = identifier;
  if (loginPassword) {
  loginPassword.value = '';
  loginPassword.focus();
  }
  } catch (err) {
  console.error('Password reset confirmation error:', err);
- alert(err.msg || err.message || 'Password reset failed. Please check your code.');
+ alert(err.msg || err.message || 'Password reset failed. Please check your OTP.');
  } finally {
  setAuthSubmitState(e.target, false);
  }

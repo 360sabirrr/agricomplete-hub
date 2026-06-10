@@ -1,16 +1,12 @@
 import logging
 import hashlib
 import hmac
-import json
 import os
 import re
 import secrets
-import smtplib
-import urllib.error
-import urllib.request
 from datetime import datetime, timedelta
-from email.message import EmailMessage
 
+import mailtrap as mt
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
@@ -27,7 +23,9 @@ auth_bp = Blueprint('auth', __name__)
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
 PASSWORD_RESET_TTL_MINUTES = 15
 PASSWORD_RESET_MAX_ATTEMPTS = 5
-PASSWORD_RESET_GENERIC_MSG = "If that email is registered, a reset code has been sent."
+PASSWORD_RESET_RESEND_SECONDS = 60
+PASSWORD_RESET_MAX_REQUESTS_PER_HOUR = 5
+PASSWORD_RESET_GENERIC_MSG = "If that account is registered, a reset code has been sent."
 
 
 def _get_json_body():
@@ -86,56 +84,53 @@ def _password_reset_ttl_minutes():
         return PASSWORD_RESET_TTL_MINUTES
 
 
-def _hash_reset_token(token):
-    return hashlib.sha256(str(token).encode('utf-8')).hexdigest()
-
-
-def _smtp_settings():
-    host = _clean_text(os.getenv('SMTP_HOST'), 120)
-    username = _clean_text(os.getenv('SMTP_USERNAME'), 120)
-    password = re.sub(r'\s+', '', str(os.getenv('SMTP_PASSWORD') or ''))
-    sender = _clean_text(os.getenv('SMTP_FROM') or username, 120)
-    use_ssl = _truthy_env('SMTP_USE_SSL')
-    use_tls = not use_ssl and str(os.getenv('SMTP_USE_TLS', 'true')).strip().lower() not in {'0', 'false', 'no', 'off'}
+def _bounded_env_int(name, default, minimum, maximum):
     try:
-        port = int(os.getenv('SMTP_PORT') or (465 if use_ssl else 587))
+        return max(minimum, min(maximum, int(os.getenv(name, default))))
     except (TypeError, ValueError):
-        port = 465 if use_ssl else 587
+        return default
+
+
+def _password_reset_resend_seconds():
+    return _bounded_env_int(
+        'PASSWORD_RESET_RESEND_SECONDS',
+        PASSWORD_RESET_RESEND_SECONDS,
+        30,
+        600
+    )
+
+
+def _password_reset_max_requests_per_hour():
+    return _bounded_env_int(
+        'PASSWORD_RESET_MAX_REQUESTS_PER_HOUR',
+        PASSWORD_RESET_MAX_REQUESTS_PER_HOUR,
+        2,
+        20
+    )
+
+
+def _hash_reset_token(token):
+    secret = str(current_app.config.get('JWT_SECRET_KEY') or '').encode('utf-8')
+    return hmac.new(secret, str(token).encode('utf-8'), hashlib.sha256).hexdigest()
+
+
+def _mailtrap_settings():
     return {
-        'host': host,
-        'port': port,
-        'username': username,
-        'password': password,
-        'sender': sender,
-        'use_tls': use_tls,
-        'use_ssl': use_ssl,
-    }
-
-
-def _smtp_is_configured(settings):
-    has_credentials = not settings['username'] or bool(settings['password'])
-    return bool(settings['host'] and settings['sender'] and has_credentials)
-
-
-def _email_api_settings():
-    return {
-        'brevo_api_key': _clean_text(os.getenv('BREVO_API_KEY') or os.getenv('SENDINBLUE_API_KEY'), 300),
-        'sender': _clean_text(
-            os.getenv('EMAIL_FROM') or
-            os.getenv('SMTP_FROM') or
-            os.getenv('SMTP_USERNAME'),
-            120
+        'api_token': _clean_text(
+            os.getenv('MAILTRAP_API_TOKEN') or os.getenv('MAILTRAP_API_KEY'),
+            300
         ),
-        'sender_name': _clean_text(os.getenv('EMAIL_FROM_NAME') or 'AgriComplete Hub', 80),
+        'sender': _normalize_email(os.getenv('MAILTRAP_FROM_EMAIL')),
+        'sender_name': _clean_text(os.getenv('MAILTRAP_FROM_NAME') or 'AgriComplete Hub', 80),
     }
 
 
-def _email_api_is_configured(settings):
-    return bool(settings['brevo_api_key'] and settings['sender'])
+def _mailtrap_is_configured(settings):
+    return bool(settings['api_token'] and settings['sender'] and EMAIL_RE.match(settings['sender']))
 
 
 def _password_reset_email_is_configured():
-    return _email_api_is_configured(_email_api_settings()) or _smtp_is_configured(_smtp_settings())
+    return _mailtrap_is_configured(_mailtrap_settings())
 
 
 def _reset_email_body(user, token, expires_minutes):
@@ -152,65 +147,25 @@ def _reset_email_body(user, token, expires_minutes):
     ])
 
 
-def _send_password_reset_email_via_brevo(user, token, expires_minutes):
-    settings = _email_api_settings()
-    if not _email_api_is_configured(settings):
-        raise RuntimeError('Brevo email API is not configured')
-
-    payload = {
-        'sender': {
-            'email': settings['sender'],
-            'name': settings['sender_name'],
-        },
-        'to': [{'email': user.email}],
-        'subject': 'AgriComplete password reset code',
-        'textContent': _reset_email_body(user, token, expires_minutes),
-    }
-    request_data = json.dumps(payload).encode('utf-8')
-    request_headers = {
-        'api-key': settings['brevo_api_key'],
-        'Content-Type': 'application/json',
-    }
-    req = urllib.request.Request(
-        'https://api.brevo.com/v3/smtp/email',
-        data=request_data,
-        headers=request_headers,
-        method='POST'
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=20) as response:
-            if response.status >= 300:
-                raise RuntimeError(f'Brevo email API returned HTTP {response.status}')
-    except urllib.error.HTTPError as err:
-        error_body = err.read().decode('utf-8', errors='replace')[:500]
-        raise RuntimeError(f'Brevo email API returned HTTP {err.code}: {error_body}') from err
-
-
 def _send_password_reset_email(user, token, expires_minutes):
-    api_settings = _email_api_settings()
-    if _email_api_is_configured(api_settings):
-        _send_password_reset_email_via_brevo(user, token, expires_minutes)
-        return
+    settings = _mailtrap_settings()
+    if not _mailtrap_is_configured(settings):
+        raise RuntimeError('Mailtrap Email API is not configured')
 
-    settings = _smtp_settings()
-    if not _smtp_is_configured(settings):
-        raise RuntimeError('SMTP email service is not configured')
-
-    msg = EmailMessage()
-    msg['Subject'] = 'AgriComplete password reset code'
-    msg['From'] = settings['sender']
-    msg['To'] = user.email
-    msg.set_content(_reset_email_body(user, token, expires_minutes))
-
-    smtp_class = smtplib.SMTP_SSL if settings['use_ssl'] else smtplib.SMTP
-    with smtp_class(settings['host'], settings['port'], timeout=20) as server:
-        server.ehlo()
-        if settings['use_tls']:
-            server.starttls()
-            server.ehlo()
-        if settings['username']:
-            server.login(settings['username'], settings['password'])
-        server.send_message(msg)
+    recipient_name = ' '.join(filter(None, [
+        _clean_text(getattr(user, 'first_name', ''), 50),
+        _clean_text(getattr(user, 'last_name', ''), 50),
+    ]))
+    mail = mt.Mail(
+        sender=mt.Address(email=settings['sender'], name=settings['sender_name']),
+        to=[mt.Address(email=user.email, name=recipient_name or None)],
+        subject='AgriComplete password reset code',
+        text=_reset_email_body(user, token, expires_minutes),
+        category='Password Reset',
+    )
+    response = mt.MailtrapClient(token=settings['api_token']).send(mail)
+    if isinstance(response, dict) and not response.get('success', False):
+        raise RuntimeError('Mailtrap Email API did not accept the reset email')
 
 
 def _find_user_by_phone(User, phone):
@@ -226,9 +181,40 @@ def _find_user_by_phone(User, phone):
 
     # Supports older rows saved before phone normalization.
     for existing_user in User.query.filter(User.phone.isnot(None)).all():
-        if _phone_digits(existing_user.phone) == digits:
+        if _phone_numbers_match(existing_user.phone, phone):
             return existing_user
     return None
+
+
+def _password_reset_request_details(data):
+    requested_channel = _clean_text(data.get('channel'), 10).lower()
+    legacy_email = _normalize_email(data.get('email'))
+    identifier = _clean_text(
+        data.get('identifier') or data.get('email'),
+        120
+    )
+    if requested_channel and requested_channel != 'email':
+        raise ValueError('Password reset is available by email only')
+
+    normalized_identifier = _normalize_email(identifier or legacy_email)
+    if not normalized_identifier or not EMAIL_RE.match(normalized_identifier):
+        raise ValueError('Please enter a valid registered email address')
+
+    return 'email', normalized_identifier
+
+
+def _find_password_reset_user(User, channel, identifier):
+    return User.query.filter_by(email=identifier).first()
+
+
+def _password_reset_service_is_configured(channel):
+    return channel == 'email' and _password_reset_email_is_configured()
+
+
+def _send_password_reset_code(user, channel, token, expires_minutes):
+    if channel != 'email':
+        raise ValueError('Password reset is available by email only')
+    _send_password_reset_email(user, token, expires_minutes)
 
 
 def _make_username_base(value):
@@ -377,23 +363,55 @@ def login():
 def request_password_reset():
     from models import PasswordResetToken, User
     data = _get_json_body()
-    email = _normalize_email(data.get('email'))
-
-    if not email or not EMAIL_RE.match(email):
-        return jsonify({"msg": "Please enter a valid registered email address"}), 400
+    try:
+        channel, identifier = _password_reset_request_details(data)
+    except ValueError as err:
+        return jsonify({"msg": str(err)}), 400
 
     dev_enabled = _password_reset_dev_enabled()
-    email_configured = _password_reset_email_is_configured()
-    if not email_configured and not dev_enabled:
-        return jsonify({"msg": "Password reset email service is not configured. Please contact support."}), 503
+    service_configured = _password_reset_service_is_configured(channel)
+    if not service_configured and not dev_enabled:
+        logger.error(
+            'Password reset %s provider is not configured. Check deployment environment variables.',
+            channel
+        )
+        return jsonify({
+            "msg": "Mailtrap password reset email is not configured. Please contact support.",
+            "error_code": "EMAIL_PROVIDER_NOT_CONFIGURED",
+        }), 503
 
-    user = User.query.filter_by(email=email).first()
-    generic_response = {"msg": PASSWORD_RESET_GENERIC_MSG}
+    user = _find_password_reset_user(User, channel, identifier)
+    resend_seconds = _password_reset_resend_seconds()
+    generic_response = {
+        "msg": PASSWORD_RESET_GENERIC_MSG,
+        "channel": channel,
+        "retry_after_seconds": resend_seconds,
+    }
     if not user:
         return jsonify(generic_response), 200
 
     now = datetime.utcnow()
     expires_minutes = _password_reset_ttl_minutes()
+    recent_tokens = (
+        PasswordResetToken.query
+        .filter(
+            PasswordResetToken.user_id == user.id,
+            PasswordResetToken.created_at > now - timedelta(hours=1)
+        )
+        .order_by(PasswordResetToken.created_at.desc())
+        .all()
+    )
+    latest_token = recent_tokens[0] if recent_tokens else None
+    if latest_token and latest_token.created_at:
+        elapsed_seconds = max(0, int((now - latest_token.created_at).total_seconds()))
+        if elapsed_seconds < resend_seconds:
+            generic_response["retry_after_seconds"] = resend_seconds - elapsed_seconds
+            return jsonify(generic_response), 200
+
+    if len(recent_tokens) >= _password_reset_max_requests_per_hour():
+        logger.warning('Password reset hourly limit reached for user id: %s', user.id)
+        return jsonify(generic_response), 200
+
     reset_code = f'{secrets.randbelow(1000000):06d}'
 
     try:
@@ -407,22 +425,28 @@ def request_password_reset():
         db.session.add(reset_token)
         db.session.commit()
 
-        if email_configured:
+        if service_configured:
             try:
-                _send_password_reset_email(user, reset_code, expires_minutes)
+                _send_password_reset_code(user, channel, reset_code, expires_minutes)
             except Exception as err:
                 reset_token.used_at = datetime.utcnow()
                 db.session.commit()
-                logger.error('Password reset email failed for user id %s: %s', user.id, err, exc_info=True)
-                return jsonify({"msg": "Could not send reset email. Please try again later."}), 503
+                logger.error(
+                    'Password reset %s delivery failed for user id %s: %s',
+                    channel,
+                    user.id,
+                    err,
+                    exc_info=True
+                )
+                return jsonify({"msg": "Could not send reset code. Please try again later."}), 503
 
         response = {
             **generic_response,
             "expires_in_minutes": expires_minutes,
         }
-        if dev_enabled and not email_configured:
+        if dev_enabled and not service_configured:
             response["dev_reset_code"] = reset_code
-        logger.info('Password reset code created for user id: %s', user.id)
+        logger.info('Password reset %s code created for user id: %s', channel, user.id)
         return jsonify(response), 200
 
     except Exception as e:
@@ -436,20 +460,20 @@ def confirm_password_reset():
     from models import PasswordResetToken, User
     try:
         data = _get_json_body()
-        email = _normalize_email(data.get('email'))
+        try:
+            channel, identifier = _password_reset_request_details(data)
+        except ValueError as err:
+            return jsonify({"msg": str(err)}), 400
         reset_code = re.sub(r'\s+', '', str(data.get('token') or data.get('code') or ''))
         password = str(data.get('password') or '')
 
-        if not email or not EMAIL_RE.match(email):
-            return jsonify({"msg": "Please enter a valid registered email address"}), 400
-
-        if not reset_code:
-            return jsonify({"msg": "Reset code is required"}), 400
+        if not re.fullmatch(r'\d{6}', reset_code):
+            return jsonify({"msg": "Enter the 6-digit reset code"}), 400
 
         if len(password) < 6:
             return jsonify({"msg": "Password must be at least 6 characters"}), 400
 
-        user = User.query.filter_by(email=email).first()
+        user = _find_password_reset_user(User, channel, identifier)
         if not user:
             return jsonify({"msg": "Invalid or expired reset code"}), 400
 
