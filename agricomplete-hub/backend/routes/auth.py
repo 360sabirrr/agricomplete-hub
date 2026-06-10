@@ -363,7 +363,7 @@ def login():
             return jsonify({"msg": "Invalid email/phone or password"}), 401
         
         # Generate token
-        access_token = create_access_token(identity=str(user.id), expires_delta=False)
+        access_token = create_access_token(identity=str(user.id))
         
         logger.info(f'User logged in successfully: {user.id}')
         return jsonify(access_token=access_token, user=_serialize_user(user)), 200

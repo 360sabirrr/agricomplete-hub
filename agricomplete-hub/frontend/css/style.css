@@ -1,8 +1,6 @@
 /* =============================================
  AgriComplete Hub — Design System
  ============================================= */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
-
 /* ---------- CSS Variables ---------- */:root {
  /* Brand */
  --color-primary: #1B5E20;
@@ -53,8 +51,8 @@
  --space-3xl: 64px;
 
  /* Typography */
- --font-primary: 'Inter', -apple-system, sans-serif;
- --font-heading: 'Outfit', 'Inter', sans-serif;
+ --font-primary: Inter, "Segoe UI", Arial, sans-serif;
+ --font-heading: Outfit, Inter, "Segoe UI", Arial, sans-serif;
 
  /* Transitions */
  --ease-smooth: cubic-bezier(.4,0,.2,1);

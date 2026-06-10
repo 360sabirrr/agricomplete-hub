@@ -132,7 +132,9 @@ python app.py
 Create a `.env` file in the root or backend folder.
 
 ```env
-JWT_SECRET_KEY=your_secret_key
+# Generate with: python -c "import secrets; print(secrets.token_urlsafe(48))"
+JWT_SECRET_KEY=replace_with_a_unique_random_value_of_at_least_32_characters
+JWT_ACCESS_TOKEN_MINUTES=60
 DATABASE_URL=postgresql+psycopg2://username:password@localhost:5432/agricompletehub
 OPENROUTER_API_KEY=your_openrouter_api_key
 OPENROUTER_MODEL=openrouter/auto

@@ -5219,17 +5219,16 @@ function compressDiseaseImageForUpload(file) {
  reject(new Error('Please upload an image file.'));
  return;
  }
- if (file.size <= 900 * 1024) {
- resolve(file);
- return;
- }
-
  const objectUrl = URL.createObjectURL(file);
  const img = new Image();
  img.onload = () => {
  URL.revokeObjectURL(objectUrl);
- const maxSize = 900;
+ const maxSize = 640;
  const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+ if (scale === 1 && file.size <= 450 * 1024) {
+ resolve(file);
+ return;
+ }
  const width = Math.max(1, Math.round(img.width * scale));
  const height = Math.max(1, Math.round(img.height * scale));
  const canvas = document.createElement('canvas');
@@ -5246,7 +5245,7 @@ function compressDiseaseImageForUpload(file) {
  }
  const baseName = String(file.name || 'leaf-image').replace(/\.[^.]+$/, '') || 'leaf-image';
  resolve(new File([blob], `${baseName}.jpg`, { type: 'image/jpeg', lastModified: Date.now() }));
- }, 'image/jpeg', 0.86);
+ }, 'image/jpeg', 0.8);
  };
  img.onerror = () => {
  URL.revokeObjectURL(objectUrl);
@@ -5254,6 +5253,14 @@ function compressDiseaseImageForUpload(file) {
  };
  img.src = objectUrl;
  });
+}
+
+async function warmDiseaseModel() {
+ try {
+ await apiFetchWithTimeout('/disease/status?warm=true', {}, 8000);
+ } catch (err) {
+ console.warn('Disease model warmup is still starting:', err);
+ }
 }
 
 async function analyzeDisease() {
@@ -5284,7 +5291,7 @@ async function analyzeDisease() {
  if (info) {
  info.innerHTML = `
  <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Preparing your leaf image...</strong></p>
- <p style="font-size:.85rem;color:var(--text-secondary);">First scan after deployment can take longer while the AI model wakes up.</p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">Optimizing the photo for a faster diagnosis.</p>
  `;
  }
 
@@ -5292,10 +5299,10 @@ async function analyzeDisease() {
  if (info) {
  info.innerHTML = `
  <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Still analyzing...</strong></p>
- <p style="font-size:.85rem;color:var(--text-secondary);">The first scan after Render restarts may take 30-90 seconds. Later scans should be faster.</p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">Finishing the AI diagnosis...</p>
  `;
  }
- }, 12000);
+ }, 8000);
 
  try {
  const uploadFile = await compressDiseaseImageForUpload(selectedFile);
@@ -5310,7 +5317,14 @@ async function analyzeDisease() {
  <p style="font-size:.85rem;color:var(--text-secondary);">Please keep this page open until the diagnosis appears.</p>
  `;
  }
- const data = await apiFetchFormData('/disease/predict', formData);
+ const controller = new AbortController();
+ const requestTimeout = window.setTimeout(() => controller.abort(), 35000);
+ let data;
+ try {
+ data = await apiFetchFormData('/disease/predict', formData, { signal: controller.signal });
+ } finally {
+ window.clearTimeout(requestTimeout);
+ }
  const diseaseResult = {
  name: data.name || data.disease || 'Detected Disease',
  confidence: data.confidence || 0,
@@ -5337,18 +5351,16 @@ async function analyzeDisease() {
  window.setTimeout(() => loadRecentDiseaseScans({ silent: true }), 500);
  }
  } catch (err) {
+ const timedOut = err?.name === 'AbortError' || err?.timeout;
  if (badge) {
  badge.className = 'badge badge-warning';
- badge.innerHTML = '<i class="fas fa-info-circle"></i> Model Not Ready';
+ badge.innerHTML = `<i class="fas fa-info-circle"></i> ${timedOut? 'Try Again': 'Analysis Unavailable'}`;
  }
  if (info) {
  info.innerHTML = `
- <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">Disease model is not deployed yet</h3>
+ <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${timedOut? 'Diagnosis took too long': 'Diagnosis unavailable'}</h3>
  <p style="font-size:.9rem;margin-bottom:var(--space-md);">
- ${escapeHtml(err.message || 'Train and deploy the crop disease model before using real predictions.')}
- </p>
- <p style="font-size:.85rem;color:var(--text-secondary);">
- After training, connect the exported model inside the backend <code>/api/disease/predict</code> route.
+ ${escapeHtml(timedOut? 'The service is waking up. Please tap Analyze Disease again.': (err.msg || err.message || 'The disease model could not analyze this image.'))}
  </p>
  `;
  }
@@ -5364,6 +5376,9 @@ async function analyzeDisease() {
 
 // Drag and drop
 document.addEventListener('DOMContentLoaded', () => {
+ if (document.getElementById('leafInput')) {
+ warmDiseaseModel();
+ }
  const dropZone = document.getElementById('uploadZone');
  if (dropZone) {
  dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });

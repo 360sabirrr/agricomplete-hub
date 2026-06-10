@@ -6,7 +6,8 @@
  <title>Disease Detection - AgriComplete Hub</title>
  <meta name="description" content="Upload a leaf image and get instant AI-powered plant disease diagnosis with treatment recommendations.">
  <link rel="stylesheet" href="css/style.css?v=price-controls-20260604">
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+ <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
 <body>
  <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
@@ -69,7 +70,7 @@
  <div class="upload-zone" id="uploadZone" onclick="document.getElementById('leafInput').click()">
  <i class="fas fa-cloud-upload-alt"></i>
  <h4>Drag & Drop or Click to Upload</h4>
- <p>Supports JPG, PNG, WEBP - Max 10MB</p>
+ <p>Supports JPG, PNG, WEBP - Max 8MB</p>
  <input type="file" id="leafInput" accept="image/*" style="display:none;" onchange="previewLeafImage(event)">
  </div>
  <div class="upload-preview" id="uploadPreview">
@@ -183,6 +184,6 @@
  </div>
  </div>
 
- <script src="js/main.js?v=disease-speed-20260608"></script>
+ <script src="js/main.js?v=disease-speed-20260610"></script>
 </body>
 </html>

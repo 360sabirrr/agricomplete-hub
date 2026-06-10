@@ -1,0 +1,23 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+  "python.terminal.activateEnvironment": true,
+  "liveServer.settings.root": "/agricomplete-hub/frontend",
+  "liveServer.settings.ignoreFiles": [
+    "**/.git/**",
+    "**/.venv/**",
+    "**/__pycache__/**",
+    "**/backend/Dataset/**",
+    "**/backend/Models/**"
+  ],
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/.venv/**": true,
+    "**/__pycache__/**": true,
+    "**/agricomplete-hub/backend/Dataset/**": true,
+    "**/agricomplete-hub/backend/Models/**": true
+  },
+  "search.exclude": {
+    "**/.venv": true,
+    "**/agricomplete-hub/backend/Dataset": true
+  }
+}

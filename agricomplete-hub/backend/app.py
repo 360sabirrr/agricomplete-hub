@@ -2,6 +2,8 @@ from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from extensions import db, jwt, bcrypt
 import os
+import secrets
+from datetime import timedelta
 from dotenv import load_dotenv
 import logging
 import re
@@ -13,20 +15,81 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(BASE_DIR, '..', 'frontend')
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
 load_dotenv(os.path.join(BASE_DIR, '.env'), encoding='utf-8-sig', override=True)
 
 app = Flask(__name__)
 CORS(app)
 
-# Configuration
-database_url = (os.getenv('DATABASE_URL') or 'sqlite:///agricomplete.db').strip().strip('"').strip("'")
-if database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+def _is_production():
+    return (
+        str(os.getenv('FLASK_ENV', '')).strip().lower() == 'production' or
+        bool(os.getenv('RENDER'))
+    )
+
+
+def _jwt_secret_key():
+    secret_key = str(os.getenv('JWT_SECRET_KEY') or '').strip()
+    insecure_values = {
+        '',
+        'change_this_secret',
+        'your_secret_key',
+        'super-secret-key',
+    }
+
+    if _is_production():
+        if secret_key.lower() in insecure_values or len(secret_key) < 32:
+            raise RuntimeError(
+                'JWT_SECRET_KEY must be configured with at least 32 characters in production.'
+            )
+        return secret_key
+
+    if secret_key.lower() in insecure_values:
+        secret_key = secrets.token_urlsafe(48)
+        logger.warning(
+            'JWT_SECRET_KEY is not securely configured. Using a temporary development key; '
+            'existing sessions will be invalid after restart.'
+        )
+    return secret_key
+
+
+def _jwt_access_token_minutes():
+    raw_value = os.getenv('JWT_ACCESS_TOKEN_MINUTES', '60')
+    try:
+        minutes = int(raw_value)
+    except (TypeError, ValueError) as err:
+        raise RuntimeError('JWT_ACCESS_TOKEN_MINUTES must be an integer.') from err
+
+    if not 5 <= minutes <= 1440:
+        raise RuntimeError('JWT_ACCESS_TOKEN_MINUTES must be between 5 and 1440.')
+    return minutes
+
+
+def _database_url():
+    database_url = (
+        os.getenv('DATABASE_URL') or 'sqlite:///agricomplete.db'
+    ).strip().strip('"').strip("'")
+
+    if database_url.startswith('postgres://'):
+        return database_url.replace('postgres://', 'postgresql://', 1)
+
+    sqlite_prefix = 'sqlite:///'
+    if database_url.startswith(sqlite_prefix):
+        sqlite_path = database_url[len(sqlite_prefix):]
+        if sqlite_path != ':memory:' and not os.path.isabs(sqlite_path):
+            os.makedirs(INSTANCE_DIR, exist_ok=True)
+            absolute_path = os.path.abspath(os.path.join(INSTANCE_DIR, sqlite_path))
+            return f'{sqlite_prefix}{absolute_path.replace(os.sep, "/")}'
+
+    return database_url
+
+
+# Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = _database_url()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'super-secret-key')
-app.config['JWT_ACCESS_TOKEN_EXPIRES'] = False
+app.config['JWT_SECRET_KEY'] = _jwt_secret_key()
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=_jwt_access_token_minutes())
 
 db.init_app(app)
 jwt.init_app(app)

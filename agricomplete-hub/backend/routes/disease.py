@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import threading
+import time
 
 os.environ.setdefault('CUDA_VISIBLE_DEVICES', '-1')
 os.environ.setdefault('TF_NUM_INTRAOP_THREADS', '1')
@@ -21,6 +22,11 @@ MODEL_PATHS = [
     os.getenv('DISEASE_MODEL_PATH'),
     os.path.join(BASE_DIR, 'Models', 'crop_disease_model.keras'),
     os.path.join(BASE_DIR, 'models', 'crop_disease_model.keras'),
+]
+TFLITE_MODEL_PATHS = [
+    os.getenv('DISEASE_TFLITE_MODEL_PATH'),
+    os.path.join(BASE_DIR, 'Models', 'crop_disease_model.tflite'),
+    os.path.join(BASE_DIR, 'models', 'crop_disease_model.tflite'),
 ]
 CLASS_NAMES_PATHS = [
     os.getenv('DISEASE_CLASS_NAMES_PATH'),
@@ -38,15 +44,18 @@ MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 RECENT_SCAN_LIMIT = 4
 PRELOAD_MODEL = os.getenv('DISEASE_PRELOAD_MODEL', 'false').lower() == 'true'
 BACKGROUND_WARMUP = os.getenv('DISEASE_BACKGROUND_WARMUP', 'true').lower() == 'true'
-INFERENCE_VERSION = 'raw-pixel-input-v2'
+INFERENCE_VERSION = 'litert-raw-pixel-input-v3'
 MODEL_INPUT_PREPROCESSING = 'embedded_in_saved_model'
 
 _model = None
+_model_runtime = None
 _class_names = None
 _treatments = None
 _model_warmed = False
 _warmup_started = False
+_warmup_in_progress = False
 _model_lock = threading.Lock()
+_inference_lock = threading.Lock()
 
 
 def _get_current_user_id():
@@ -126,7 +135,7 @@ def _load_json_file(paths, default):
 
 
 def _load_model_bundle():
-    global _model, _class_names, _treatments, _model_warmed
+    global _model, _model_runtime, _class_names, _treatments, _model_warmed
 
     if _model is not None and _class_names is not None:
         return _model, _class_names, _treatments or {}
@@ -135,7 +144,9 @@ def _load_model_bundle():
         if _model is not None and _class_names is not None:
             return _model, _class_names, _treatments or {}
 
-        model_path = _first_existing_path(MODEL_PATHS)
+        tflite_model_path = _first_existing_path(TFLITE_MODEL_PATHS)
+        keras_model_path = _first_existing_path(MODEL_PATHS)
+        model_path = tflite_model_path or keras_model_path
         if not model_path:
             raise FileNotFoundError('Disease model file was not found in backend/Models.')
 
@@ -143,19 +154,33 @@ def _load_model_bundle():
         if not isinstance(class_names, list) or not class_names:
             raise FileNotFoundError('Disease class_names.json was not found or is invalid.')
 
-        import tensorflow as tf
+        if tflite_model_path:
+            try:
+                from ai_edge_litert.interpreter import Interpreter
+            except ImportError:
+                import tensorflow as tf
+                Interpreter = tf.lite.Interpreter
 
-        try:
-            tf.config.threading.set_intra_op_parallelism_threads(1)
-            tf.config.threading.set_inter_op_parallelism_threads(1)
-        except RuntimeError:
-            pass
+            _model = Interpreter(model_path=tflite_model_path, num_threads=1)
+            _model.allocate_tensors()
+            _model_runtime = 'litert'
+        else:
+            import tensorflow as tf
 
-        _model = tf.keras.models.load_model(model_path)
+            try:
+                tf.config.threading.set_intra_op_parallelism_threads(1)
+                tf.config.threading.set_inter_op_parallelism_threads(1)
+            except RuntimeError:
+                pass
+
+            _model = tf.keras.models.load_model(keras_model_path)
+            _model_runtime = 'keras'
+
         _class_names = [str(item) for item in class_names]
         _treatments = _load_json_file(TREATMENTS_PATHS, {})
         _warm_model(_model)
         _model_warmed = True
+        logger.info('Disease model loaded with %s runtime from %s.', _model_runtime, model_path)
         return _model, _class_names, _treatments or {}
 
 
@@ -163,35 +188,70 @@ def _warm_model(model):
     import numpy as np
 
     dummy_batch = np.zeros((1, IMG_SIZE[0], IMG_SIZE[1], 3), dtype='float32')
-    model(dummy_batch, training=False)
+    _run_inference(model, dummy_batch)
+
+
+def _run_inference(model, batch):
+    import numpy as np
+
+    with _inference_lock:
+        if _model_runtime == 'litert':
+            input_details = model.get_input_details()[0]
+            output_details = model.get_output_details()[0]
+            input_batch = batch.astype(input_details['dtype'], copy=False)
+
+            if np.issubdtype(input_details['dtype'], np.integer):
+                scale, zero_point = input_details.get('quantization', (0.0, 0))
+                if scale:
+                    input_batch = np.rint(batch / scale + zero_point).astype(input_details['dtype'])
+
+            model.set_tensor(input_details['index'], input_batch)
+            model.invoke()
+            predictions = model.get_tensor(output_details['index'])
+
+            if np.issubdtype(output_details['dtype'], np.integer):
+                scale, zero_point = output_details.get('quantization', (0.0, 0))
+                if scale:
+                    predictions = (predictions.astype('float32') - zero_point) * scale
+            return predictions
+
+        predictions = model(batch, training=False)
+        return predictions.numpy() if hasattr(predictions, 'numpy') else np.asarray(predictions)
 
 
 def _start_background_warmup():
-    global _warmup_started
+    global _warmup_started, _warmup_in_progress
 
-    if _warmup_started or _model_warmed:
+    if _model_warmed or _warmup_in_progress:
         return
 
     _warmup_started = True
+    _warmup_in_progress = True
 
     def warmup():
+        global _warmup_in_progress
         try:
             _load_model_bundle()
             logger.info('Disease prediction model warmed in background.')
         except Exception as err:
             logger.warning('Disease prediction background warmup failed: %s', err)
+        finally:
+            _warmup_in_progress = False
 
     threading.Thread(target=warmup, name='disease-model-warmup', daemon=True).start()
 
 
 def _model_status():
-    model_path = _first_existing_path(MODEL_PATHS)
+    model_path = _first_existing_path(TFLITE_MODEL_PATHS) or _first_existing_path(MODEL_PATHS)
     class_names_path = _first_existing_path(CLASS_NAMES_PATHS)
     treatments_path = _first_existing_path(TREATMENTS_PATHS)
     return {
         'configured': bool(model_path and class_names_path),
         'loaded': _model is not None and _class_names is not None,
         'warmed': _model_warmed,
+        'warming': _warmup_in_progress,
+        'warmup_started': _warmup_started,
+        'runtime': _model_runtime,
         'model_path': model_path,
         'class_names_path': class_names_path,
         'treatments_path': treatments_path,
@@ -296,6 +356,8 @@ def _guidance_for(label, treatments):
 
 @disease_bp.route('/status', methods=['GET'])
 def disease_status():
+    if str(request.args.get('warm') or '').strip().lower() in {'1', 'true', 'yes'}:
+        _start_background_warmup()
     return jsonify(_model_status()), 200
 
 
@@ -324,16 +386,22 @@ def recent_scans():
 
 @disease_bp.route('/predict', methods=['POST'])
 def predict_disease():
+    start_total_time = time.time()
     if 'image' not in request.files:
         return jsonify({'msg': 'Leaf image is required'}), 400
 
     try:
         model, class_names, treatments = _load_model_bundle()
+
+        start_preprocess_time = time.time()
         batch = _preprocess_image(request.files['image'])
-        
-        predictions = model(batch, training=False)
-        if hasattr(predictions, 'numpy'):
-            predictions = predictions.numpy()
+        end_preprocess_time = time.time()
+        logger.info(f'Image preprocessing took: {end_preprocess_time - start_preprocess_time:.4f} seconds')
+
+        start_inference_time = time.time()
+        predictions = _run_inference(model, batch)
+        end_inference_time = time.time()
+        logger.info(f'Model inference took: {end_inference_time - start_inference_time:.4f} seconds')
 
         scores = predictions[0].tolist()
         predicted_index = max(range(len(scores)), key=lambda index: scores[index])
@@ -358,7 +426,11 @@ def predict_disease():
             reverse=True
         )[:3]
 
+        start_db_record_time = time.time()
         saved_scan = _record_disease_scan(label, confidence, severity, badge_class)
+        end_db_record_time = time.time()
+        logger.info(f'Database record took: {end_db_record_time - start_db_record_time:.4f} seconds')
+
         response = {
             'status': 'ok',
             'disease': label,
@@ -377,6 +449,9 @@ def predict_disease():
         }
         if saved_scan:
             response['scan'] = _serialize_scan(saved_scan)
+
+        end_total_time = time.time()
+        logger.info(f'Total predict_disease request took: {end_total_time - start_total_time:.4f} seconds')
 
         return jsonify(response), 200
     except ValueError as err:
