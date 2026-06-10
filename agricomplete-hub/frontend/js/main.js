@@ -4300,12 +4300,13 @@ const LOCAL_API_HOSTS = ['', 'localhost', '127.0.0.1', '::1'];
 const DEFAULT_RENDER_API_URL = 'https://agricomplete-backend.onrender.com/api';
 
 const API_URL = (() => {
+ const isLocalHost = LOCAL_API_HOSTS.includes(window.location.hostname);
  const configuredUrl =
  window.AGRICOMPLETE_API_URL ||
- document.querySelector('meta[name="api-url"]')?.content;
+ (!isLocalHost && document.querySelector('meta[name="api-url"]')?.content);
  if (configuredUrl) return normalizeApiUrl(configuredUrl);
 
- if (LOCAL_API_HOSTS.includes(window.location.hostname)) {
+ if (isLocalHost) {
  return 'http://localhost:5000/api';
  }
 
@@ -5255,12 +5256,53 @@ function compressDiseaseImageForUpload(file) {
  });
 }
 
-async function warmDiseaseModel() {
+const DISEASE_READY_TIMEOUT_MS = 120000;
+const DISEASE_PREDICTION_TIMEOUT_MS = 60000;
+let diseaseWarmupPromise = null;
+
+function waitForDelay(milliseconds) {
+ return new Promise(resolve => window.setTimeout(resolve, milliseconds));
+}
+
+async function waitForDiseaseModel() {
+ const deadline = Date.now() + DISEASE_READY_TIMEOUT_MS;
+ let lastError = null;
+
+ while (Date.now() < deadline) {
  try {
- await apiFetchWithTimeout('/disease/status?warm=true', {}, 8000);
- } catch (err) {
- console.warn('Disease model warmup is still starting:', err);
+ const remaining = Math.max(1000, deadline - Date.now());
+ const status = await apiFetchWithTimeout(
+ '/disease/status?warm=true&wait=true',
+ {},
+ Math.min(remaining, DISEASE_READY_TIMEOUT_MS)
+ );
+ if (status?.ready || (status?.loaded && status?.warmed)) {
+ return status;
  }
+ lastError = { msg: status?.msg || 'Disease model is still loading.' };
+ } catch (err) {
+ lastError = err;
+ }
+
+ if (Date.now() < deadline) {
+ await waitForDelay(1500);
+ }
+ }
+
+ throw {
+ msg: lastError?.msg || lastError?.message || 'The disease service is taking too long to start.',
+ timeout: true
+ };
+}
+
+function warmDiseaseModel() {
+ if (!diseaseWarmupPromise) {
+ diseaseWarmupPromise = waitForDiseaseModel().catch(err => {
+ diseaseWarmupPromise = null;
+ throw err;
+ });
+ }
+ return diseaseWarmupPromise;
 }
 
 async function analyzeDisease() {
@@ -5290,8 +5332,8 @@ async function analyzeDisease() {
  }
  if (info) {
  info.innerHTML = `
- <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Preparing your leaf image...</strong></p>
- <p style="font-size:.85rem;color:var(--text-secondary);">Optimizing the photo for a faster diagnosis.</p>
+ <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Preparing the AI diagnosis...</strong></p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">The first scan may briefly wake the cloud service.</p>
  `;
  }
 
@@ -5305,7 +5347,10 @@ async function analyzeDisease() {
  }, 8000);
 
  try {
- const uploadFile = await compressDiseaseImageForUpload(selectedFile);
+ const [uploadFile] = await Promise.all([
+ compressDiseaseImageForUpload(selectedFile),
+ warmDiseaseModel()
+ ]);
  const formData = new FormData();
  formData.append('image', uploadFile, uploadFile.name || selectedFile.name || 'leaf-image.jpg');
  if (badge) {
@@ -5318,7 +5363,7 @@ async function analyzeDisease() {
  `;
  }
  const controller = new AbortController();
- const requestTimeout = window.setTimeout(() => controller.abort(), 35000);
+ const requestTimeout = window.setTimeout(() => controller.abort(), DISEASE_PREDICTION_TIMEOUT_MS);
  let data;
  try {
  data = await apiFetchFormData('/disease/predict', formData, { signal: controller.signal });
@@ -5360,7 +5405,7 @@ async function analyzeDisease() {
  info.innerHTML = `
  <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${timedOut? 'Diagnosis took too long': 'Diagnosis unavailable'}</h3>
  <p style="font-size:.9rem;margin-bottom:var(--space-md);">
- ${escapeHtml(timedOut? 'The service is waking up. Please tap Analyze Disease again.': (err.msg || err.message || 'The disease model could not analyze this image.'))}
+ ${escapeHtml(timedOut? 'The cloud service did not become ready. Please try again in a moment.': (err.msg || err.message || 'The disease model could not analyze this image.'))}
  </p>
  `;
  }
@@ -5377,7 +5422,9 @@ async function analyzeDisease() {
 // Drag and drop
 document.addEventListener('DOMContentLoaded', () => {
  if (document.getElementById('leafInput')) {
- warmDiseaseModel();
+ warmDiseaseModel().catch(err => {
+ console.warn('Disease model warmup is still pending:', err);
+ });
  }
  const dropZone = document.getElementById('uploadZone');
  if (dropZone) {

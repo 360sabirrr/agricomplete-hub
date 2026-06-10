@@ -356,9 +356,26 @@ def _guidance_for(label, treatments):
 
 @disease_bp.route('/status', methods=['GET'])
 def disease_status():
-    if str(request.args.get('warm') or '').strip().lower() in {'1', 'true', 'yes'}:
+    should_warm = str(request.args.get('warm') or '').strip().lower() in {'1', 'true', 'yes'}
+    should_wait = str(request.args.get('wait') or '').strip().lower() in {'1', 'true', 'yes'}
+
+    if should_wait:
+        try:
+            _load_model_bundle()
+        except Exception as err:
+            logger.error('Disease model readiness check failed: %s', err, exc_info=True)
+            status = _model_status()
+            status.update({
+                'ready': False,
+                'msg': str(err),
+            })
+            return jsonify(status), 503
+    elif should_warm:
         _start_background_warmup()
-    return jsonify(_model_status()), 200
+
+    status = _model_status()
+    status['ready'] = bool(status['loaded'] and status['warmed'])
+    return jsonify(status), 200
 
 
 @disease_bp.route('/scans', methods=['GET'])

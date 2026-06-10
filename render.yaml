@@ -34,9 +34,9 @@ services:
       - key: DISEASE_TREATMENTS_PATH
         value: recommendations/treatments.json
       - key: DISEASE_PRELOAD_MODEL
-        value: "false"
-      - key: DISEASE_BACKGROUND_WARMUP
         value: "true"
+      - key: DISEASE_BACKGROUND_WARMUP
+        value: "false"
       - key: TF_CPP_MIN_LOG_LEVEL
         value: "2"
       - key: TF_NUM_INTRAOP_THREADS
