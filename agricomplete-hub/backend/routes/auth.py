@@ -292,6 +292,38 @@ def _send_password_reset_code(user, channel, token, expires_minutes):
     _send_password_reset_email(user, token, expires_minutes)
 
 
+def _password_reset_delivery_error(err):
+    if isinstance(err, smtplib.SMTPAuthenticationError):
+        return (
+            'SMTP_AUTH_FAILED',
+            'Email login failed. Check SMTP_USERNAME and the Google App Password.'
+        )
+    if isinstance(err, smtplib.SMTPRecipientsRefused):
+        return (
+            'SMTP_RECIPIENT_REFUSED',
+            'The registered email address was rejected by the email provider.'
+        )
+    if isinstance(err, smtplib.SMTPConnectError):
+        return (
+            'SMTP_CONNECTION_FAILED',
+            'The email service could not connect to Gmail. Please try again shortly.'
+        )
+    if isinstance(err, smtplib.SMTPResponseException):
+        return (
+            'SMTP_REQUEST_FAILED',
+            'Gmail rejected the password reset email request.'
+        )
+    if isinstance(err, (smtplib.SMTPServerDisconnected, TimeoutError, OSError)):
+        return (
+            'SMTP_CONNECTION_FAILED',
+            'The email service could not connect to Gmail. Please try again shortly.'
+        )
+    return (
+        'EMAIL_DELIVERY_FAILED',
+        'Could not send the reset code. Please try again later.'
+    )
+
+
 def _make_username_base(value):
     base = re.sub(r'[^a-zA-Z0-9_]+', '_', _clean_text(value).lower()).strip('_')
     return (base or 'farmer')[:80]
@@ -512,16 +544,21 @@ def request_password_reset():
             try:
                 _send_password_reset_code(user, channel, reset_code, expires_minutes)
             except Exception as err:
-                reset_token.used_at = datetime.utcnow()
+                error_code, error_message = _password_reset_delivery_error(err)
+                db.session.delete(reset_token)
                 db.session.commit()
                 logger.error(
-                    'Password reset %s delivery failed for user id %s: %s',
+                    'Password reset %s delivery failed for user id %s (%s): %s',
                     channel,
                     user.id,
+                    error_code,
                     err,
                     exc_info=True
                 )
-                return jsonify({"msg": "Could not send reset code. Please try again later."}), 503
+                return jsonify({
+                    "msg": error_message,
+                    "error_code": error_code,
+                }), 503
 
         response = {
             **generic_response,
