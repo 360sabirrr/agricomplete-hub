@@ -142,15 +142,21 @@ OPENROUTER_FALLBACK_MODELS=
 OPENROUTER_TIMEOUT_SECONDS=24
 WEATHERAPI_KEY=your_weatherapi_key
 OPENWEATHER_API_KEY=your_openweathermap_key
-BREVO_API_KEY=your_brevo_api_key
-EMAIL_FROM=your_email@example.com
-EMAIL_FROM_NAME=AgriComplete Hub
+EMAIL_DELIVERY_PROVIDER=gmail_api
+GMAIL_API_CLIENT_ID=your_google_oauth_client_id
+GMAIL_API_CLIENT_SECRET=your_google_oauth_client_secret
+GMAIL_API_REFRESH_TOKEN=your_google_oauth_refresh_token
+GMAIL_API_FROM=your_gmail_address
+GMAIL_API_FROM_NAME=AgriComplete Hub
+GMAIL_API_TIMEOUT_SECONDS=15
 SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
+SMTP_PORT=465
 SMTP_USERNAME=your_email@example.com
 SMTP_PASSWORD=your_email_app_password
 SMTP_FROM=your_email@example.com
-SMTP_USE_TLS=true
+SMTP_FROM_NAME=AgriComplete Hub
+SMTP_USE_TLS=false
+SMTP_USE_SSL=true
 PASSWORD_RESET_TOKEN_MINUTES=15
 FLASK_ENV=development
 FLASK_DEBUG=True
@@ -192,15 +198,13 @@ When creating the Blueprint, Render provisions the Postgres database and injects
 OPENROUTER_API_KEY=your_openrouter_api_key
 WEATHERAPI_KEY=optional_weatherapi_key
 OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
-BREVO_API_KEY=recommended_for_password_reset_on_render
-EMAIL_FROM=your_email@example.com
-EMAIL_FROM_NAME=AgriComplete Hub
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your_email@example.com
-SMTP_PASSWORD=your_email_app_password
-SMTP_FROM=your_email@example.com
-SMTP_USE_TLS=true
+EMAIL_DELIVERY_PROVIDER=gmail_api
+GMAIL_API_CLIENT_ID=your_google_oauth_client_id
+GMAIL_API_CLIENT_SECRET=your_google_oauth_client_secret
+GMAIL_API_REFRESH_TOKEN=your_google_oauth_refresh_token
+GMAIL_API_FROM=your_gmail_address
+GMAIL_API_FROM_NAME=AgriComplete Hub
+GMAIL_API_TIMEOUT_SECONDS=15
 ```
 
 The frontend API URL is deployment-aware in `frontend/js/main.js`:
@@ -208,7 +212,15 @@ The frontend API URL is deployment-aware in `frontend/js/main.js`:
 - deployed frontend uses the current service origin plus `/api`
 - you can override it with `window.AGRICOMPLETE_API_URL` or a `<meta name="api-url">` tag
 
-For password reset email on Render, use `BREVO_API_KEY` when possible. Render free services can fail on direct SMTP ports like Gmail `587`/`465`, while Brevo's API sends over HTTPS.
+For password reset email on Render, use the Gmail API provider. It sends over HTTPS and does not depend on SMTP ports. Enable the Gmail API, create a Google OAuth desktop client, set `GMAIL_API_CLIENT_ID` and `GMAIL_API_CLIENT_SECRET` locally, then run:
+
+```bash
+cd agricomplete-hub/backend
+python gmail_oauth_setup.py
+```
+
+Authorize the same mailbox used by `GMAIL_API_FROM`, then store the generated refresh token only in Render.
+For long-running deployment, publish the OAuth consent configuration to Production; Google refresh tokens for external apps left in Testing expire after seven days.
 
 ## Backend
 

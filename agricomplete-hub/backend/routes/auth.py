@@ -1,6 +1,8 @@
+import base64
 import logging
 import hashlib
 import hmac
+import json
 import os
 import re
 import secrets
@@ -9,6 +11,9 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from email.utils import formataddr
 from html import escape
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token
@@ -29,6 +34,14 @@ PASSWORD_RESET_MAX_ATTEMPTS = 5
 PASSWORD_RESET_RESEND_SECONDS = 60
 PASSWORD_RESET_MAX_REQUESTS_PER_HOUR = 5
 PASSWORD_RESET_GENERIC_MSG = "If that account is registered, a reset code has been sent."
+GMAIL_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+GMAIL_SEND_URL = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send'
+
+
+class GmailApiDeliveryError(RuntimeError):
+    def __init__(self, message, error_code='GMAIL_API_REQUEST_FAILED'):
+        super().__init__(message)
+        self.error_code = error_code
 
 
 def _get_json_body():
@@ -154,8 +167,57 @@ def _smtp_is_configured(settings):
     )
 
 
+def _gmail_api_settings():
+    return {
+        'client_id': _clean_text(os.getenv('GMAIL_API_CLIENT_ID'), 300),
+        'client_secret': _clean_text(os.getenv('GMAIL_API_CLIENT_SECRET'), 300),
+        'refresh_token': _clean_text(os.getenv('GMAIL_API_REFRESH_TOKEN'), 1000),
+        'sender': _normalize_email(
+            os.getenv('GMAIL_API_FROM') or
+            os.getenv('SMTP_FROM') or
+            os.getenv('SMTP_USERNAME')
+        ),
+        'sender_name': _clean_text(
+            os.getenv('GMAIL_API_FROM_NAME') or
+            os.getenv('EMAIL_FROM_NAME') or
+            'AgriComplete Hub',
+            80
+        ),
+        'timeout': _bounded_env_int('GMAIL_API_TIMEOUT_SECONDS', 15, 5, 30),
+    }
+
+
+def _gmail_api_is_configured(settings):
+    return bool(
+        settings['client_id'] and
+        settings['client_secret'] and
+        settings['refresh_token'] and
+        settings['sender'] and
+        EMAIL_RE.match(settings['sender'])
+    )
+
+
+def _email_delivery_provider():
+    requested_provider = _clean_text(
+        os.getenv('EMAIL_DELIVERY_PROVIDER') or 'auto',
+        20
+    ).lower()
+    gmail_settings = _gmail_api_settings()
+    smtp_settings = _smtp_settings()
+
+    if requested_provider == 'gmail_api':
+        return 'gmail_api' if _gmail_api_is_configured(gmail_settings) else None
+    if requested_provider == 'smtp':
+        return 'smtp' if _smtp_is_configured(smtp_settings) else None
+    if _gmail_api_is_configured(gmail_settings):
+        return 'gmail_api'
+    if _smtp_is_configured(smtp_settings):
+        return 'smtp'
+    return None
+
+
 def _password_reset_email_is_configured():
-    return _smtp_is_configured(_smtp_settings())
+    return _email_delivery_provider() is not None
 
 
 def _reset_email_body(user, token, expires_minutes):
@@ -205,21 +267,134 @@ def _reset_email_html(user, token, expires_minutes):
 </html>"""
 
 
-def _send_password_reset_email(user, token, expires_minutes):
-    settings = _smtp_settings()
-    if not _smtp_is_configured(settings):
-        raise RuntimeError('SMTP email service is not configured')
-
+def _build_password_reset_message(user, token, expires_minutes, sender, sender_name):
     recipient = _normalize_email(getattr(user, 'email', ''))
     if not recipient or not EMAIL_RE.match(recipient):
         raise RuntimeError('The registered email address is invalid')
 
     message = EmailMessage()
     message['Subject'] = 'AgriComplete password reset code'
-    message['From'] = formataddr((settings['sender_name'], settings['sender']))
+    message['From'] = formataddr((sender_name, sender))
     message['To'] = recipient
     message.set_content(_reset_email_body(user, token, expires_minutes))
     message.add_alternative(_reset_email_html(user, token, expires_minutes), subtype='html')
+    return message, recipient
+
+
+def _read_http_error(err):
+    try:
+        payload = json.loads(err.read().decode('utf-8'))
+    except (AttributeError, UnicodeDecodeError, json.JSONDecodeError):
+        return ''
+    error = payload.get('error')
+    if isinstance(error, dict):
+        error = error.get('message')
+    return _clean_text(payload.get('error_description') or error, 300)
+
+
+def _gmail_api_access_token(settings):
+    token_request = Request(
+        GMAIL_TOKEN_URL,
+        data=urlencode({
+            'client_id': settings['client_id'],
+            'client_secret': settings['client_secret'],
+            'refresh_token': settings['refresh_token'],
+            'grant_type': 'refresh_token',
+        }).encode('utf-8'),
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        method='POST'
+    )
+    try:
+        with urlopen(token_request, timeout=settings['timeout']) as response:
+            payload = json.loads(response.read().decode('utf-8'))
+    except HTTPError as err:
+        detail = _read_http_error(err)
+        raise GmailApiDeliveryError(
+            detail or 'Google rejected the Gmail API credentials',
+            'GMAIL_API_AUTH_FAILED'
+        ) from err
+    except (URLError, TimeoutError, OSError) as err:
+        raise GmailApiDeliveryError(
+            'Could not connect to Google OAuth',
+            'GMAIL_API_CONNECTION_FAILED'
+        ) from err
+    except (UnicodeDecodeError, json.JSONDecodeError) as err:
+        raise GmailApiDeliveryError(
+            'Google OAuth returned an invalid response',
+            'GMAIL_API_AUTH_FAILED'
+        ) from err
+
+    access_token = _clean_text(payload.get('access_token'), 3000)
+    if not access_token:
+        raise GmailApiDeliveryError(
+            'Google OAuth did not return an access token',
+            'GMAIL_API_AUTH_FAILED'
+        )
+    return access_token
+
+
+def _send_password_reset_email_with_gmail_api(user, token, expires_minutes):
+    settings = _gmail_api_settings()
+    if not _gmail_api_is_configured(settings):
+        raise GmailApiDeliveryError(
+            'Gmail API is not configured',
+            'GMAIL_API_NOT_CONFIGURED'
+        )
+
+    message, _ = _build_password_reset_message(
+        user,
+        token,
+        expires_minutes,
+        settings['sender'],
+        settings['sender_name']
+    )
+    raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('ascii')
+    access_token = _gmail_api_access_token(settings)
+    send_request = Request(
+        GMAIL_SEND_URL,
+        data=json.dumps({'raw': raw_message}).encode('utf-8'),
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+        },
+        method='POST'
+    )
+    try:
+        with urlopen(send_request, timeout=settings['timeout']) as response:
+            payload = json.loads(response.read().decode('utf-8'))
+    except HTTPError as err:
+        detail = _read_http_error(err)
+        raise GmailApiDeliveryError(
+            detail or 'Gmail rejected the password reset email',
+            'GMAIL_API_REQUEST_FAILED'
+        ) from err
+    except (URLError, TimeoutError, OSError) as err:
+        raise GmailApiDeliveryError(
+            'Could not connect to the Gmail API',
+            'GMAIL_API_CONNECTION_FAILED'
+        ) from err
+    except (UnicodeDecodeError, json.JSONDecodeError) as err:
+        raise GmailApiDeliveryError(
+            'Gmail API returned an invalid response',
+            'GMAIL_API_REQUEST_FAILED'
+        ) from err
+
+    if not payload.get('id'):
+        raise GmailApiDeliveryError('Gmail API did not accept the email')
+    logger.info('Password reset email accepted by Gmail API for user id %s', user.id)
+
+
+def _send_password_reset_email_with_smtp(user, token, expires_minutes):
+    settings = _smtp_settings()
+    if not _smtp_is_configured(settings):
+        raise RuntimeError('SMTP email service is not configured')
+    message, recipient = _build_password_reset_message(
+        user,
+        token,
+        expires_minutes,
+        settings['sender'],
+        settings['sender_name']
+    )
 
     smtp_class = smtplib.SMTP_SSL if settings['use_ssl'] else smtplib.SMTP
     with smtp_class(settings['host'], settings['port'], timeout=settings['timeout']) as server:
@@ -242,6 +417,15 @@ def _send_password_reset_email(user, token, expires_minutes):
         settings['host'],
         settings['port']
     )
+
+
+def _send_password_reset_email(user, token, expires_minutes):
+    provider = _email_delivery_provider()
+    if provider == 'gmail_api':
+        return _send_password_reset_email_with_gmail_api(user, token, expires_minutes)
+    if provider == 'smtp':
+        return _send_password_reset_email_with_smtp(user, token, expires_minutes)
+    raise RuntimeError('Password reset email service is not configured')
 
 
 def _find_user_by_phone(User, phone):
@@ -294,6 +478,21 @@ def _send_password_reset_code(user, channel, token, expires_minutes):
 
 
 def _password_reset_delivery_error(err):
+    if isinstance(err, GmailApiDeliveryError):
+        if err.error_code == 'GMAIL_API_AUTH_FAILED':
+            return (
+                err.error_code,
+                'Gmail API authorization failed. Refresh the Google OAuth credentials.'
+            )
+        if err.error_code == 'GMAIL_API_CONNECTION_FAILED':
+            return (
+                err.error_code,
+                'The email service could not reach the Gmail API. Please try again shortly.'
+            )
+        return (
+            err.error_code,
+            'Gmail rejected the password reset email request.'
+        )
     if isinstance(err, smtplib.SMTPAuthenticationError):
         return (
             'SMTP_AUTH_FAILED',
