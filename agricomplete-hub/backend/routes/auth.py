@@ -137,6 +137,7 @@ def _smtp_settings():
             os.getenv('SMTP_FROM_NAME') or os.getenv('EMAIL_FROM_NAME') or 'AgriComplete Hub',
             80
         ),
+        'timeout': _bounded_env_int('SMTP_TIMEOUT_SECONDS', 12, 5, 30),
         'use_tls': use_tls,
         'use_ssl': use_ssl,
     }
@@ -221,7 +222,7 @@ def _send_password_reset_email(user, token, expires_minutes):
     message.add_alternative(_reset_email_html(user, token, expires_minutes), subtype='html')
 
     smtp_class = smtplib.SMTP_SSL if settings['use_ssl'] else smtplib.SMTP
-    with smtp_class(settings['host'], settings['port'], timeout=20) as server:
+    with smtp_class(settings['host'], settings['port'], timeout=settings['timeout']) as server:
         server.ehlo()
         if settings['use_tls']:
             server.starttls()
