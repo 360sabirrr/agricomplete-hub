@@ -114,7 +114,6 @@ def ensure_sqlite_schema():
     user_columns = {
         'first_name': 'VARCHAR(50)',
         'last_name': 'VARCHAR(50)',
-        'google_sub': 'VARCHAR(255)',
         'phone': 'VARCHAR(20)',
         'state': 'VARCHAR(50)',
         'district': 'VARCHAR(50)',
@@ -170,7 +169,6 @@ def ensure_sqlite_schema():
                 )
 
         conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS idx_user_phone_unique ON "user"(phone) WHERE phone IS NOT NULL'))
-        conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS idx_user_google_sub_unique ON "user"(google_sub) WHERE google_sub IS NOT NULL'))
 
 
 def ensure_postgres_schema():
@@ -180,7 +178,6 @@ def ensure_postgres_schema():
     user_columns = {
         'first_name': 'VARCHAR(50)',
         'last_name': 'VARCHAR(50)',
-        'google_sub': 'VARCHAR(255)',
         'phone': 'VARCHAR(20)',
         'state': 'VARCHAR(50)',
         'district': 'VARCHAR(50)',
@@ -205,7 +202,6 @@ def ensure_postgres_schema():
             conn.execute(text(f'ALTER TABLE market_listing ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
         conn.execute(text('UPDATE "user" SET email = LOWER(TRIM(email)) WHERE email IS NOT NULL'))
         conn.execute(text("UPDATE \"user\" SET phone = NULL WHERE phone IS NULL OR TRIM(phone) = ''"))
-        conn.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS idx_user_google_sub_unique ON "user"(google_sub) WHERE google_sub IS NOT NULL'))
 
 from routes.auth import auth_bp
 from routes.farm import farm_bp

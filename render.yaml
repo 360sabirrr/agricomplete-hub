@@ -17,8 +17,6 @@ services:
         generateValue: true
       - key: JWT_ACCESS_TOKEN_MINUTES
         value: "60"
-      - key: GOOGLE_CLIENT_ID
-        sync: false
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL

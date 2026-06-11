@@ -9,8 +9,6 @@ from datetime import datetime, timedelta
 import mailtrap as mt
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token
-from google.auth.transport import requests as google_requests
-from google.oauth2 import id_token as google_id_token
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
@@ -129,10 +127,6 @@ def _mailtrap_settings():
 
 def _mailtrap_is_configured(settings):
     return bool(settings['api_token'] and settings['sender'] and EMAIL_RE.match(settings['sender']))
-
-
-def _google_client_id():
-    return _clean_text(os.getenv('GOOGLE_CLIENT_ID'), 300)
 
 
 def _password_reset_email_is_configured():
@@ -258,87 +252,6 @@ def _serialize_user(user):
         "primary_crops": user.primary_crops or '',
         "farming_type": user.farming_type or ''
     }
-
-
-@auth_bp.route('/google/config', methods=['GET'])
-def google_login_config():
-    client_id = _google_client_id()
-    return jsonify({
-        "enabled": bool(client_id),
-        "client_id": client_id,
-    }), 200
-
-
-@auth_bp.route('/google', methods=['POST'])
-def google_login():
-    from models import User
-
-    client_id = _google_client_id()
-    if not client_id:
-        return jsonify({"msg": "Google login is not configured"}), 503
-
-    credential = _clean_text(_get_json_body().get('credential'), 10000)
-    if not credential:
-        return jsonify({"msg": "Google credential is required"}), 400
-
-    try:
-        identity = google_id_token.verify_oauth2_token(
-            credential,
-            google_requests.Request(),
-            client_id
-        )
-    except ValueError:
-        logger.warning('Google login rejected an invalid ID token')
-        return jsonify({"msg": "Google sign-in could not be verified"}), 401
-    except Exception as err:
-        logger.error('Google token verification failed: %s', err, exc_info=True)
-        return jsonify({"msg": "Google sign-in is temporarily unavailable"}), 503
-
-    issuer = identity.get('iss')
-    email = _normalize_email(identity.get('email'))
-    google_sub = _clean_text(identity.get('sub'), 255)
-    email_verified = identity.get('email_verified') is True
-
-    if issuer not in {'accounts.google.com', 'https://accounts.google.com'}:
-        return jsonify({"msg": "Google sign-in could not be verified"}), 401
-    if not google_sub or not email_verified or not email.endswith('@gmail.com'):
-        return jsonify({"msg": "Please sign in with a verified Gmail account"}), 400
-
-    try:
-        user = User.query.filter_by(google_sub=google_sub).first()
-        if not user:
-            user = User.query.filter_by(email=email).first()
-
-        if user:
-            if user.google_sub and user.google_sub != google_sub:
-                logger.warning('Google account mismatch for user id: %s', user.id)
-                return jsonify({"msg": "This email is linked to another Google account"}), 409
-            user.google_sub = google_sub
-            user.first_name = user.first_name or _clean_text(identity.get('given_name'), 50)
-            user.last_name = user.last_name or _clean_text(identity.get('family_name'), 50)
-        else:
-            user = User(
-                username=_generate_unique_username(User, '', email),
-                email=email,
-                google_sub=google_sub,
-                first_name=_clean_text(identity.get('given_name'), 50),
-                last_name=_clean_text(identity.get('family_name'), 50),
-            )
-            user.set_password(secrets.token_urlsafe(32))
-            db.session.add(user)
-
-        db.session.commit()
-        access_token = create_access_token(identity=str(user.id))
-        logger.info('Google login successful for user id: %s', user.id)
-        return jsonify(access_token=access_token, user=_serialize_user(user)), 200
-    except IntegrityError:
-        db.session.rollback()
-        logger.warning('Google login encountered an account identity conflict', exc_info=True)
-        return jsonify({"msg": "This Google account is already linked"}), 409
-    except Exception as err:
-        db.session.rollback()
-        logger.error('Google login failed: %s', err, exc_info=True)
-        return jsonify({"msg": "Google sign-in failed. Please try again."}), 500
 
 
 @auth_bp.route('/register', methods=['POST'])
