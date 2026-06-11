@@ -2928,3 +2928,113 @@ p { color:var(--text-secondary); }
  from { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
  to { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
 }
+
+/* In-app status notifications */
+.app-toast {
+ --toast-accent:#217A3E;
+ position:fixed;
+ top:24px;
+ right:24px;
+ z-index:1000;
+ display:grid;
+ grid-template-columns:42px minmax(0, 1fr) 32px;
+ align-items:center;
+ gap:12px;
+ width:min(410px, calc(100vw - 32px));
+ min-height:78px;
+ padding:14px 12px 14px 14px;
+ overflow:hidden;
+ border:1px solid #D7E7DA;
+ border-radius:8px;
+ background:#FFFFFF;
+ color:#18351F;
+ box-shadow:0 18px 48px rgba(10,38,18,.2);
+ animation:toastSlideIn .28s ease-out both;
+}
+.app-toast.toast-error { --toast-accent:#C62828; border-color:#F0CECE; }
+.app-toast.toast-warning { --toast-accent:#B26A00; border-color:#EEDDBD; }
+.app-toast.toast-info { --toast-accent:#087F8C; border-color:#C5E4E7; }
+.toast-icon-wrap {
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ width:42px;
+ height:42px;
+ border-radius:50%;
+ background:#EAF5ED;
+ color:var(--toast-accent);
+ font-size:1rem;
+}
+.toast-error .toast-icon-wrap { background:#FCECEC; }
+.toast-warning .toast-icon-wrap { background:#FFF5DF; }
+.toast-info .toast-icon-wrap { background:#E5F5F6; }
+.toast-content {
+ display:flex;
+ min-width:0;
+ flex-direction:column;
+ gap:3px;
+}
+.toast-title {
+ color:#17351E;
+ font-size:.92rem;
+ line-height:1.25;
+}
+.toast-message {
+ color:#58705D;
+ font-size:.82rem;
+ line-height:1.45;
+ overflow-wrap:anywhere;
+}
+.toast-close {
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ width:32px;
+ height:32px;
+ color:#718176;
+ border-radius:50%;
+ transition:background var(--transition-fast), color var(--transition-fast);
+}
+.toast-close:hover {
+ background:#EEF3EF;
+ color:#18351F;
+}
+.toast-progress {
+ position:absolute;
+ right:0;
+ bottom:0;
+ left:0;
+ height:3px;
+ background:var(--toast-accent);
+ transform-origin:left;
+ animation:toastProgress 4.5s linear both;
+}
+.toast-error .toast-progress { animation-duration:6s; }
+.app-toast.toast-hide { animation:toastSlideOut .26s ease-in both; }
+@keyframes toastSlideIn {
+ from { opacity:0; transform:translateY(-12px) translateX(18px); }
+ to { opacity:1; transform:translateY(0) translateX(0); }
+}
+@keyframes toastSlideOut {
+ from { opacity:1; transform:translateY(0) translateX(0); }
+ to { opacity:0; transform:translateY(-8px) translateX(18px); }
+}
+@keyframes toastProgress {
+ from { transform:scaleX(1); }
+ to { transform:scaleX(0); }
+}
+@media(max-width:600px) {
+ .app-toast {
+  top:12px;
+  right:16px;
+  left:16px;
+  width:auto;
+ }
+}
+@media(prefers-reduced-motion:reduce) {
+ .app-toast,
+ .app-toast.toast-hide,
+ .toast-progress {
+  animation:none;
+ }
+}

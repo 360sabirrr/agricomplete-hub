@@ -2739,43 +2739,75 @@ function toggleFarmDetailsEdit(show = true) {
  }
 }
 
-function showToast(message, type = 'success') {
+function showToast(message, type = 'success', titleOverride = '') {
  let toast = document.getElementById('toastNotification');
  if (!toast) {
  toast = document.createElement('div');
  toast.id = 'toastNotification';
  toast.className = 'toast-notification app-toast';
+ toast.setAttribute('role', 'status');
+ toast.setAttribute('aria-live', 'polite');
  toast.style.display = 'none';
  toast.innerHTML = `
+ <div class="toast-icon-wrap" aria-hidden="true">
+ <i class="toast-icon fas fa-check"></i>
+ </div>
  <div class="toast-content">
- <i class="toast-icon fas fa-check-circle"></i>
+ <strong class="toast-title">Success</strong>
  <span class="toast-message"></span>
  </div>
+ <button type="button" class="toast-close" aria-label="Dismiss notification">
+ <i class="fas fa-times"></i>
+ </button>
+ <span class="toast-progress" aria-hidden="true"></span>
  `;
  document.body.appendChild(toast);
+ toast.querySelector('.toast-close')?.addEventListener('click', () => {
+ hideToast(toast);
+ });
  }
 
  const icon = toast.querySelector('.toast-icon');
+ const title = toast.querySelector('.toast-title');
  const msg = toast.querySelector('.toast-message');
+ const progress = toast.querySelector('.toast-progress');
  if (msg) msg.textContent = message;
- const iconClass = type === 'error'? 'fa-exclamation-circle': type === 'warning'? 'fa-triangle-exclamation': type === 'info'? 'fa-circle-info': 'fa-check-circle';
+ const toastTypes = {
+ success: { title: 'Success', icon: 'fa-check' },
+ error: { title: 'Something went wrong', icon: 'fa-exclamation' },
+ warning: { title: 'Please check', icon: 'fa-triangle-exclamation' },
+ info: { title: 'Notice', icon: 'fa-info' }
+ };
+ const currentType = toastTypes[type] || toastTypes.success;
+ if (title) title.textContent = titleOverride || currentType.title;
+ const iconClass = currentType.icon;
  if (icon) icon.className = `toast-icon fas ${iconClass}`;
  toast.classList.remove('toast-hide', 'toast-error', 'toast-warning', 'toast-info');
  if (type === 'error') toast.classList.add('toast-error');
  if (type === 'warning') toast.classList.add('toast-warning');
  if (type === 'info') toast.classList.add('toast-info');
- toast.style.display = 'block';
+ toast.setAttribute('aria-live', type === 'error'? 'assertive': 'polite');
+ toast.style.display = 'grid';
 
  // Force re-trigger animation
  toast.style.animation = 'none';
+ if (progress) progress.style.animation = 'none';
  toast.offsetHeight; // reflow
  toast.style.animation = '';
+ if (progress) progress.style.animation = '';
 
  clearTimeout(toast._hideTimer);
- toast._hideTimer = setTimeout(() => {
+ toast._hideTimer = setTimeout(() => hideToast(toast), type === 'error'? 6000: 4500);
+}
+
+function hideToast(toast = document.getElementById('toastNotification')) {
+ if (!toast || toast.style.display === 'none') return;
+ clearTimeout(toast._hideTimer);
  toast.classList.add('toast-hide');
- setTimeout(() => { toast.style.display = 'none'; }, 400);
- }, 3000);
+ window.setTimeout(() => {
+ toast.style.display = 'none';
+ toast.classList.remove('toast-hide');
+ }, 260);
 }
 
 function saveFarmDetails() {
@@ -4698,7 +4730,7 @@ async function handleForgotPasswordRequest(e) {
  const channel = getPasswordResetChannel();
 
  if (!validatePasswordResetIdentifier(identifier, channel)) {
- alert('Please enter your registered email address.');
+ showToast('Please enter your registered email address.', 'warning');
  setAuthSubmitState(e.target, false);
  return;
  }
@@ -4706,10 +4738,10 @@ async function handleForgotPasswordRequest(e) {
  try {
  const data = await requestPasswordResetCode(identifier, channel);
  showForgotPasswordConfirmStep(identifier, channel, data);
- alert(data?.msg || 'If that account is registered, a reset code has been sent.');
+ showToast(data?.msg || 'If that account is registered, a reset code has been sent.');
  } catch (err) {
  console.error('Password reset request error:', err);
- alert(err.msg || err.message || 'Could not send reset code. Please try again.');
+ showToast(err.msg || err.message || 'Could not send reset code. Please try again.', 'error');
  } finally {
  setAuthSubmitState(e.target, false);
  }
@@ -4729,11 +4761,11 @@ async function resendPasswordResetCode() {
  try {
  const data = await requestPasswordResetCode(identifier, channel);
  setPasswordResetResendCooldown(data.retry_after_seconds || 60);
- alert(data?.msg || 'A new OTP has been requested.');
+ showToast(data?.msg || 'A new OTP has been requested.');
  } catch (err) {
  console.error('Password reset resend error:', err);
  setPasswordResetResendCooldown(0);
- alert(err.msg || err.message || 'Could not send a new OTP. Please try again.');
+ showToast(err.msg || err.message || 'Could not send a new OTP. Please try again.', 'error');
  }
 }
 
@@ -4747,13 +4779,13 @@ async function handleForgotPasswordConfirm(e) {
  const password = e.target.querySelector('#resetPassword')?.value || '';
 
  if (!identifier ||!/^\d{6}$/.test(token) ||!password) {
- alert('Please enter the 6-digit OTP and your new password.');
+ showToast('Please enter the 6-digit OTP and your new password.', 'warning');
  setAuthSubmitState(e.target, false);
  return;
  }
 
  if (password.length < 6) {
- alert('Password must be at least 6 characters long');
+ showToast('Password must be at least 6 characters long.', 'warning');
  setAuthSubmitState(e.target, false);
  return;
  }
@@ -4763,7 +4795,11 @@ async function handleForgotPasswordConfirm(e) {
  method: 'POST',
  body: JSON.stringify({ identifier, channel, token, password })
  });
- alert(data?.msg || 'Password reset successfully. Please log in with your new password.');
+ showToast(
+ data?.msg || 'Password reset successfully. Please log in with your new password.',
+ 'success',
+ 'Password updated'
+ );
  e.target.reset();
  closeForgotPasswordModal();
  switchAuthTab('login');
@@ -4776,7 +4812,7 @@ async function handleForgotPasswordConfirm(e) {
  }
  } catch (err) {
  console.error('Password reset confirmation error:', err);
- alert(err.msg || err.message || 'Password reset failed. Please check your OTP.');
+ showToast(err.msg || err.message || 'Password reset failed. Please check your OTP.', 'error');
  } finally {
  setAuthSubmitState(e.target, false);
  }

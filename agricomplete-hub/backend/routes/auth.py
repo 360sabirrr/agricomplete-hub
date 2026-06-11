@@ -62,6 +62,13 @@ def _normalize_email(value):
     return _clean_text(value, 120).lower()
 
 
+def _clean_secret(value, max_length):
+    secret = _clean_text(value, max_length)
+    if len(secret) >= 2 and secret[0] == secret[-1] and secret[0] in {'"', "'"}:
+        secret = secret[1:-1].strip()
+    return secret
+
+
 def _normalize_phone(value):
     phone = _clean_text(value, 20)
     if not phone:
@@ -169,11 +176,11 @@ def _smtp_is_configured(settings):
 
 def _gmail_api_settings():
     return {
-        'client_id': _clean_text(os.getenv('GMAIL_API_CLIENT_ID'), 300),
-        'client_secret': _clean_text(os.getenv('GMAIL_API_CLIENT_SECRET'), 300),
-        'refresh_token': _clean_text(os.getenv('GMAIL_API_REFRESH_TOKEN'), 1000),
+        'client_id': _clean_secret(os.getenv('GMAIL_API_CLIENT_ID'), 300),
+        'client_secret': _clean_secret(os.getenv('GMAIL_API_CLIENT_SECRET'), 300),
+        'refresh_token': _clean_secret(os.getenv('GMAIL_API_REFRESH_TOKEN'), 1000),
         'sender': _normalize_email(
-            os.getenv('GMAIL_API_FROM') or
+            _clean_secret(os.getenv('GMAIL_API_FROM'), 120) or
             os.getenv('SMTP_FROM') or
             os.getenv('SMTP_USERNAME')
         ),
@@ -480,6 +487,17 @@ def _send_password_reset_code(user, channel, token, expires_minutes):
 def _password_reset_delivery_error(err):
     if isinstance(err, GmailApiDeliveryError):
         if err.error_code == 'GMAIL_API_AUTH_FAILED':
+            detail = str(err).lower()
+            if 'invalid_client' in detail or 'unauthorized_client' in detail:
+                return (
+                    err.error_code,
+                    'Google OAuth Client ID or Client Secret is incorrect.'
+                )
+            if 'invalid_grant' in detail:
+                return (
+                    err.error_code,
+                    'The Gmail refresh token is invalid. Generate it again with the same OAuth client.'
+                )
             return (
                 err.error_code,
                 'Gmail API authorization failed. Refresh the Google OAuth credentials.'
