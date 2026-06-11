@@ -5,6 +5,7 @@ import os
 import re
 import secrets
 from datetime import datetime, timedelta
+from html import escape
 
 import mailtrap as mt
 from flask import Blueprint, request, jsonify, current_app
@@ -147,6 +148,39 @@ def _reset_email_body(user, token, expires_minutes):
     ])
 
 
+def _reset_email_html(user, token, expires_minutes):
+    first_name = escape(_clean_text(getattr(user, 'first_name', ''), 50) or 'Farmer')
+    safe_token = escape(str(token))
+    return f"""<!doctype html>
+<html lang="en">
+<body style="margin:0;background:#f3f7f3;font-family:Arial,sans-serif;color:#19351f;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 16px;">
+    <div style="background:#ffffff;border:1px solid #dce8dc;border-radius:8px;overflow:hidden;">
+      <div style="background:#176b36;padding:22px 28px;color:#ffffff;">
+        <div style="font-size:22px;font-weight:700;">AgriComplete Hub</div>
+        <div style="margin-top:5px;font-size:14px;opacity:.88;">Password reset verification</div>
+      </div>
+      <div style="padding:28px;">
+        <p style="margin:0 0 16px;">Hello {first_name},</p>
+        <p style="margin:0 0 20px;line-height:1.55;">
+          Enter this one-time password to reset your AgriComplete account password:
+        </p>
+        <div style="margin:0 0 20px;padding:18px;text-align:center;background:#eef7ef;border:1px solid #c9dfcc;border-radius:8px;">
+          <span style="font-size:32px;font-weight:700;letter-spacing:8px;color:#125b2d;">{safe_token}</span>
+        </div>
+        <p style="margin:0 0 12px;line-height:1.55;">
+          This code expires in <strong>{expires_minutes} minutes</strong> and can be used only once.
+        </p>
+        <p style="margin:0;color:#617565;font-size:13px;line-height:1.5;">
+          Do not share this code. If you did not request a password reset, you can safely ignore this email.
+        </p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>"""
+
+
 def _send_password_reset_email(user, token, expires_minutes):
     settings = _mailtrap_settings()
     if not _mailtrap_is_configured(settings):
@@ -161,6 +195,7 @@ def _send_password_reset_email(user, token, expires_minutes):
         to=[mt.Address(email=user.email, name=recipient_name or None)],
         subject='AgriComplete password reset code',
         text=_reset_email_body(user, token, expires_minutes),
+        html=_reset_email_html(user, token, expires_minutes),
         category='Password Reset',
     )
     response = mt.MailtrapClient(token=settings['api_token']).send(mail)

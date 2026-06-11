@@ -54,7 +54,7 @@ services:
       - key: MAILTRAP_API_TOKEN
         sync: false
       - key: MAILTRAP_FROM_EMAIL
-        value: hello@demomailtrap.co
+        value: security@agricompletehub.com
       - key: MAILTRAP_FROM_NAME
         value: AgriComplete Hub
       - key: PASSWORD_RESET_TOKEN_MINUTES
