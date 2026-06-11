@@ -4,10 +4,12 @@ import hmac
 import os
 import re
 import secrets
+import smtplib
 from datetime import datetime, timedelta
+from email.message import EmailMessage
+from email.utils import formataddr
 from html import escape
 
-import mailtrap as mt
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
@@ -115,23 +117,43 @@ def _hash_reset_token(token):
     return hmac.new(secret, str(token).encode('utf-8'), hashlib.sha256).hexdigest()
 
 
-def _mailtrap_settings():
+def _smtp_settings():
+    use_ssl = _truthy_env('SMTP_USE_SSL')
+    use_tls = not use_ssl and str(os.getenv('SMTP_USE_TLS', 'true')).strip().lower() not in {
+        '0', 'false', 'no', 'off'
+    }
+    try:
+        port = int(os.getenv('SMTP_PORT') or (465 if use_ssl else 587))
+    except (TypeError, ValueError):
+        port = 465 if use_ssl else 587
+
     return {
-        'api_token': _clean_text(
-            os.getenv('MAILTRAP_API_TOKEN') or os.getenv('MAILTRAP_API_KEY'),
-            300
+        'host': _clean_text(os.getenv('SMTP_HOST') or 'smtp.gmail.com', 120),
+        'port': port,
+        'username': _normalize_email(os.getenv('SMTP_USERNAME')),
+        'password': re.sub(r'\s+', '', str(os.getenv('SMTP_PASSWORD') or '')),
+        'sender': _normalize_email(os.getenv('SMTP_FROM') or os.getenv('SMTP_USERNAME')),
+        'sender_name': _clean_text(
+            os.getenv('SMTP_FROM_NAME') or os.getenv('EMAIL_FROM_NAME') or 'AgriComplete Hub',
+            80
         ),
-        'sender': _normalize_email(os.getenv('MAILTRAP_FROM_EMAIL')),
-        'sender_name': _clean_text(os.getenv('MAILTRAP_FROM_NAME') or 'AgriComplete Hub', 80),
+        'use_tls': use_tls,
+        'use_ssl': use_ssl,
     }
 
 
-def _mailtrap_is_configured(settings):
-    return bool(settings['api_token'] and settings['sender'] and EMAIL_RE.match(settings['sender']))
+def _smtp_is_configured(settings):
+    return bool(
+        settings['host'] and
+        settings['username'] and
+        settings['password'] and
+        settings['sender'] and
+        EMAIL_RE.match(settings['sender'])
+    )
 
 
 def _password_reset_email_is_configured():
-    return _mailtrap_is_configured(_mailtrap_settings())
+    return _smtp_is_configured(_smtp_settings())
 
 
 def _reset_email_body(user, token, expires_minutes):
@@ -182,25 +204,25 @@ def _reset_email_html(user, token, expires_minutes):
 
 
 def _send_password_reset_email(user, token, expires_minutes):
-    settings = _mailtrap_settings()
-    if not _mailtrap_is_configured(settings):
-        raise RuntimeError('Mailtrap Email API is not configured')
+    settings = _smtp_settings()
+    if not _smtp_is_configured(settings):
+        raise RuntimeError('SMTP email service is not configured')
 
-    recipient_name = ' '.join(filter(None, [
-        _clean_text(getattr(user, 'first_name', ''), 50),
-        _clean_text(getattr(user, 'last_name', ''), 50),
-    ]))
-    mail = mt.Mail(
-        sender=mt.Address(email=settings['sender'], name=settings['sender_name']),
-        to=[mt.Address(email=user.email, name=recipient_name or None)],
-        subject='AgriComplete password reset code',
-        text=_reset_email_body(user, token, expires_minutes),
-        html=_reset_email_html(user, token, expires_minutes),
-        category='Password Reset',
-    )
-    response = mt.MailtrapClient(token=settings['api_token']).send(mail)
-    if isinstance(response, dict) and not response.get('success', False):
-        raise RuntimeError('Mailtrap Email API did not accept the reset email')
+    message = EmailMessage()
+    message['Subject'] = 'AgriComplete password reset code'
+    message['From'] = formataddr((settings['sender_name'], settings['sender']))
+    message['To'] = user.email
+    message.set_content(_reset_email_body(user, token, expires_minutes))
+    message.add_alternative(_reset_email_html(user, token, expires_minutes), subtype='html')
+
+    smtp_class = smtplib.SMTP_SSL if settings['use_ssl'] else smtplib.SMTP
+    with smtp_class(settings['host'], settings['port'], timeout=20) as server:
+        server.ehlo()
+        if settings['use_tls']:
+            server.starttls()
+            server.ehlo()
+        server.login(settings['username'], settings['password'])
+        server.send_message(message)
 
 
 def _find_user_by_phone(User, phone):
@@ -411,7 +433,7 @@ def request_password_reset():
             channel
         )
         return jsonify({
-            "msg": "Mailtrap password reset email is not configured. Please contact support.",
+            "msg": "Password reset email service is not configured. Please contact support.",
             "error_code": "EMAIL_PROVIDER_NOT_CONFIGURED",
         }), 503
 

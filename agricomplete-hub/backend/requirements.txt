@@ -6,7 +6,6 @@ flask-bcrypt
 python-dotenv
 psycopg2-binary
 gunicorn
-mailtrap==2.6.0
 ai-edge-litert==2.1.5
 numpy
 Pillow
