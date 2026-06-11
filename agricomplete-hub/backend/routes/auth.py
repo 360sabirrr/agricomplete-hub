@@ -148,6 +148,7 @@ def _smtp_is_configured(settings):
         settings['username'] and
         settings['password'] and
         settings['sender'] and
+        EMAIL_RE.match(settings['username']) and
         EMAIL_RE.match(settings['sender'])
     )
 
@@ -208,10 +209,14 @@ def _send_password_reset_email(user, token, expires_minutes):
     if not _smtp_is_configured(settings):
         raise RuntimeError('SMTP email service is not configured')
 
+    recipient = _normalize_email(getattr(user, 'email', ''))
+    if not recipient or not EMAIL_RE.match(recipient):
+        raise RuntimeError('The registered email address is invalid')
+
     message = EmailMessage()
     message['Subject'] = 'AgriComplete password reset code'
     message['From'] = formataddr((settings['sender_name'], settings['sender']))
-    message['To'] = user.email
+    message['To'] = recipient
     message.set_content(_reset_email_body(user, token, expires_minutes))
     message.add_alternative(_reset_email_html(user, token, expires_minutes), subtype='html')
 
@@ -222,7 +227,20 @@ def _send_password_reset_email(user, token, expires_minutes):
             server.starttls()
             server.ehlo()
         server.login(settings['username'], settings['password'])
-        server.send_message(message)
+        refused_recipients = server.send_message(
+            message,
+            from_addr=settings['sender'],
+            to_addrs=[recipient]
+        )
+        if refused_recipients:
+            raise RuntimeError('SMTP server refused the recipient address')
+
+    logger.info(
+        'Password reset email accepted by SMTP for user id %s via %s:%s',
+        user.id,
+        settings['host'],
+        settings['port']
+    )
 
 
 def _find_user_by_phone(User, phone):
@@ -445,6 +463,11 @@ def request_password_reset():
         "retry_after_seconds": resend_seconds,
     }
     if not user:
+        identifier_hash = hashlib.sha256(identifier.encode('utf-8')).hexdigest()[:12]
+        logger.warning(
+            'Password reset requested for an unregistered email (identifier hash: %s)',
+            identifier_hash
+        )
         return jsonify(generic_response), 200
 
     now = datetime.utcnow()
@@ -458,7 +481,10 @@ def request_password_reset():
         .order_by(PasswordResetToken.created_at.desc())
         .all()
     )
-    latest_token = recent_tokens[0] if recent_tokens else None
+    latest_token = next(
+        (token for token in recent_tokens if token.used_at is None),
+        None
+    )
     if latest_token and latest_token.created_at:
         elapsed_seconds = max(0, int((now - latest_token.created_at).total_seconds()))
         if elapsed_seconds < resend_seconds:
