@@ -1,0 +1,183 @@
+.cropshield-signature-capture {
+ display: flex;
+ flex-direction: column;
+ gap: 12px;
+ padding: 15px;
+ border: 1px solid #d6e3d8;
+ border-radius: 7px;
+ background: #f8fbf8;
+}
+
+.cropshield-signature-head {
+ display: flex;
+ align-items: flex-start;
+ justify-content: space-between;
+ gap: 16px;
+}
+
+.cropshield-signature-head > div {
+ display: flex;
+ flex-direction: column;
+ gap: 3px;
+}
+
+.cropshield-signature-head strong {
+ color: #263f2d;
+ font-size: .82rem;
+}
+
+.cropshield-signature-head > div span {
+ color: #6d7e71;
+ font-size: .7rem;
+}
+
+.cropshield-signature-status {
+ display: inline-flex;
+ align-items: center;
+ gap: 6px;
+ color: #7a887d;
+ font-size: .7rem;
+ font-weight: 800;
+ white-space: nowrap;
+}
+
+.cropshield-signature-status.ready {
+ color: #187344;
+}
+
+.cropshield-signature-actions {
+ display: flex;
+ align-items: center;
+ gap: 7px;
+ flex-wrap: wrap;
+}
+
+.cropshield-signature-actions button {
+ display: inline-flex;
+ min-height: 36px;
+ align-items: center;
+ justify-content: center;
+ gap: 6px;
+ padding: 7px 11px;
+ border: 1px solid #cbd9ce;
+ border-radius: 6px;
+ background: #fff;
+ color: #47604d;
+ font-size: .7rem;
+ font-weight: 800;
+ cursor: pointer;
+}
+
+.cropshield-signature-actions button.active {
+ border-color: #238552;
+ background: #eaf6ee;
+ color: #176a3d;
+}
+
+.cropshield-signature-actions button.clear {
+ width: 36px;
+ margin-left: auto;
+ padding: 0;
+ color: #9b3d32;
+}
+
+.cropshield-signature-draw,
+.cropshield-signature-upload {
+ overflow: hidden;
+ border: 1px dashed #8eac95;
+ border-radius: 6px;
+ background: #fff;
+}
+
+.cropshield-signature-draw canvas {
+ display: block;
+ width: 100%;
+ aspect-ratio: 45 / 13;
+ background: #fff;
+ cursor: crosshair;
+ touch-action: none;
+}
+
+.cropshield-signature-draw > span {
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ padding: 8px 10px;
+ border-top: 1px solid #e2e9e3;
+ color: #748278;
+ font-size: .67rem;
+}
+
+.cropshield-signature-upload {
+ position: relative;
+ min-height: 165px;
+ cursor: pointer;
+}
+
+.cropshield-signature-upload input {
+ position: absolute;
+ inset: 0;
+ z-index: 2;
+ width: 100%;
+ opacity: 0;
+ cursor: pointer;
+}
+
+.cropshield-signature-upload > div {
+ display: flex;
+ min-height: 165px;
+ align-items: center;
+ justify-content: center;
+ flex-direction: column;
+ gap: 6px;
+ padding: 20px;
+ color: #6c7d70;
+ text-align: center;
+}
+
+.cropshield-signature-upload > div i {
+ color: #268451;
+ font-size: 1.5rem;
+}
+
+.cropshield-signature-upload > div strong {
+ color: #304a36;
+ font-size: .8rem;
+}
+
+.cropshield-signature-upload > div span {
+ font-size: .68rem;
+}
+
+.cropshield-signature-upload img {
+ display: none;
+ width: 100%;
+ height: 165px;
+ padding: 12px;
+ object-fit: contain;
+ background: #fff;
+}
+
+.cropshield-signature-upload.has-image img {
+ display: block;
+}
+
+.cropshield-signature-upload.has-image > div {
+ display: none;
+}
+
+@media (max-width: 600px) {
+ .cropshield-signature-head {
+  flex-direction: column;
+  gap: 7px;
+ }
+
+ .cropshield-signature-actions button {
+  flex: 1 1 calc(50% - 7px);
+ }
+
+ .cropshield-signature-actions button.clear {
+  flex: 0 0 36px;
+  margin-left: 0;
+ }
+}

@@ -89,6 +89,8 @@ services:
         value: "60"
       - key: PASSWORD_RESET_MAX_REQUESTS_PER_HOUR
         value: "5"
+      - key: CROPSHIELD_VERIFY_BASE_URL
+        value: https://agricomplete-frontend.onrender.com
       - key: FLASK_ENV
         value: production
       - key: FLASK_DEBUG

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="api-url" content="https://agricomplete-backend.onrender.com/api">
+ <title>CropShield - AgriComplete Hub</title>
+ <meta name="description" content="Create structured crop-loss evidence reports using field photos, weather context, and transparent financial estimates.">
+ <link rel="stylesheet" href="css/style.css?v=auth-toast-20260612">
+ <link rel="stylesheet" href="css/cropshield.css?v=case-delete-20260613-2">
+ <link rel="stylesheet" href="css/cropshield-signature.css?v=signature-capture-20260613">
+ <link rel="stylesheet" href="css/cropshield-claims.css?v=claim-score-20260613">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+ <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+</head>
+<body>
+ <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+ <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+ <aside class="sidebar" id="sidebar">
+ <div class="sidebar-brand">
+ <h2><span class="brand-icon"><i class="fas fa-seedling"></i></span> AgriComplete</h2>
+ <p>Smart Farming Platform</p>
+ </div>
+ <nav class="sidebar-nav">
+ <div class="nav-section-title">Main Menu</div>
+ <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span>Dashboard</span></a>
+ <a href="disease-detection.html" class="nav-item"><i class="fas fa-leaf"></i><span>Disease Detection</span></a>
+ <a href="market-prices.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Market Prices</span><span class="nav-badge">Live</span></a>
+ <a href="marketplace.html" class="nav-item"><i class="fas fa-store"></i><span>Marketplace</span></a>
+ <div class="nav-section-title">Tools</div>
+ <a href="resource-management.html" class="nav-item"><i class="fas fa-recycle"></i><span>Resource Management</span></a>
+ <a href="cropshield.html" class="nav-item active"><i class="fas fa-shield-halved"></i><span>CropShield</span><span class="nav-badge cropshield-nav-badge">New</span></a>
+ <div class="nav-section-title">Account</div>
+ <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span>My Profile</span></a>
+ <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
+ </nav>
+ <div class="sidebar-footer">
+ <div class="user-profile"><div class="user-avatar">RS</div><div class="user-info"><h4>Rajesh Singh</h4></div></div>
+ </div>
+ </aside>
+
+ <div class="main-content">
+ <div class="topbar">
+ <div class="topbar-left">
+ <div>
+ <h3><i class="fas fa-shield-halved cropshield-title-icon"></i> CropShield</h3>
+ <p>Data-assisted crop-loss evidence and financial impact reporting</p>
+ </div>
+ </div>
+ <div class="topbar-right">
+ <span class="cropshield-secure-chip"><i class="fas fa-fingerprint"></i> Evidence protected</span>
+ <button class="btn-icon notification-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+ </div>
+ </div>
+
+ <main class="page-content cropshield-page">
+ <section class="cropshield-hero fade-in">
+ <div>
+ <span class="cropshield-kicker"><i class="fas fa-file-shield"></i> Crop loss evidence workspace</span>
+ <h1>Turn field damage into structured, verifiable evidence.</h1>
+ <p>Attach clear damage evidence, add weather context, estimate financial loss, and generate a QR-verifiable report.</p>
+ </div>
+ <div class="cropshield-hero-stats">
+ <article><strong id="csTotalCases">0</strong><span>Evidence reports</span></article>
+ <article><strong id="csSubmittedCases">0</strong><span>Submitted cases</span></article>
+ <article><strong id="csTotalExposure">INR 0</strong><span>Documented exposure</span></article>
+ </div>
+ </section>
+
+ <section class="cropshield-disclaimer">
+ <i class="fas fa-circle-info"></i>
+ <p><strong>Decision-support only.</strong> CropShield prepares traceable evidence and estimates. It does not approve insurance claims or replace an agricultural officer's inspection.</p>
+ </section>
+
+ <div class="cropshield-workspace">
+ <form id="cropShieldForm" class="cropshield-form-panel">
+ <div class="cropshield-panel-heading">
+ <div><span>New assessment</span><h2>Build evidence package</h2></div>
+ <button class="btn-icon cropshield-reset-btn" id="csResetBtn" type="button" title="Clear assessment"><i class="fas fa-rotate-left"></i></button>
+ </div>
+ <div class="cropshield-completion">
+ <div><span>Assessment readiness</span><strong id="csCompletionText">0% complete</strong></div>
+ <div class="cropshield-completion-track"><span id="csCompletionBar"></span></div>
+ </div>
+
+ <fieldset>
+ <legend><span>01</span> Basic information & location</legend>
+ <div class="cropshield-form-grid">
+ <label><span>Season</span><select id="csSeason" required><option value="">Select season</option><option>Kharif</option><option>Rabi</option><option>Zaid</option><option>Annual / Perennial</option></select></label>
+ <label><span>Season year</span><input id="csSeasonYear" type="number" min="2020" max="2027" step="1" placeholder="2026" required></label>
+ <label><span>Farmer name</span><input id="csFarmerName" type="text" maxlength="120" autocomplete="name" required></label>
+ <label><span>Application / policy number</span><input id="csPolicyNumber" type="text" maxlength="80" placeholder="Policy or application reference" required></label>
+ <label><span>Contact number</span><input id="csContactNumber" type="tel" maxlength="20" autocomplete="tel" placeholder="+91..." required></label>
+ <label><span>State</span><input id="csState" type="text" maxlength="80" autocomplete="address-level1" required></label>
+ <label><span>District</span><input id="csDistrict" type="text" maxlength="80" autocomplete="address-level2" required></label>
+ <label><span>Tehsil / Taluka</span><input id="csTehsil" type="text" maxlength="80" required></label>
+ <label><span>Block</span><input id="csBlock" type="text" maxlength="80" required></label>
+ <label><span>Gram Panchayat</span><input id="csGramPanchayat" type="text" maxlength="100" required></label>
+ <label class="cropshield-wide"><span>Village</span><input id="csVillage" type="text" maxlength="100" autocomplete="address-level3" required><small>The administrative hierarchy is printed in the final report.</small></label>
+ <label><span>Date of survey</span><input id="csSurveyDate" type="date" required></label>
+ <div class="cropshield-gps-control">
+ <label><span>GPS latitude</span><input id="csGpsLatitude" type="number" min="-90" max="90" step="0.000001" placeholder="18.520430"></label>
+ <label><span>GPS longitude</span><input id="csGpsLongitude" type="number" min="-180" max="180" step="0.000001" placeholder="73.856744"></label>
+ <button class="btn btn-secondary" id="csLocateBtn" type="button"><i class="fas fa-location-crosshairs"></i> Use current location</button>
+ </div>
+ <label class="cropshield-wide cropshield-compact-upload" id="csMapZone">
+ <input id="csMapInput" type="file" accept="image/jpeg,image/png,image/webp">
+ <img id="csMapPreview" alt="Optional map snapshot preview">
+ <span><i class="fas fa-map-location-dot"></i><strong>Optional map snapshot</strong><small id="csMapMeta">Upload a map screenshot if available.</small></span>
+ </label>
+ <input id="csLocation" type="hidden">
+ </div>
+ </fieldset>
+
+ <fieldset>
+ <legend><span>02</span> Plot & sowing details</legend>
+ <div class="cropshield-form-grid">
+ <label><span>Survey / Khasra number</span><input id="csSurveyNumber" type="text" maxlength="80" placeholder="Exact plot identifier" required></label>
+ <label><span>Crop pattern</span><select id="csCropPattern" required><option value="">Select pattern</option><option>Single Crop</option><option>Mixed Crop</option></select></label>
+ <label><span>Notified crop sown</span><input id="csCropName" type="text" placeholder="e.g. Soybean" maxlength="100" autocomplete="off" required></label>
+ <label><span>Insured area (acres)</span><input id="csAreaAcres" type="number" min="0.001" max="100000" step="0.001" placeholder="2.5" inputmode="decimal" required></label>
+ <label><span>Sowing date</span><input id="csSowingDate" type="date" required></label>
+ <label><span>Expected harvest date</span><input id="csExpectedHarvestDate" type="date" required></label>
+ <label><span>Expected yield / acre (kg)</span><input id="csYieldAcre" type="number" min="1" max="1000000" step="1" placeholder="5000" inputmode="decimal" required></label>
+ <label><span>Current yield estimate (kg)</span><input id="csCurrentYield" type="number" min="0" step="1" placeholder="Leave blank to estimate from damage"></label>
+ <label><span>Market price / kg (INR)</span><input id="csPrice" type="number" min="0.01" max="1000000" step="0.01" placeholder="24" inputmode="decimal" required></label>
+ </div>
+ </fieldset>
+
+ <fieldset>
+ <legend><span>03</span> Loss intimation & damage assessment</legend>
+ <div class="cropshield-form-grid">
+ <label><span>Damage type</span>
+ <select id="csDamageType" required>
+ <option value="">Select cause</option><option>Disease</option><option>Flood</option><option>Drought</option><option>Storm</option><option>Pest</option><option>Heat</option><option>Other</option>
+ </select>
+ </label>
+ <label><span>Damage occurrence</span><input id="csDamageOccurredAt" type="datetime-local" required></label>
+ <label><span>Loss intimation submitted</span><input id="csLossIntimatedAt" type="datetime-local" required></label>
+ <div class="cropshield-intimation-status" id="csIntimationStatus"><i class="fas fa-clock"></i><div><strong>72-hour intimation check</strong><span>Enter occurrence and intimation times.</span></div></div>
+ <label class="cropshield-wide">
+ <span>Observed field damage <strong id="csDamageValue">30%</strong></span>
+ <input id="csDamagePercent" class="cropshield-range" type="range" min="1" max="100" step="1" value="30">
+ <div class="cropshield-range-labels"><span>Low</span><span>Severe</span></div>
+ </label>
+ </div>
+ </fieldset>
+
+ <fieldset>
+ <legend>Damage photo evidence</legend>
+ <div class="cropshield-evidence-grid cropshield-evidence-single">
+ <label class="cropshield-upload damage" id="csDamageZone">
+ <input id="csDamageInput" type="file" accept="image/jpeg,image/png,image/webp">
+ <img id="csDamagePreview" alt="Damaged crop preview">
+ <span class="cropshield-upload-empty"><i class="fas fa-triangle-exclamation"></i><strong>Damage photo</strong><small>Clear image of the affected crop or field</small></span>
+ <span class="cropshield-upload-change"><i class="fas fa-camera"></i> Replace</span>
+ <span class="cropshield-upload-meta" id="csDamageMeta">JPG, PNG or WEBP</span>
+ </label>
+ </div>
+ <p class="cropshield-upload-note"><i class="fas fa-lock"></i> The damage image is compressed before upload and stored with a SHA-256 evidence fingerprint.</p>
+ </fieldset>
+
+ <fieldset class="cropshield-ai-evidence" id="csAiEvidenceFieldset" hidden>
+ <legend><span>04</span> AI disease detection evidence</legend>
+ <div class="cropshield-ai-summary" id="csAiSummary">
+ <i class="fas fa-microscope"></i>
+ <div><strong>No saved diagnosis selected</strong><span>Run Disease Detection first, then upload the same crop image here.</span></div>
+ </div>
+ <label class="cropshield-compact-upload" id="csAiZone">
+ <input id="csAiInput" type="file" accept="image/jpeg,image/png,image/webp">
+ <img id="csAiPreview" alt="AI disease detection source image">
+ <span><i class="fas fa-image"></i><strong>Diagnosis source image</strong><small id="csAiMeta">Upload the image analyzed by the disease model.</small></span>
+ </label>
+ </fieldset>
+
+ <fieldset>
+ <legend><span>05</span> Insurance claim checklist</legend>
+ <div class="cropshield-claim-summary">
+ <div><strong id="csClaimReadiness">0 of 4 ready</strong><span>Claim document readiness</span></div>
+ <div class="cropshield-claim-progress"><span id="csClaimProgress"></span></div>
+ </div>
+ <div class="cropshield-claim-list">
+ <label class="cropshield-claim-item">
+ <input id="csAadhaarAvailable" type="checkbox">
+ <i class="fas fa-id-card"></i>
+ <span><strong>Aadhaar Available</strong><small>Only availability is recorded. The Aadhaar number is not collected.</small></span>
+ </label>
+ <label class="cropshield-claim-item" id="csLandRecordItem">
+ <input id="csLandRecordAvailable" type="checkbox">
+ <i class="fas fa-file-lines"></i>
+ <span><strong>Land Record Available</strong><small>Only availability is recorded. No document is uploaded or stored.</small></span>
+ </label>
+ <div class="cropshield-claim-item" id="csCropPhotosCheck">
+ <input id="csCropPhotosCheckbox" type="checkbox" disabled aria-label="Crop photos uploaded">
+ <i class="fas fa-camera"></i>
+ <span><strong>Damage Photo Uploaded</strong><small>Completed automatically when the damage evidence photo is ready.</small></span>
+ </div>
+ <div class="cropshield-claim-item" id="csDiseaseEvidenceCheck" hidden>
+ <input id="csDiseaseEvidenceCheckbox" type="checkbox" disabled aria-label="Disease evidence generated">
+ <i class="fas fa-microscope"></i>
+ <span><strong>Disease Evidence Generated</strong><small id="csDiseaseEvidenceMeta">Checking saved disease scans...</small></span>
+ </div>
+ <label class="cropshield-claim-item">
+ <input id="csBankDetailsAvailable" type="checkbox">
+ <i class="fas fa-building-columns"></i>
+ <span><strong>Bank Details Available</strong><small>Only availability is recorded. Account details are not collected.</small></span>
+ </label>
+ </div>
+ </fieldset>
+
+ <label class="cropshield-notes"><span>Farmer observations</span><textarea id="csNotes" rows="3" maxlength="2000" placeholder="Describe the affected plot, visible crop damage, rainfall, treatment already applied, and other relevant facts."></textarea></label>
+
+ <fieldset>
+ <legend><span>06</span> Farmer declaration & signature</legend>
+ <div class="cropshield-signature-capture">
+ <div class="cropshield-signature-head">
+ <div><strong>Signature or thumb impression</strong><span>Draw below or upload a clear image.</span></div>
+ <span class="cropshield-signature-status" id="csSignatureStatus"><i class="far fa-circle"></i> Not added</span>
+ </div>
+ <div class="cropshield-signature-actions" role="group" aria-label="Signature capture method">
+ <button class="active" id="csDrawSignatureBtn" type="button"><i class="fas fa-pen-nib"></i> Draw</button>
+ <button id="csUploadSignatureBtn" type="button"><i class="fas fa-upload"></i> Upload signature</button>
+ <button id="csUploadThumbBtn" type="button"><i class="fas fa-fingerprint"></i> Upload thumb</button>
+ <button class="clear" id="csClearSignatureBtn" type="button" title="Clear signature"><i class="fas fa-eraser"></i></button>
+ </div>
+ <div class="cropshield-signature-draw" id="csSignatureDrawPanel">
+ <canvas id="csSignatureCanvas" width="900" height="260" aria-label="Draw farmer signature"></canvas>
+ <span><i class="fas fa-hand-pointer"></i> Sign using your mouse, finger, or stylus.</span>
+ </div>
+ <div class="cropshield-signature-upload" id="csSignatureUploadPanel" hidden>
+ <input id="csSignatureFile" type="file" accept="image/jpeg,image/png,image/webp">
+ <img id="csSignaturePreview" alt="Farmer signature or thumb impression preview">
+ <div><i class="fas fa-image"></i><strong id="csSignatureUploadTitle">Choose an image</strong><span>JPG, PNG or WEBP, up to 5 MB</span></div>
+ </div>
+ <input id="csSignatureMethod" type="hidden">
+ </div>
+ <label class="cropshield-declaration">
+ <input id="csDeclaration" type="checkbox" required>
+ <span><strong>Farmer declaration</strong>I confirm that the plot, crop, loss information, and photographic evidence supplied in this farmer-generated report are accurate to the best of my knowledge.</span>
+ </label>
+ </fieldset>
+
+ <button class="btn btn-primary cropshield-generate-btn" id="csGenerateBtn" type="submit">
+ <i class="fas fa-wand-magic-sparkles"></i> Generate CropShield Report
+ </button>
+ </form>
+
+ <aside class="cropshield-estimate-panel">
+ <div class="cropshield-panel-heading">
+ <div><span>Live estimate</span><h2>Financial exposure</h2></div>
+ <span class="cropshield-step">02</span>
+ </div>
+ <div class="cropshield-loss-total">
+ <span>Estimated loss</span>
+ <strong id="csLiveLoss">INR 0</strong>
+ <small>Based on farmer-entered area, yield, price, and observed damage.</small>
+ </div>
+ <dl class="cropshield-live-metrics">
+ <div><dt>Expected production</dt><dd id="csLiveProduction">0 kg</dd></div>
+ <div><dt>Expected crop value</dt><dd id="csLiveRevenue">INR 0</dd></div>
+ <div><dt>Potential salvage value</dt><dd id="csLiveSalvage">INR 0</dd></div>
+ </dl>
+ <div class="cropshield-process">
+ <h3>Readiness checks</h3>
+ <ul class="cropshield-checklist">
+ <li id="csCheckFarm"><i class="far fa-circle"></i><span>Farmer and location details</span></li>
+ <li id="csCheckLoss"><i class="far fa-circle"></i><span>Plot, crop and loss intimation</span></li>
+ <li id="csCheckEvidence"><i class="far fa-circle"></i><span>Photographic evidence</span></li>
+ <li id="csCheckDeclaration"><i class="far fa-circle"></i><span>Declaration and farmer signature</span></li>
+ </ul>
+ </div>
+ <div class="cropshield-formula">
+ <h3><i class="fas fa-calculator"></i> Transparent calculation</h3>
+ <p>Expected production minus current yield estimate, multiplied by the recorded market price.</p>
+ </div>
+ <div class="cropshield-weather-box" id="csWeatherBox">
+ <i class="fas fa-cloud-sun"></i>
+ <div><strong>Weather context</strong><span>Captured automatically from the field location when available.</span></div>
+ </div>
+ <div class="cropshield-weather-impact" id="csWeatherImpact">
+ <div class="cropshield-weather-impact-head"><i class="fas fa-chart-line"></i><div><strong>Weather impact analysis</strong><span>Enter the village and district to load historical conditions.</span></div></div>
+ </div>
+ </aside>
+ </div>
+
+ <section class="cropshield-result" id="csResult" hidden>
+ <div class="cropshield-result-head">
+ <div>
+ <span class="cropshield-kicker"><i class="fas fa-circle-check"></i> Evidence package ready</span>
+ <h2 id="csResultReference">CropShield report</h2>
+ <p id="csResultMeta"></p>
+ </div>
+ <div class="cropshield-result-actions">
+ <button class="btn btn-secondary" type="button" id="csCopyVerifyBtn"><i class="fas fa-link"></i> Copy verification link</button>
+ <button class="btn btn-secondary" type="button" id="csShareBtn"><i class="fas fa-share-nodes"></i> Share with insurance agent</button>
+ <button class="btn btn-secondary" type="button" id="csStatusBtn"><i class="fas fa-paper-plane"></i> Mark submitted</button>
+ <label class="cropshield-language"><i class="fas fa-language"></i><select id="csReportLanguage" aria-label="Report language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="mr">मराठी</option></select></label>
+ <button class="btn btn-primary" type="button" id="csDownloadBtn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+ </div>
+ </div>
+ <div class="cropshield-result-metrics" id="csResultMetrics"></div>
+ <div class="cropshield-score-result" id="csScoreResult"></div>
+ <div class="cropshield-result-layout">
+ <div class="cropshield-comparison" id="csResultImages"></div>
+ <div class="cropshield-verification">
+ <h3><i class="fas fa-fingerprint"></i> Verification</h3>
+ <dl id="csVerificationDetails"></dl>
+ <div class="cropshield-fingerprint"><span>Evidence fingerprint</span><code id="csFingerprint"></code></div>
+ <p><i class="fas fa-shield"></i> Any change to the stored evidence produces a different fingerprint.</p>
+ </div>
+ </div>
+ <div class="cropshield-timeline" id="csTimeline"></div>
+ </section>
+
+ <section class="cropshield-history">
+ <div class="cropshield-section-head">
+ <div><span class="cropshield-kicker"><i class="fas fa-clock-rotate-left"></i> Case history</span><h2>Your CropShield reports</h2></div>
+ <div class="cropshield-history-tools">
+ <label><i class="fas fa-magnifying-glass"></i><input id="csCaseSearch" type="search" placeholder="Search crop or reference" aria-label="Search reports"></label>
+ <select id="csStatusFilter" aria-label="Filter by status"><option value="">All statuses</option><option>Report Ready</option><option>Submitted</option><option>Under Review</option><option>Resolved</option></select>
+ <button class="btn-icon" id="csRefreshCases" type="button" title="Refresh cases"><i class="fas fa-rotate"></i></button>
+ </div>
+ </div>
+ <div class="cropshield-case-list" id="csCaseList">
+ <div class="cropshield-empty"><i class="fas fa-file-shield"></i><strong>No reports yet</strong><span>Your generated evidence reports will appear here.</span></div>
+ </div>
+ </section>
+ </main>
+ </div>
+
+ <script src="js/main.js?v=auth-toast-20260612"></script>
+ <script src="js/cropshield.js?v=case-delete-20260613-7"></script>
+</body>
+</html>

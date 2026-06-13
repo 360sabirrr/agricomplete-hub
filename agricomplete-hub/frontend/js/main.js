@@ -6243,6 +6243,7 @@ function getAssistantCommand(message) {
  { keys: ['disease', 'leaf scan', 'detect disease'], page: 'disease-detection.html', label: 'Disease Detection' },
  { keys: ['market price', 'prices', 'mandi'], page: 'market-prices.html', label: 'Market Prices' },
  { keys: ['resource', 'water', 'fertilizer', 'irrigation'], page: 'resource-management.html', label: 'Resource Management' },
+ { keys: ['crop loss', 'insurance', 'claim evidence', 'cropshield'], page: 'cropshield.html', label: 'CropShield' },
  { keys: ['profile', 'account'], page: 'profile.html', label: 'Profile' },
  { keys: ['dashboard', 'home'], page: 'dashboard.html', label: 'Dashboard' }
  ];

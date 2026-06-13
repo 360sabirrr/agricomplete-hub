@@ -9,3 +9,5 @@ gunicorn
 ai-edge-litert==2.1.5
 numpy
 Pillow
+reportlab
+qrcode[pil]

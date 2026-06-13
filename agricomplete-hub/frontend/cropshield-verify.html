@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <meta name="api-url" content="https://agricomplete-backend.onrender.com/api">
+ <title>Verify CropShield Report - AgriComplete Hub</title>
+ <meta name="description" content="Verify the authenticity and evidence fingerprint of an AgriComplete CropShield report.">
+ <link rel="stylesheet" href="css/style.css?v=auth-toast-20260612">
+ <link rel="stylesheet" href="css/cropshield-verify.css?v=cropshield-acres-20260613">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+</head>
+<body class="cropshield-verify-body">
+ <main class="cropshield-verify-shell">
+ <header class="cropshield-verify-brand">
+ <a href="index.html"><i class="fas fa-seedling"></i><span>AgriComplete</span></a>
+ <span>CropShield verification</span>
+ </header>
+
+ <section class="cropshield-verify-card" id="verificationCard" aria-live="polite">
+ <div class="cropshield-verify-state loading" id="verificationState">
+ <span class="cropshield-verify-icon"><i class="fas fa-spinner fa-spin"></i></span>
+ <span class="cropshield-verify-kicker">Checking evidence record</span>
+ <h1>Verifying CropShield report</h1>
+ <p>We are matching the reference against the protected report registry.</p>
+ </div>
+ </section>
+
+ <footer class="cropshield-verify-footer">
+ <p>Verification confirms that the report and fingerprint exist in AgriComplete. It is not an insurance approval.</p>
+ <a href="index.html">Visit AgriComplete Hub <i class="fas fa-arrow-right"></i></a>
+ </footer>
+ </main>
+ <script src="js/cropshield-verify.js?v=cropshield-acres-20260613"></script>
+</body>
+</html>

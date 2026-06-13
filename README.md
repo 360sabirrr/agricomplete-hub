@@ -28,6 +28,7 @@ This project focuses on practical agricultural support:
 - Market price visibility
 - Direct buyer connections
 - Resource-saving advice
+- Verifiable crop-loss evidence reports
 
 ## Features
 
@@ -43,6 +44,9 @@ This project focuses on practical agricultural support:
 - Water and fertilizer guidance
 - AI chatbot interface
 - Multi-language support
+- CropShield crop-insurance evidence reports with 72-hour loss-intimation checks,
+  claim-readiness checklists, 7/15/30-day weather impact analysis, photographic
+  evidence, farmer signatures/thumb impressions, and QR verification
 
 ### Smart Agriculture Features
 - Crop recommendation based on inputs like location, season, irrigation type, and crop history
@@ -52,6 +56,7 @@ This project focuses on practical agricultural support:
 - Direct farmer-to-buyer marketplace
 - Water and fertilizer usage guidance
 - Simple chatbot for farming help
+- Before/after crop evidence, transparent loss estimates, case status tracking, and public report verification
 
 ## Tech Stack
 
@@ -158,6 +163,7 @@ SMTP_FROM_NAME=AgriComplete Hub
 SMTP_USE_TLS=false
 SMTP_USE_SSL=true
 PASSWORD_RESET_TOKEN_MINUTES=15
+CROPSHIELD_VERIFY_BASE_URL=https://agricomplete-frontend.onrender.com
 FLASK_ENV=development
 FLASK_DEBUG=True
 ```
@@ -205,6 +211,7 @@ GMAIL_API_REFRESH_TOKEN=your_google_oauth_refresh_token
 GMAIL_API_FROM=your_gmail_address
 GMAIL_API_FROM_NAME=AgriComplete Hub
 GMAIL_API_TIMEOUT_SECONDS=15
+CROPSHIELD_VERIFY_BASE_URL=https://agricomplete-frontend.onrender.com
 ```
 
 The frontend API URL is deployment-aware in `frontend/js/main.js`:
@@ -230,6 +237,7 @@ The backend is built with Flask and handles:
 - disease prediction API integration placeholder
 - login and profile data
 - marketplace listings
+- CropShield insurance evidence cases, public verification, and formal PDF reports
 - chatbot responses
 - PostgreSQL database operations
 

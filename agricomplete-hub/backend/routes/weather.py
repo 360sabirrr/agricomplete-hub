@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError, URLError
 import json
+from datetime import date, timedelta
 
 from flask import Blueprint, jsonify, request
 
@@ -151,17 +152,28 @@ def _openweather_current_weather(city, api_key):
 
 
 def _open_meteo_geocode(city):
-    params = urlencode({
-        'name': city,
-        'count': 1,
-        'language': 'en',
-        'format': 'json'
-    })
-    data = _fetch_json(f'https://geocoding-api.open-meteo.com/v1/search?{params}')
-    results = data.get('results') or []
-    if not results:
-        raise RuntimeError(f'Could not find location: {city}')
-    return results[0]
+    parts = [part.strip() for part in str(city or '').split(',') if part.strip()]
+    candidates = [str(city or '').strip()]
+    if parts:
+        candidates.extend([parts[0], *reversed(parts[-2:])])
+
+    seen = set()
+    for candidate in candidates:
+        normalized = candidate.casefold()
+        if not candidate or normalized in seen:
+            continue
+        seen.add(normalized)
+        params = urlencode({
+            'name': candidate,
+            'count': 1,
+            'language': 'en',
+            'format': 'json'
+        })
+        data = _fetch_json(f'https://geocoding-api.open-meteo.com/v1/search?{params}')
+        results = data.get('results') or []
+        if results:
+            return results[0]
+    raise RuntimeError(f'Could not find location: {city}')
 
 
 def _open_meteo_current_weather(city):
@@ -217,6 +229,110 @@ def _open_meteo_current_weather(city):
     }
 
 
+def _safe_float(value):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _weather_window_summary(daily, days):
+    dates = daily.get('time') or []
+    precipitation = daily.get('precipitation_sum') or []
+    maximums = daily.get('temperature_2m_max') or []
+    minimums = daily.get('temperature_2m_min') or []
+    humidities = daily.get('relative_humidity_2m_mean') or []
+    start_index = max(0, len(dates) - days)
+    indexes = range(start_index, len(dates))
+
+    rainfall_values = [
+        value for index in indexes
+        if index < len(precipitation)
+        for value in [_safe_float(precipitation[index])]
+        if value is not None
+    ]
+    maximum_values = [
+        value for index in indexes
+        if index < len(maximums)
+        for value in [_safe_float(maximums[index])]
+        if value is not None
+    ]
+    minimum_values = [
+        value for index in indexes
+        if index < len(minimums)
+        for value in [_safe_float(minimums[index])]
+        if value is not None
+    ]
+    humidity_values = [
+        value for index in indexes
+        if index < len(humidities)
+        for value in [_safe_float(humidities[index])]
+        if value is not None
+    ]
+    return {
+        'days': days,
+        'rainfall_mm': round(sum(rainfall_values), 1),
+        'max_temperature_c': round(max(maximum_values), 1) if maximum_values else None,
+        'min_temperature_c': round(min(minimum_values), 1) if minimum_values else None,
+        'average_humidity_percent': (
+            round(sum(humidity_values) / len(humidity_values), 1)
+            if humidity_values else None
+        ),
+        'records_used': len(list(indexes)),
+    }
+
+
+def _open_meteo_weather_impact(city):
+    place = _open_meteo_geocode(city)
+    end_date = date.today() - timedelta(days=1)
+    params = urlencode({
+        'latitude': place.get('latitude'),
+        'longitude': place.get('longitude'),
+        'daily': (
+            'precipitation_sum,temperature_2m_max,temperature_2m_min,'
+            'relative_humidity_2m_mean'
+        ),
+        'past_days': 30,
+        'forecast_days': 1,
+        'timezone': 'auto',
+    })
+    data = _fetch_json(f'https://api.open-meteo.com/v1/forecast?{params}')
+    source_daily = data.get('daily') or {}
+    dates = source_daily.get('time') or []
+    included_indexes = [
+        index for index, date_text in enumerate(dates)
+        if date_text <= end_date.isoformat()
+    ][-30:]
+    daily = {
+        key: [
+            values[index] for index in included_indexes
+            if index < len(values)
+        ]
+        for key, values in source_daily.items()
+        if isinstance(values, list)
+    }
+    if not daily.get('time'):
+        raise RuntimeError('Historical weather provider returned no daily records')
+
+    return {
+        'provider': 'open-meteo',
+        'location': ', '.join(filter(None, [
+            place.get('name'),
+            place.get('admin1'),
+            place.get('country'),
+        ])) or city,
+        'latitude': place.get('latitude'),
+        'longitude': place.get('longitude'),
+        'period_start': (daily.get('time') or [end_date.isoformat()])[0],
+        'period_end': (daily.get('time') or [end_date.isoformat()])[-1],
+        'windows': {
+            '7_days': _weather_window_summary(daily, 7),
+            '15_days': _weather_window_summary(daily, 15),
+            '30_days': _weather_window_summary(daily, 30),
+        },
+    }
+
+
 @weather_bp.route('/current', methods=['GET'])
 def current_weather():
     city = (request.args.get('city') or '').strip()
@@ -262,4 +378,18 @@ def current_weather():
         return jsonify({
             'msg': 'Weather data is unavailable for this location',
             'details': str(err)
+        }), 502
+
+
+@weather_bp.route('/impact', methods=['GET'])
+def weather_impact():
+    city = (request.args.get('city') or '').strip()
+    if not city:
+        return jsonify({'msg': 'City is required'}), 400
+    try:
+        return jsonify(_open_meteo_weather_impact(city)), 200
+    except (RuntimeError, TypeError, ValueError) as err:
+        return jsonify({
+            'msg': 'Historical weather impact is unavailable for this location',
+            'details': str(err),
         }), 502

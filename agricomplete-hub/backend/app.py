@@ -90,6 +90,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = _database_url()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = _jwt_secret_key()
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=_jwt_access_token_minutes())
+app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
 
 db.init_app(app)
 jwt.init_app(app)
@@ -130,6 +131,59 @@ def ensure_sqlite_schema():
         'category': 'VARCHAR(50)',
         'image_data': 'TEXT',
     }
+    cropshield_columns = {
+        'season': 'VARCHAR(20)',
+        'season_year': 'INTEGER',
+        'farmer_name': 'VARCHAR(120)',
+        'policy_number': 'VARCHAR(80)',
+        'contact_number': 'VARCHAR(20)',
+        'state': 'VARCHAR(80)',
+        'district': 'VARCHAR(80)',
+        'tehsil': 'VARCHAR(80)',
+        'block': 'VARCHAR(80)',
+        'gram_panchayat': 'VARCHAR(100)',
+        'village': 'VARCHAR(100)',
+        'survey_number': 'VARCHAR(80)',
+        'crop_variety': 'VARCHAR(100)',
+        'crop_pattern': 'VARCHAR(20)',
+        'area_hectares': 'FLOAT',
+        'expected_harvest_date': 'DATE',
+        'gps_latitude': 'FLOAT',
+        'gps_longitude': 'FLOAT',
+        'map_snapshot_data': 'TEXT',
+        'survey_date': 'DATE',
+        'expected_yield_per_hectare_kg': 'FLOAT',
+        'severity_level': 'VARCHAR(20)',
+        'current_yield_estimate_kg': 'FLOAT',
+        'estimated_yield_loss_kg': 'FLOAT',
+        'ai_evidence_image_data': 'TEXT',
+        'ai_disease_name': 'VARCHAR(150)',
+        'ai_confidence': 'FLOAT',
+        'ai_model_name': 'VARCHAR(120)',
+        'ai_detection_at': 'DATETIME',
+        'ai_recommendation': 'TEXT',
+        'claim_score': 'INTEGER DEFAULT 0',
+        'claim_status': 'VARCHAR(60)',
+        'claim_score_factors': 'TEXT',
+        'claim_checklist_summary': 'TEXT',
+        'damage_occurred_at': 'DATETIME',
+        'loss_intimated_at': 'DATETIME',
+        'intimation_hours': 'FLOAT',
+        'intimated_within_72_hours': 'BOOLEAN',
+        'inspection_date': 'DATE',
+        'surveyor_name': 'VARCHAR(120)',
+        'surveyor_designation': 'VARCHAR(120)',
+        'surveyor_remarks': 'TEXT',
+        'discrepancy_notes': 'TEXT',
+        'farmer_declaration': 'BOOLEAN DEFAULT 0',
+        'farmer_signature_name': 'VARCHAR(120)',
+        'farmer_signature_data': 'TEXT',
+        'farmer_signature_method': 'VARCHAR(30)',
+        'baseline_captured_at': 'DATETIME',
+        'damage_captured_at': 'DATETIME',
+        'surveyor_signature_name': 'VARCHAR(120)',
+        'local_official_signature_name': 'VARCHAR(120)',
+    }
 
     with db.engine.begin() as conn:
         existing_columns = {
@@ -145,6 +199,15 @@ def ensure_sqlite_schema():
         for column_name, column_type in market_listing_columns.items():
             if column_name not in existing_market_columns:
                 conn.execute(text(f'ALTER TABLE market_listing ADD COLUMN {column_name} {column_type}'))
+
+        existing_cropshield_columns = {
+            row[1] for row in conn.execute(text('PRAGMA table_info("crop_shield_case")')).fetchall()
+        }
+        for column_name, column_type in cropshield_columns.items():
+            if column_name not in existing_cropshield_columns:
+                conn.execute(text(
+                    f'ALTER TABLE crop_shield_case ADD COLUMN {column_name} {column_type}'
+                ))
 
         conn.execute(text('UPDATE "user" SET email = LOWER(TRIM(email)) WHERE email IS NOT NULL'))
         conn.execute(text('UPDATE "user" SET phone = NULL WHERE phone IS NULL OR TRIM(phone) = ""'))
@@ -194,12 +257,69 @@ def ensure_postgres_schema():
         'category': 'VARCHAR(50)',
         'image_data': 'TEXT',
     }
+    cropshield_columns = {
+        'season': 'VARCHAR(20)',
+        'season_year': 'INTEGER',
+        'farmer_name': 'VARCHAR(120)',
+        'policy_number': 'VARCHAR(80)',
+        'contact_number': 'VARCHAR(20)',
+        'state': 'VARCHAR(80)',
+        'district': 'VARCHAR(80)',
+        'tehsil': 'VARCHAR(80)',
+        'block': 'VARCHAR(80)',
+        'gram_panchayat': 'VARCHAR(100)',
+        'village': 'VARCHAR(100)',
+        'survey_number': 'VARCHAR(80)',
+        'crop_variety': 'VARCHAR(100)',
+        'crop_pattern': 'VARCHAR(20)',
+        'area_hectares': 'DOUBLE PRECISION',
+        'expected_harvest_date': 'DATE',
+        'gps_latitude': 'DOUBLE PRECISION',
+        'gps_longitude': 'DOUBLE PRECISION',
+        'map_snapshot_data': 'TEXT',
+        'survey_date': 'DATE',
+        'expected_yield_per_hectare_kg': 'DOUBLE PRECISION',
+        'severity_level': 'VARCHAR(20)',
+        'current_yield_estimate_kg': 'DOUBLE PRECISION',
+        'estimated_yield_loss_kg': 'DOUBLE PRECISION',
+        'ai_evidence_image_data': 'TEXT',
+        'ai_disease_name': 'VARCHAR(150)',
+        'ai_confidence': 'DOUBLE PRECISION',
+        'ai_model_name': 'VARCHAR(120)',
+        'ai_detection_at': 'TIMESTAMP WITHOUT TIME ZONE',
+        'ai_recommendation': 'TEXT',
+        'claim_score': 'INTEGER DEFAULT 0',
+        'claim_status': 'VARCHAR(60)',
+        'claim_score_factors': 'TEXT',
+        'claim_checklist_summary': 'TEXT',
+        'damage_occurred_at': 'TIMESTAMP WITHOUT TIME ZONE',
+        'loss_intimated_at': 'TIMESTAMP WITHOUT TIME ZONE',
+        'intimation_hours': 'DOUBLE PRECISION',
+        'intimated_within_72_hours': 'BOOLEAN',
+        'inspection_date': 'DATE',
+        'surveyor_name': 'VARCHAR(120)',
+        'surveyor_designation': 'VARCHAR(120)',
+        'surveyor_remarks': 'TEXT',
+        'discrepancy_notes': 'TEXT',
+        'farmer_declaration': 'BOOLEAN DEFAULT FALSE',
+        'farmer_signature_name': 'VARCHAR(120)',
+        'farmer_signature_data': 'TEXT',
+        'farmer_signature_method': 'VARCHAR(30)',
+        'baseline_captured_at': 'TIMESTAMP WITHOUT TIME ZONE',
+        'damage_captured_at': 'TIMESTAMP WITHOUT TIME ZONE',
+        'surveyor_signature_name': 'VARCHAR(120)',
+        'local_official_signature_name': 'VARCHAR(120)',
+    }
 
     with db.engine.begin() as conn:
         for column_name, column_type in user_columns.items():
             conn.execute(text(f'ALTER TABLE "user" ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
         for column_name, column_type in market_listing_columns.items():
             conn.execute(text(f'ALTER TABLE market_listing ADD COLUMN IF NOT EXISTS {column_name} {column_type}'))
+        for column_name, column_type in cropshield_columns.items():
+            conn.execute(text(
+                f'ALTER TABLE crop_shield_case ADD COLUMN IF NOT EXISTS {column_name} {column_type}'
+            ))
         conn.execute(text('UPDATE "user" SET email = LOWER(TRIM(email)) WHERE email IS NOT NULL'))
         conn.execute(text("UPDATE \"user\" SET phone = NULL WHERE phone IS NULL OR TRIM(phone) = ''"))
 
@@ -210,6 +330,7 @@ from routes.user import user_bp
 from routes.weather import weather_bp
 from routes.disease import disease_bp
 from routes.assistant import assistant_bp
+from routes.cropshield import cropshield_bp
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(farm_bp, url_prefix='/api/farm')
@@ -218,6 +339,7 @@ app.register_blueprint(user_bp, url_prefix='/api/user')
 app.register_blueprint(weather_bp, url_prefix='/api/weather')
 app.register_blueprint(disease_bp, url_prefix='/api/disease')
 app.register_blueprint(assistant_bp, url_prefix='/api/assistant')
+app.register_blueprint(cropshield_bp, url_prefix='/api/cropshield')
 
 
 with app.app_context():
@@ -238,6 +360,10 @@ def unauthorized(error):
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({"msg": "Endpoint not found"}), 404
+
+@app.errorhandler(413)
+def request_too_large(error):
+    return jsonify({"msg": "Uploaded evidence is too large. Please use smaller images."}), 413
 
 @app.errorhandler(500)
 def internal_error(error):
