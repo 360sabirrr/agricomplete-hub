@@ -97,6 +97,13 @@ def seller_display_name(user):
 def _truthy_query_arg(name):
     return str(request.args.get(name, '')).strip().lower() in {'1', 'true', 'yes', 'on'}
 
+def _no_store_json(payload, status=200):
+    response = jsonify(payload)
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response, status
+
 def _serialize_listing(listing, seller, include_image=False):
     serialized = {
         "id": listing.id,
@@ -127,10 +134,10 @@ def get_listings():
         for user in User.query.filter(User.id.in_(seller_ids)).all()
     } if seller_ids else {}
 
-    return jsonify([
+    return _no_store_json([
         _serialize_listing(l, users_by_id.get(l.seller_id), include_image=include_images)
         for l in listings
-    ]), 200
+    ])
 
 @market_bp.route('/listings/<int:id>', methods=['GET'])
 def get_listing(id):
@@ -138,7 +145,7 @@ def get_listing(id):
     listing = MarketListing.query.get_or_404(id)
     seller = User.query.get(listing.seller_id) if listing.seller_id is not None else None
     include_image = _truthy_query_arg('include_images') or _truthy_query_arg('include_image')
-    return jsonify(_serialize_listing(listing, seller, include_image=include_image)), 200
+    return _no_store_json(_serialize_listing(listing, seller, include_image=include_image))
 
 @market_bp.route('/listings', methods=['POST'])
 @jwt_required()

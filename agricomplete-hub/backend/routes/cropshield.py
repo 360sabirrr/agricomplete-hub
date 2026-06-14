@@ -19,7 +19,7 @@ from models import CropShieldCase, CropShieldStatusEvent, DiseaseScan, User
 
 cropshield_bp = Blueprint('cropshield', __name__)
 
-CROPSHIELD_API_VERSION = '2026-06-13-damage-only-v2'
+CROPSHIELD_API_VERSION = '2026-06-14-any-damage-pixels-v4'
 MAX_IMAGE_BYTES = 1_200_000
 MAX_SIGNATURE_BYTES = 600_000
 MAX_LAND_RECORD_BYTES = 900_000
@@ -538,7 +538,9 @@ def cropshield_version():
     return jsonify({
         'version': CROPSHIELD_API_VERSION,
         'evidence_mode': 'damage_only',
-        'report_layout': 'professional_v2',
+        'damage_image_min_width': 1,
+        'damage_image_min_height': 1,
+        'report_layout': 'professional_v4',
     }), 200
 
 
@@ -781,7 +783,12 @@ def create_case():
             raise ValueError('Field location is required')
 
         damage_data = _clean_text(data.get('damage_image_data'))
-        damage_bytes = _decode_image_data(damage_data, 'Damage image')
+        damage_bytes = _decode_image_data(
+            damage_data,
+            'Damage image',
+            min_width=1,
+            min_height=1,
+        )
         damage_hash = hashlib.sha256(damage_bytes).hexdigest()
         # Preserve the existing non-null legacy columns without asking farmers
         # to upload a second image or requiring a database migration.
@@ -1205,10 +1212,12 @@ def _case_report_pdf(case, user, language='en'):
         pagesize=A4,
         rightMargin=18 * mm,
         leftMargin=18 * mm,
-        topMargin=14 * mm,
+        topMargin=19 * mm,
         bottomMargin=15 * mm,
         title=f'{text["title"]} {case.reference}',
         author='AgriComplete Hub',
+        subject='Farmer-generated crop-loss evidence and claim-support report',
+        creator='AgriComplete CropShield',
     )
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(
@@ -1284,6 +1293,43 @@ def _case_report_pdf(case, user, language='en'):
         alignment=TA_CENTER,
         textColor=colors.HexColor('#687A6C'),
     ))
+    styles.add(ParagraphStyle(
+        name='ExecutiveTitle',
+        parent=styles['Heading2'],
+        fontName=bold_font,
+        fontSize=10,
+        leading=13,
+        textColor=colors.white,
+        spaceAfter=1.5 * mm,
+    ))
+    styles.add(ParagraphStyle(
+        name='ExecutiveBody',
+        parent=styles['Normal'],
+        fontName=normal_font,
+        fontSize=8.5,
+        leading=12,
+        textColor=colors.HexColor('#29442F'),
+    ))
+    styles.add(ParagraphStyle(
+        name='DocumentControl',
+        parent=styles['Normal'],
+        fontName=normal_font,
+        fontSize=7.4,
+        leading=10,
+        textColor=colors.HexColor('#536A58'),
+    ))
+    styles.add(ParagraphStyle(
+        name='EvidenceAdvisory',
+        parent=styles['Normal'],
+        fontName=normal_font,
+        fontSize=7.5,
+        leading=10,
+        textColor=colors.HexColor('#5C4B17'),
+        backColor=colors.HexColor('#FFF9E8'),
+        borderColor=colors.HexColor('#E7D394'),
+        borderWidth=0.4,
+        borderPadding=6,
+    ))
 
     styles['Normal'].fontName = normal_font
     styles['Heading1'].fontName = bold_font
@@ -1298,6 +1344,13 @@ def _case_report_pdf(case, user, language='en'):
         if not value:
             return text['not_recorded']
         return value.strftime('%d %b %Y, %I:%M %p')
+
+    def section_title(number, label):
+        clean_label = re.sub(r'^\s*\d+\.\s*', '', str(label or '')).strip()
+        return Paragraph(
+            f'<font color="#25803B">{number}</font>&nbsp;&nbsp;{escape(clean_label)}',
+            styles['SectionLabel'],
+        )
 
     farmer_name = case.farmer_name or 'Registered farmer'
     if farmer_name == 'Registered farmer' and user:
@@ -1336,6 +1389,35 @@ def _case_report_pdf(case, user, language='en'):
         ('TOPPADDING', (0, 0), (-1, -1), 9),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 9),
     ]))
+    document_control = Table([[
+        Paragraph(
+            f'<b>DOCUMENT ID</b><br/>{escape(case.reference)}',
+            styles['DocumentControl'],
+        ),
+        Paragraph(
+            f'<b>ISSUED</b><br/>{escape(report_datetime(case.created_at))}',
+            styles['DocumentControl'],
+        ),
+        Paragraph(
+            f'<b>CLASSIFICATION</b><br/>Farmer-generated claim support',
+            styles['DocumentControl'],
+        ),
+        Paragraph(
+            '<b>INTEGRITY</b><br/>QR verification + SHA-256 fingerprint',
+            styles['DocumentControl'],
+        ),
+    ]], colWidths=[42.5 * mm] * 4)
+    document_control.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#F8FBF8')),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#D2DFD4')),
+        ('INNERGRID', (0, 0), (-1, -1), 0.35, colors.HexColor('#DFE8E1')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 7),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 7),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
     metric_values = [
         (_money(case.estimated_loss), 'ESTIMATED LOSS'),
         (f'{case.reported_damage_percent:.0f}%', 'REPORTED DAMAGE'),
@@ -1364,7 +1446,43 @@ def _case_report_pdf(case, user, language='en'):
         ('TOPPADDING', (0, 0), (-1, 0), 7),
         ('BOTTOMPADDING', (0, 1), (-1, 1), 7),
     ]))
-    story = [header_block, Spacer(1, 3 * mm), metric_table, Spacer(1, 3 * mm)]
+    claim_status = case.claim_status or 'Evidence incomplete'
+    executive_detail = (
+        case.ai_recommendation
+        or (
+            'This dossier consolidates farmer-provided crop, damage, weather, '
+            'financial, and photographic evidence for claim review.'
+        )
+    )
+    executive_summary = (
+        f'<b>{escape(claim_status)}</b><br/>'
+        f'{escape(executive_detail)}'
+    )
+    executive_panel = Table([[
+        Paragraph('EXECUTIVE ASSESSMENT', styles['ExecutiveTitle']),
+        Paragraph(executive_summary, styles['ExecutiveBody']),
+    ]], colWidths=[42 * mm, 128 * mm])
+    executive_panel.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, 0), colors.HexColor('#155C2C')),
+        ('TEXTCOLOR', (0, 0), (0, 0), colors.white),
+        ('BACKGROUND', (1, 0), (1, 0), colors.HexColor('#EEF7F0')),
+        ('BOX', (0, 0), (-1, -1), 0.6, colors.HexColor('#BFD8C4')),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 9),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 9),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    story = [
+        header_block,
+        Spacer(1, 2.5 * mm),
+        document_control,
+        Spacer(1, 2.5 * mm),
+        metric_table,
+        Spacer(1, 2.5 * mm),
+        executive_panel,
+        Spacer(1, 4 * mm),
+    ]
 
     basic_data = [
         ['Season & year', f'{case.season or "Not recorded"} {case.season_year or ""}'.strip(),
@@ -1384,7 +1502,7 @@ def _case_report_pdf(case, user, language='en'):
          'Date of survey',
          case.survey_date.isoformat() if case.survey_date else text['not_recorded']],
     ]
-    story.append(Paragraph(text['basic'], styles['SectionLabel']))
+    story.append(section_title('01', text['basic']))
     basic_table = Table(basic_data, colWidths=[31 * mm, 54 * mm, 31 * mm, 54 * mm])
     basic_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#EEF6EF')),
@@ -1413,7 +1531,7 @@ def _case_report_pdf(case, user, language='en'):
         ['Expected yield', f'{case.expected_yield_per_acre_kg:,.0f} kg / acre',
          'Market price', f'INR {case.market_price_per_kg:,.2f} / kg'],
     ]
-    story.append(Paragraph(text['crop'], styles['SectionLabel']))
+    story.append(section_title('02', text['crop']))
     plot_table = Table(plot_data, colWidths=[31 * mm, 54 * mm, 31 * mm, 54 * mm])
     plot_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#F2F6EC')),
@@ -1449,7 +1567,7 @@ def _case_report_pdf(case, user, language='en'):
          'Evidence source', 'Farmer submitted'],
         ['Assessment type', 'Data-assisted estimate', 'Report scope', 'Claim support evidence'],
     ]
-    story.append(Paragraph(text['damage'], styles['SectionLabel']))
+    story.append(section_title('03', text['damage']))
     verification_table = Table(
         verification_data,
         colWidths=[31 * mm, 54 * mm, 31 * mm, 54 * mm]
@@ -1467,7 +1585,7 @@ def _case_report_pdf(case, user, language='en'):
         ('TOPPADDING', (0, 0), (-1, -1), 7),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 7),
     ]))
-    story.extend([verification_table, PageBreak()])
+    story.extend([verification_table, Spacer(1, 4 * mm)])
 
     if case.damage_type == 'Disease' and case.ai_disease_name:
         ai_rows = [
@@ -1504,7 +1622,7 @@ def _case_report_pdf(case, user, language='en'):
             ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]))
         story.extend([
-            Paragraph(text['ai_evidence'], styles['SectionLabel']),
+            section_title('04', text['ai_evidence']),
             ai_table,
             Spacer(1, 3 * mm),
         ])
@@ -1532,10 +1650,10 @@ def _case_report_pdf(case, user, language='en'):
         ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
     ]))
     story.extend([
-        Paragraph(text['loss'], styles['SectionLabel']),
+        section_title('05', text['loss']),
         metrics_table,
         Spacer(1, 3 * mm),
-        Paragraph(text['recommendation'], styles['SectionLabel']),
+        section_title('06', text['recommendation']),
         Paragraph(
             escape(case.ai_recommendation or text['not_recorded']),
             styles['Normal']
@@ -1607,11 +1725,11 @@ def _case_report_pdf(case, user, language='en'):
     ]))
     readiness_panel = Table([[
         [
-            Paragraph(text['checklist'], styles['SectionLabel']),
+            section_title('07', text['checklist']),
             checklist_table,
         ],
         [
-            Paragraph(text['score'], styles['SectionLabel']),
+            section_title('08', text['score']),
             score_table,
         ],
     ]], colWidths=[85 * mm, 85 * mm])
@@ -1638,11 +1756,11 @@ def _case_report_pdf(case, user, language='en'):
             for key, value in weather.items()
             if key != 'impact' and value not in ('', None)
         )
-        story.extend([
-            Paragraph(text['weather'], styles['SectionLabel']),
+        weather_section = [
+            section_title('09', text['weather']),
             Paragraph(escape(weather_text) or 'No weather context recorded.', styles['Normal']),
             Spacer(1, 4 * mm),
-        ])
+        ]
         impact = weather.get('impact') if isinstance(weather.get('impact'), dict) else {}
         windows = impact.get('windows') if isinstance(impact.get('windows'), dict) else {}
         if windows:
@@ -1679,7 +1797,7 @@ def _case_report_pdf(case, user, language='en'):
                 ('TOPPADDING', (0, 0), (-1, -1), 4),
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ]))
-            story.extend([
+            weather_section.extend([
                 Paragraph(
                     escape(
                         f'{impact.get("location") or case.location} | '
@@ -1691,6 +1809,7 @@ def _case_report_pdf(case, user, language='en'):
                 impact_table,
                 Spacer(1, 4 * mm),
             ])
+        story.append(KeepTogether(weather_section))
     closing_notes = []
     if case.notes:
         closing_notes.extend([
@@ -1704,18 +1823,32 @@ def _case_report_pdf(case, user, language='en'):
         'government inspection, or claim approval.',
         styles['ReportDisclaimer']
     ))
-    story.extend([PageBreak(), Paragraph(text['photos'], styles['Heading1'])])
+    story.extend([Spacer(1, 2 * mm), section_title('10', text['photos'])])
 
     coordinates = (
         f'{case.gps_latitude:.6f}, {case.gps_longitude:.6f}'
         if case.gps_latitude is not None and case.gps_longitude is not None
         else text['not_recorded']
     )
-    damage_raw = _decode_image_data(case.damage_image_data, 'Damage evidence')
+    damage_raw = _decode_image_data(
+        case.damage_image_data,
+        'Damage evidence',
+        min_width=1,
+        min_height=1,
+    )
+    from PIL import Image as PILImage
+    with PILImage.open(io.BytesIO(damage_raw)) as damage_source:
+        damage_width, damage_height = damage_source.size
+    evidence_quality = (
+        'Original-resolution evidence'
+        if damage_width >= 320 and damage_height >= 240
+        else 'Low-resolution source accepted; visual interpretation may be limited'
+    )
     damage_caption = (
         f'<b>Damage evidence</b><br/>'
         f'Timestamp: {escape(report_datetime(case.damage_captured_at))}<br/>'
-        f'GPS: {escape(coordinates)}'
+        f'GPS: {escape(coordinates)}<br/>'
+        f'Source resolution: {damage_width} x {damage_height} px'
     )
     if case.ai_evidence_image_data:
         ai_raw = _decode_image_data(
@@ -1767,7 +1900,17 @@ def _case_report_pdf(case, user, language='en'):
         ('TOPPADDING', (0, 0), (-1, -1), 6),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
-    story.extend([evidence_table, Spacer(1, 4 * mm)])
+    story.extend([
+        evidence_table,
+        Spacer(1, 2 * mm),
+        Paragraph(
+            f'<b>Evidence quality note:</b> {escape(evidence_quality)}. '
+            'The original upload is accepted without a minimum pixel requirement, '
+            'then normalized for consistent report presentation.',
+            styles['EvidenceAdvisory'],
+        ),
+        Spacer(1, 4 * mm),
+    ])
 
     additional_images = []
     if case.map_snapshot_data:
@@ -1831,7 +1974,8 @@ def _case_report_pdf(case, user, language='en'):
         ('BOTTOMPADDING', (0, 1), (-1, 1), 7),
     ]))
     story.extend([
-        Paragraph(text['declaration'], styles['SectionLabel']),
+        PageBreak(),
+        section_title('11', text['declaration']),
         Paragraph(
             'The farmer declares that the submitted plot, crop, loss details, and '
             'photographic evidence are accurate to the best of their knowledge. '
@@ -1941,10 +2085,28 @@ def _case_report_pdf(case, user, language='en'):
         ('TOPPADDING', (0, 0), (-1, -1), 6),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
-    story.append(verification)
+    story.extend([
+        section_title('12', text['verify']),
+        verification,
+    ])
 
     def report_footer(canvas, document):
         canvas.saveState()
+        canvas.setFillColor(colors.HexColor('#155C2C'))
+        canvas.rect(0, A4[1] - 9 * mm, A4[0], 9 * mm, fill=1, stroke=0)
+        canvas.setFont(bold_font, 7.5)
+        canvas.setFillColor(colors.white)
+        canvas.drawString(
+            18 * mm,
+            A4[1] - 5.8 * mm,
+            'AGRICOMPLETE CROPSHIELD'
+        )
+        canvas.setFont(normal_font, 6.8)
+        canvas.drawRightString(
+            A4[0] - 18 * mm,
+            A4[1] - 5.8 * mm,
+            'CONFIDENTIAL CLAIM-SUPPORT DOSSIER'
+        )
         canvas.setStrokeColor(colors.HexColor('#C9D8CC'))
         canvas.setLineWidth(0.5)
         canvas.line(18 * mm, 12 * mm, A4[0] - 18 * mm, 12 * mm)
@@ -1953,7 +2115,7 @@ def _case_report_pdf(case, user, language='en'):
         canvas.drawString(
             18 * mm,
             8 * mm,
-            f'AgriComplete CropShield | {case.reference} | Claim-support evidence'
+            f'AgriComplete CropShield | {case.reference} | QR-verifiable evidence'
         )
         canvas.drawRightString(
             A4[0] - 18 * mm,

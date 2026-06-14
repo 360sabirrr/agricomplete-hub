@@ -7,7 +7,7 @@
 
     appBundlePromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'js/main.js?v=weather-api-20260608';
+      script.src = 'js/main.js?v=full-i18n-20260614-2';
       script.onload = resolve;
       script.onerror = () => reject(new Error('Could not load language support.'));
       document.head.appendChild(script);

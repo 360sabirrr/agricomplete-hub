@@ -2,6 +2,8 @@
   "python.defaultInterpreterPath": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
   "python.terminal.activateEnvironment": true,
   "liveServer.settings.root": "/agricomplete-hub/frontend",
+  "liveServer.settings.host": "127.0.0.1",
+  "liveServer.settings.port": 5501,
   "liveServer.settings.ignoreFiles": [
     "**/.git/**",
     "**/.venv/**",

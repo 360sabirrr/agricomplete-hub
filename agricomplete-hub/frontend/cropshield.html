@@ -6,7 +6,7 @@
  <meta name="api-url" content="https://agricomplete-backend.onrender.com/api">
  <title>CropShield - AgriComplete Hub</title>
  <meta name="description" content="Create structured crop-loss evidence reports using field photos, weather context, and transparent financial estimates.">
- <link rel="stylesheet" href="css/style.css?v=auth-toast-20260612">
+ <link rel="stylesheet" href="css/style.css?v=mobile-shell-20260614">
  <link rel="stylesheet" href="css/cropshield.css?v=case-delete-20260613-2">
  <link rel="stylesheet" href="css/cropshield-signature.css?v=signature-capture-20260613">
  <link rel="stylesheet" href="css/cropshield-claims.css?v=claim-score-20260613">
@@ -33,6 +33,7 @@
  <a href="cropshield.html" class="nav-item active"><i class="fas fa-shield-halved"></i><span>CropShield</span><span class="nav-badge cropshield-nav-badge">New</span></a>
  <div class="nav-section-title">Account</div>
  <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span>My Profile</span></a>
+ <a href="#" class="nav-item"><i class="fas fa-cog"></i><span data-i18n="nav_settings">Settings</span></a>
  <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a>
  </nav>
  <div class="sidebar-footer">
@@ -50,6 +51,10 @@
  </div>
  <div class="topbar-right">
  <span class="cropshield-secure-chip"><i class="fas fa-fingerprint"></i> Evidence protected</span>
+ <div class="lang-selector">
+ <i class="fas fa-globe"></i>
+ <select onchange="changeLanguage(this.value)" aria-label="Select language"></select>
+ </div>
  <button class="btn-icon notification-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
  </div>
  </div>
@@ -155,7 +160,7 @@
  <img id="csDamagePreview" alt="Damaged crop preview">
  <span class="cropshield-upload-empty"><i class="fas fa-triangle-exclamation"></i><strong>Damage photo</strong><small>Clear image of the affected crop or field</small></span>
  <span class="cropshield-upload-change"><i class="fas fa-camera"></i> Replace</span>
- <span class="cropshield-upload-meta" id="csDamageMeta">JPG, PNG or WEBP</span>
+ <span class="cropshield-upload-meta" id="csDamageMeta">Any resolution - JPG, PNG or WEBP up to 15 MB</span>
  </label>
  </div>
  <p class="cropshield-upload-note"><i class="fas fa-lock"></i> The damage image is compressed before upload and stored with a SHA-256 evidence fingerprint.</p>
@@ -329,7 +334,8 @@
  </main>
  </div>
 
- <script src="js/main.js?v=auth-toast-20260612"></script>
- <script src="js/cropshield.js?v=case-delete-20260613-7"></script>
+ <script src="js/main.js?v=full-i18n-20260614-2"></script>
+ <script src="js/cropshield-i18n.js?v=full-i18n-20260614-3"></script>
+ <script src="js/cropshield.js?v=damage-any-pixels-v4-20260614"></script>
 </body>
 </html>

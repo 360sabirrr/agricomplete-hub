@@ -331,6 +331,7 @@ from routes.weather import weather_bp
 from routes.disease import disease_bp
 from routes.assistant import assistant_bp
 from routes.cropshield import cropshield_bp
+from user_dates import backfill_missing_user_created_at
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 app.register_blueprint(farm_bp, url_prefix='/api/farm')
@@ -346,6 +347,9 @@ with app.app_context():
     db.create_all()
     ensure_sqlite_schema()
     ensure_postgres_schema()
+    repaired_users = backfill_missing_user_created_at()
+    if repaired_users:
+        logger.info('Restored joining dates for %s legacy users', repaired_users)
 
 # Error handlers
 @app.errorhandler(400)

@@ -149,7 +149,11 @@ class CropShieldRouteTests(unittest.TestCase):
     def test_version_reports_damage_only_evidence(self):
         response = self.client.get('/api/cropshield/version')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json()['evidence_mode'], 'damage_only')
+        capabilities = response.get_json()
+        self.assertEqual(capabilities['evidence_mode'], 'damage_only')
+        self.assertEqual(capabilities['damage_image_min_width'], 1)
+        self.assertEqual(capabilities['damage_image_min_height'], 1)
+        self.assertEqual(capabilities['report_layout'], 'professional_v4')
 
     def test_create_verify_and_download_report(self):
         case = self.create_case()
@@ -207,6 +211,23 @@ class CropShieldRouteTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn('Damage image', response.get_json()['msg'])
+
+    def test_accepts_damage_photo_with_any_valid_pixel_dimensions(self):
+        tiny_damage = evidence_image((145, 95, 35), (1, 1))
+        response = self.client.post(
+            '/api/cropshield/cases',
+            json=self.payload(damage_image_data=tiny_damage),
+            headers=self.headers,
+        )
+        self.assertEqual(response.status_code, 201)
+
+        case = response.get_json()['case']
+        report = self.client.get(
+            f"/api/cropshield/cases/{case['id']}/report",
+            headers=self.headers,
+        )
+        self.assertEqual(report.status_code, 200)
+        self.assertTrue(report.data.startswith(b'%PDF'))
 
     def test_requires_signature_or_thumb_impression(self):
         response = self.client.post(

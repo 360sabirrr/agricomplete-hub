@@ -20,6 +20,7 @@ from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import IntegrityError
 
 from extensions import db
+from user_dates import user_created_at_utc
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -575,7 +576,8 @@ def _serialize_user(user):
         "soil_type": user.soil_type or '',
         "irrigation_source": user.irrigation_source or '',
         "primary_crops": user.primary_crops or '',
-        "farming_type": user.farming_type or ''
+        "farming_type": user.farming_type or '',
+        "created_at": user_created_at_utc(user)
     }
 
 

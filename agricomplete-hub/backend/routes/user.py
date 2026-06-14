@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from extensions import db
 from models import FarmAlert, User
 from datetime import timezone
+from user_dates import user_created_at_utc
 import logging
 import re
 
@@ -69,7 +70,8 @@ def _serialize_user(user):
         "soil_type": getattr(user, 'soil_type', '') or '',
         "irrigation_source": getattr(user, 'irrigation_source', '') or '',
         "primary_crops": getattr(user, 'primary_crops', '') or '',
-        "farming_type": getattr(user, 'farming_type', '') or ''
+        "farming_type": getattr(user, 'farming_type', '') or '',
+        "created_at": user_created_at_utc(user)
     }
 
 def _alert_created_at_utc(alert):

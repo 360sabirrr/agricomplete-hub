@@ -2402,6 +2402,21 @@ Object.keys(dynamicStaticUiTranslations).forEach(lang => {
  };
 });
 
+const sharedFeatureStaticUiTranslations = {
+ hi: { CropShield: 'क्रॉपशील्ड', New: 'नया' },
+ mr: { CropShield: 'क्रॉपशील्ड', New: 'नवीन' },
+ pa: { CropShield: 'ਕ੍ਰਾਪਸ਼ੀਲਡ', New: 'ਨਵਾਂ' },
+ ta: { CropShield: 'கிராப்ஷீல்ட்', New: 'புதியது' },
+ te: { CropShield: 'క్రాప్‌షీల్డ్', New: 'కొత్త' }
+};
+
+Object.keys(sharedFeatureStaticUiTranslations).forEach(lang => {
+ staticUiTranslations[lang] = {
+ ...(staticUiTranslations[lang] || {}),
+ ...sharedFeatureStaticUiTranslations[lang]
+ };
+});
+
 const staticTextNodeSources = new WeakMap();
 const translatableStaticTexts = new Set(Object.keys(staticUiTranslations.hi || {}));
 
@@ -2416,7 +2431,7 @@ function translateStaticTextNodes(root = document.body) {
  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
  acceptNode(node) {
  const parent = node.parentElement;
- if (!parent || parent.closest('script,style,noscript,.chatbot-body')) return NodeFilter.FILTER_REJECT;
+ if (!parent || parent.closest('script,style,noscript,.chatbot-body,[data-i18n-skip]')) return NodeFilter.FILTER_REJECT;
  const text = node.textContent.trim();
  return text? NodeFilter.FILTER_ACCEPT: NodeFilter.FILTER_REJECT;
  }
@@ -2431,30 +2446,83 @@ function translateStaticTextNodes(root = document.body) {
  if (!translatableStaticTexts.has(source)) return;
  staticTextNodeSources.set(node, source);
  const translated = getStaticUiText(source);
- node.textContent = node.textContent.replace(trimmed, translated);
+ if (translated !== trimmed) node.textContent = node.textContent.replace(trimmed, translated);
  });
 }
 
-function translateStaticAttributes() {
- document.querySelectorAll('[placeholder]').forEach(el => {
+function translateStaticAttributes(root = document) {
+ const scope = root?.querySelectorAll ? root : document;
+ scope.querySelectorAll('[placeholder]').forEach(el => {
  const source = el.dataset.i18nSourcePlaceholder || el.getAttribute('placeholder') || '';
  if (!translatableStaticTexts.has(source)) return;
  el.dataset.i18nSourcePlaceholder = source;
  el.setAttribute('placeholder', getStaticUiText(source));
  });
 
- document.querySelectorAll('option').forEach(option => {
+ scope.querySelectorAll('option').forEach(option => {
  const source = option.dataset.i18nSourceText || option.textContent.trim();
  if (!translatableStaticTexts.has(source)) return;
+ if (!option.hasAttribute('value')) option.value = source;
  option.dataset.i18nSourceText = source;
  option.textContent = getStaticUiText(source);
  });
+
+ ['title', 'aria-label'].forEach(attribute => {
+ scope.querySelectorAll(`[${attribute}]`).forEach(el => {
+ const datasetKey = attribute === 'title' ? 'i18nSourceTitle' : 'i18nSourceAriaLabel';
+ const source = el.dataset[datasetKey] || el.getAttribute(attribute) || '';
+ if (!translatableStaticTexts.has(source)) return;
+ el.dataset[datasetKey] = source;
+ el.setAttribute(attribute, getStaticUiText(source));
+ });
+ });
 }
 
-function applyStaticUiTranslations() {
- translateStaticTextNodes();
- translateStaticAttributes();
+function applyStaticUiTranslations(root = document.body) {
+ translateStaticTextNodes(root);
+ translateStaticAttributes(root);
 }
+
+function registerStaticUiTranslations(bundle = {}) {
+ Object.entries(bundle).forEach(([lang, entries]) => {
+ if (!SUPPORTED_LANGUAGES.includes(lang) || !entries) return;
+ staticUiTranslations[lang] = {
+ ...(staticUiTranslations[lang] || {}),
+ ...entries
+ };
+ Object.keys(entries).forEach(source => translatableStaticTexts.add(source));
+ });
+ applyStaticUiTranslations();
+}
+
+let staticTranslationFrame = 0;
+function scheduleStaticUiTranslation(root = document.body) {
+ if (staticTranslationFrame) window.cancelAnimationFrame(staticTranslationFrame);
+ staticTranslationFrame = window.requestAnimationFrame(() => {
+ staticTranslationFrame = 0;
+ applyStaticUiTranslations(root?.isConnected ? root : document.body);
+ });
+}
+
+function initDynamicUiTranslations() {
+ if (!document.body || document.body.dataset.i18nObserverReady === 'true') return;
+ document.body.dataset.i18nObserverReady = 'true';
+ const observer = new MutationObserver(mutations => {
+ const changedRoot = mutations
+ .map(mutation => mutation.target)
+ .find(node => node?.nodeType === Node.ELEMENT_NODE);
+ scheduleStaticUiTranslation(changedRoot || document.body);
+ });
+ observer.observe(document.body, {
+ childList: true,
+ subtree: true
+ });
+}
+
+window.getStaticUiText = getStaticUiText;
+window.getCurrentLanguage = () => currentLang;
+window.registerStaticUiTranslations = registerStaticUiTranslations;
+window.applyStaticUiTranslations = applyStaticUiTranslations;
 
 function syncLanguageSelectors() {
  document.querySelectorAll('.lang-selector select').forEach(select => {
@@ -2605,6 +2673,7 @@ function applyTranslations() {
  applyStaticUiTranslations();
  applyChatbotStaticTranslations();
  syncLanguageSelectors();
+ initDynamicUiTranslations();
 }
 
 function getStoredUser() {
@@ -2643,6 +2712,34 @@ function ensureSelectOption(selectEl, value) {
  }
 }
 
+function formatProfileJoinedDate(value) {
+ const labels = {
+ en: { joined: 'Joined', unavailable: 'Joining date unavailable', locale: 'en-IN' },
+ hi: { joined: 'शामिल हुए', unavailable: 'शामिल होने की तारीख उपलब्ध नहीं है', locale: 'hi-IN' },
+ mr: { joined: 'सामील झाले', unavailable: 'सामील झाल्याची तारीख उपलब्ध नाही', locale: 'mr-IN' },
+ pa: { joined: 'ਸ਼ਾਮਲ ਹੋਏ', unavailable: 'ਸ਼ਾਮਲ ਹੋਣ ਦੀ ਤਾਰੀਖ ਉਪਲਬਧ ਨਹੀਂ ਹੈ', locale: 'pa-IN' },
+ ta: { joined: 'இணைந்த நாள்', unavailable: 'இணைந்த தேதி கிடைக்கவில்லை', locale: 'ta-IN' },
+ te: { joined: 'చేరిన తేదీ', unavailable: 'చేరిన తేదీ అందుబాటులో లేదు', locale: 'te-IN' }
+ };
+ const language = labels[currentLang] || labels.en;
+ if (!value) return language.unavailable;
+
+ let timestamp = String(value).trim();
+ if (!/[zZ]$|[+-]\d{2}:\d{2}$/.test(timestamp)) {
+ timestamp += 'Z';
+ }
+
+ const joinedAt = new Date(timestamp);
+ if (Number.isNaN(joinedAt.getTime())) return language.unavailable;
+
+ const formattedDate = new Intl.DateTimeFormat(language.locale, {
+ day: 'numeric',
+ month: 'long',
+ year: 'numeric'
+ }).format(joinedAt);
+ return `${language.joined} ${formattedDate}`;
+}
+
 function updateProfileDisplay(user) {
  if (!user) return;
 
@@ -2672,6 +2769,11 @@ function updateProfileDisplay(user) {
  document.querySelectorAll('.profile-avatar,.sidebar-footer .user-avatar').forEach(el => {
  el.textContent = avatarText;
  });
+
+ const joinedDate = document.getElementById('profileJoinedDate');
+ if (joinedDate) {
+ joinedDate.textContent = formatProfileJoinedDate(user.created_at || user.createdAt);
+ }
 
  const dashWelcome = document.querySelector('[data-i18n="dash_welcome"]');
  if (dashWelcome) {
@@ -3077,8 +3179,8 @@ function getSafeListingImageData(value) {
 
 let marketplaceListingsById = new Map();
 let marketplaceAllListings = [];
-const MARKETPLACE_SAVED_KEY = 'agri_marketplace_saved_listings';
-const MARKETPLACE_REPORTED_KEY = 'agri_marketplace_reported_listings';
+const MARKETPLACE_SAVED_KEY = 'agri_marketplace_saved_listings_v2';
+const MARKETPLACE_REPORTED_KEY = 'agri_marketplace_reported_listings_v2';
 
 function getMarketplaceStoredIds(key) {
  try {
@@ -3392,10 +3494,21 @@ async function renderMarketplaceListings() {
  buyGrid.innerHTML = '';
 
  try {
- const listings = await apiFetch('/market/listings?include_images=true');
+ const listings = await apiFetch('/market/listings?include_images=true', {
+  cache: 'no-store'
+ });
  const safeListings = Array.isArray(listings)? listings.map(normalizeMarketplaceListing): [];
  marketplaceAllListings = safeListings;
  marketplaceListingsById = new Map(safeListings.map(listing => [String(listing.id), listing]));
+ const databaseIds = new Set(safeListings.map(listing => String(listing.id)));
+ setMarketplaceStoredIds(
+  MARKETPLACE_SAVED_KEY,
+  getSavedMarketplaceListingIds().filter(id => databaseIds.has(id))
+ );
+ setMarketplaceStoredIds(
+  MARKETPLACE_REPORTED_KEY,
+  getReportedMarketplaceListingIds().filter(id => databaseIds.has(id))
+ );
  updateMarketplaceLocationOptions();
  renderMarketplaceFilteredListings();
  } catch (err) {
@@ -3830,43 +3943,6 @@ function closeListingModal() {
  if (modal) modal.style.display = 'none';
 }
 
-async function seedMarketplaceFromLocalStorageIfNeeded() {
- const legacyKey = 'agri_marketplace_custom_listings';
- const legacyRaw = localStorage.getItem(legacyKey);
- const token = localStorage.getItem('agri_token');
- if (!legacyRaw ||!token) return;
-
- try {
- const legacyListings = JSON.parse(legacyRaw);
- if (!Array.isArray(legacyListings) ||!legacyListings.length) {
- localStorage.removeItem(legacyKey);
- return;
- }
-
- for (const item of legacyListings) {
- if (!item?.cropName ||!item?.quantity ||!item?.price ||!item?.location) continue;
- try {
- await apiFetch('/market/listings', {
- method: 'POST',
- body: JSON.stringify({
- crop_name: item.cropName,
- quantity: item.quantity,
- price: Number(item.price),
- location: item.location,
- category: getListingCategory({ crop_name: item.cropName, category: item.category })
- })
- });
- } catch (err) {
- console.warn('Skipping legacy listing import item:', err);
- }
- }
-
- localStorage.removeItem(legacyKey);
- } catch (err) {
- console.warn('Failed to import legacy listings:', err);
- }
-}
-
 function initMarketplaceListingFlow() {
  const form = document.getElementById('listingForm');
  const modal = document.getElementById('listingModal');
@@ -3878,9 +3954,9 @@ function initMarketplaceListingFlow() {
  reportForm.dataset.bound = 'true';
  }
 
- seedMarketplaceFromLocalStorageIfNeeded().finally(() => {
+ // Old browser-only listings must never be copied back into the database.
+ localStorage.removeItem('agri_marketplace_custom_listings');
  renderMarketplaceListings();
- });
 
  ['marketCategoryFilter', 'marketLocationFilter', 'marketSortFilter'].forEach(id => {
  document.getElementById(id)?.addEventListener('change', handleMarketplaceFilterChange);
@@ -6809,6 +6885,15 @@ function formatTrendPrice(value) {
  return `Rs.${Math.round(value).toLocaleString('en-IN')}`;
 }
 
+function formatTrendCompactPrice(value) {
+ const amount = Number(value) || 0;
+ if (Math.abs(amount) >= 1000) {
+  const thousands = amount / 1000;
+  return `${thousands.toFixed(thousands >= 10 ? 0 : 1).replace(/\.0$/, '')}k`;
+ }
+ return Math.round(amount).toString();
+}
+
 window.updateChartData = function(period, crop) {
  const chartGroup = document.getElementById('priceTrendBars') || document.querySelector('.chart-bar-group');
  if (!chartGroup) return;
@@ -6840,7 +6925,7 @@ window.updateChartData = function(period, crop) {
  const stateClass = Number(item.value) === max? ' is-high': Number(item.value) === min? ' is-low': '';
  return `
  <div class="chart-bar${stateClass}" style="--bar-height:${height.toFixed(1)}%; animation: growUp 0.6s ease-out ${idx * 0.05}s both;" title="${escapeHtml(cropLabel)} ${escapeHtml(item.label)}: ${formatTrendPrice(item.value)}">
- <span class="bar-value">${formatTrendPrice(item.value)}</span>
+ <span class="bar-value" data-compact="${formatTrendCompactPrice(item.value)}">${formatTrendPrice(item.value)}</span>
  <span class="bar-label">${escapeHtml(item.label)}</span>
  </div>
  `;
@@ -6850,7 +6935,10 @@ window.updateChartData = function(period, crop) {
  if (averageLine) {
  averageLine.style.setProperty('--avg-position', `${avgPosition.toFixed(1)}%`);
  const label = averageLine.querySelector('span');
- if (label) label.textContent = `${translateLabel('chart_avg_short') || 'Avg'} ${formatTrendPrice(avg)}`;
+ if (label) {
+  label.textContent = `${translateLabel('chart_avg_short') || 'Avg'} ${formatTrendPrice(avg)}`;
+  label.dataset.compact = `Avg ${formatTrendCompactPrice(avg)}`;
+ }
  }
 
  const currentEl = document.getElementById('priceTrendCurrent');

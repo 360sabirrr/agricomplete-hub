@@ -31,15 +31,38 @@ function cropShieldElement(id) {
  return document.getElementById(id);
 }
 
+function cropShieldTranslate(source, values = {}) {
+ if (typeof window.cropShieldT === 'function') return window.cropShieldT(source, values);
+ return Object.entries(values).reduce(
+  (text, [key, value]) => text.replaceAll(`{${key}}`, String(value)),
+  source
+ );
+}
+
+function cropShieldLocale() {
+ return {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  mr: 'mr-IN',
+  pa: 'pa-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+ }[window.getCurrentLanguage?.() || 'en'] || 'en-IN';
+}
+
 async function cropShieldRequireCurrentBackend() {
  try {
   const capabilities = await apiFetch('/cropshield/version');
-  if (capabilities?.evidence_mode !== 'damage_only') {
+  if (
+   capabilities?.evidence_mode !== 'damage_only'
+   || Number(capabilities?.damage_image_min_width) !== 1
+   || Number(capabilities?.damage_image_min_height) !== 1
+  ) {
    throw new Error('Unsupported CropShield evidence mode');
   }
  } catch (error) {
   const compatibilityError = new Error(
-   'CropShield backend is not up to date. Restart the local backend or deploy the latest backend code, then try again.'
+   'CropShield backend is outdated. Restart the local backend or deploy the latest backend code so damage photos of any pixel size are accepted.'
   );
   compatibilityError.cause = error;
   throw compatibilityError;
@@ -47,7 +70,7 @@ async function cropShieldRequireCurrentBackend() {
 }
 
 function cropShieldMoney(value) {
- return `INR ${Math.round(Number(value) || 0).toLocaleString('en-IN')}`;
+ return `INR ${Math.round(Number(value) || 0).toLocaleString(cropShieldLocale())}`;
 }
 
 function cropShieldNumber(value, fallback = 0) {
@@ -75,10 +98,10 @@ function cropShieldUtcDateTime(value) {
 }
 
 function cropShieldFormatDateTime(value) {
- if (!value) return 'Not recorded';
+ if (!value) return cropShieldTranslate('Not recorded');
  const parsed = new Date(value);
  if (Number.isNaN(parsed.getTime())) return String(value);
- return new Intl.DateTimeFormat('en-IN', {
+ return new Intl.DateTimeFormat(cropShieldLocale(), {
   dateStyle: 'medium',
   timeStyle: 'short',
  }).format(parsed);
@@ -108,7 +131,7 @@ function cropShieldUpdateIntimation() {
  panel.classList.remove('compliant', 'late', 'invalid');
 
  if (!occurrenceValue || !intimationValue) {
-  panel.innerHTML = '<i class="fas fa-clock"></i><div><strong>72-hour intimation check</strong><span>Enter occurrence and intimation times.</span></div>';
+  panel.innerHTML = `<i class="fas fa-clock"></i><div><strong>${cropShieldTranslate('72-hour intimation check')}</strong><span>${cropShieldTranslate('Enter occurrence and intimation times.')}</span></div>`;
   return null;
  }
 
@@ -117,17 +140,17 @@ function cropShieldUpdateIntimation() {
  const hours = (intimation - occurrence) / 3600000;
  if (!Number.isFinite(hours) || hours < 0) {
   panel.classList.add('invalid');
-  panel.innerHTML = '<i class="fas fa-circle-exclamation"></i><div><strong>Invalid chronology</strong><span>Loss intimation cannot be earlier than the damage occurrence.</span></div>';
+  panel.innerHTML = `<i class="fas fa-circle-exclamation"></i><div><strong>${cropShieldTranslate('Invalid chronology')}</strong><span>${cropShieldTranslate('Loss intimation cannot be earlier than the damage occurrence.')}</span></div>`;
   return null;
  }
 
  const roundedHours = Math.round(hours * 10) / 10;
  if (hours <= 72) {
   panel.classList.add('compliant');
-  panel.innerHTML = `<i class="fas fa-circle-check"></i><div><strong>Reported within 72 hours</strong><span>${roundedHours} hours after the recorded damage occurrence.</span></div>`;
+  panel.innerHTML = `<i class="fas fa-circle-check"></i><div><strong>${cropShieldTranslate('Reported within 72 hours')}</strong><span>${cropShieldTranslate('{hours} hours after the recorded damage occurrence.', { hours: roundedHours })}</span></div>`;
  } else {
   panel.classList.add('late');
-  panel.innerHTML = `<i class="fas fa-triangle-exclamation"></i><div><strong>Reported beyond 72 hours</strong><span>${roundedHours} hours after occurrence. The final report will flag this delay.</span></div>`;
+  panel.innerHTML = `<i class="fas fa-triangle-exclamation"></i><div><strong>${cropShieldTranslate('Reported beyond 72 hours')}</strong><span>${cropShieldTranslate('{hours} hours after occurrence. The final report will flag this delay.', { hours: roundedHours })}</span></div>`;
  }
  return hours;
 }
@@ -147,7 +170,7 @@ function cropShieldUpdateEstimate() {
  const loss = yieldLoss * price;
 
  cropShieldElement('csDamageValue').textContent = `${damage}%`;
- cropShieldElement('csLiveProduction').textContent = `${Math.round(production).toLocaleString('en-IN')} kg`;
+ cropShieldElement('csLiveProduction').textContent = `${Math.round(production).toLocaleString(cropShieldLocale())} kg`;
  cropShieldElement('csLiveRevenue').textContent = cropShieldMoney(revenue);
  cropShieldElement('csLiveLoss').textContent = cropShieldMoney(loss);
  cropShieldElement('csLiveSalvage').textContent = cropShieldMoney(Math.max(0, revenue - loss));
@@ -189,7 +212,7 @@ function cropShieldUpdateCompletion() {
  cropShieldSetCheck('csCheckEvidence', evidenceComplete);
  cropShieldSetCheck('csCheckDeclaration', declarationComplete);
  cropShieldElement('csCompletionBar').style.width = `${percent}%`;
- cropShieldElement('csCompletionText').textContent = `${percent}% complete`;
+ cropShieldElement('csCompletionText').textContent = cropShieldTranslate('{percent}% complete', { percent });
 }
 
 function cropShieldClaimStatuses() {
@@ -210,7 +233,10 @@ function cropShieldUpdateClaimChecklist() {
  const values = Object.values(statuses);
  const completed = values.filter(Boolean).length;
  const total = values.length;
- cropShieldElement('csClaimReadiness').textContent = `${completed} of ${total} ready`;
+ cropShieldElement('csClaimReadiness').textContent = cropShieldTranslate(
+  '{completed} of {total} ready',
+  { completed, total }
+ );
  cropShieldElement('csClaimProgress').style.width = `${Math.round(completed / total * 100)}%`;
  cropShieldElement('csAadhaarAvailable').closest('.cropshield-claim-item').classList.toggle(
   'complete',
@@ -564,9 +590,11 @@ function cropShieldRenderEvidence(type, evidence) {
 async function cropShieldPrepareImage(file, type, input = null) {
  if (!file) return;
  try {
- const minimum = type === 'ai'
-  ? { width: 128, height: 128 }
-  : { width: 320, height: 240 };
+ const minimum = type === 'damage'
+  ? { width: 1, height: 1 }
+  : type === 'ai'
+   ? { width: 128, height: 128 }
+   : { width: 320, height: 240 };
  const outputMinimum = type === 'ai'
   ? { width: 320, height: 240 }
   : minimum;
@@ -812,15 +840,15 @@ function cropShieldRenderCase(caseData, scroll = true) {
  cropShieldElement('csResultMeta').textContent = [
   season,
   caseData.crop_name,
-  `${caseData.field_area_acres} acres`,
-  `Survey ${caseData.survey_number}`,
+  cropShieldTranslate('{area} acres', { area: caseData.field_area_acres }),
+  cropShieldTranslate('Survey {number}', { number: caseData.survey_number }),
   caseData.location
  ].filter(Boolean).join(' - ');
  cropShieldElement('csResultMetrics').innerHTML = `
  <article><span>Reported damage</span><strong>${caseData.reported_damage_percent}%</strong></article>
  <article><span>Visual change indicator</span><strong>${caseData.visual_change_percent}%</strong></article>
  <article><span>Estimated loss</span><strong>${cropShieldMoney(caseData.estimated_loss)}</strong></article>
- <article><span>Estimated yield loss</span><strong>${Math.round(caseData.estimated_yield_loss_kg || 0).toLocaleString('en-IN')} kg</strong></article>
+ <article><span>Estimated yield loss</span><strong>${Math.round(caseData.estimated_yield_loss_kg || 0).toLocaleString(cropShieldLocale())} kg</strong></article>
  <article><span>Claim readiness</span><strong>${caseData.claim_score ?? 0}/100</strong></article>
  `;
  const factors = caseData.claim_score_factors || {};
@@ -846,10 +874,10 @@ function cropShieldRenderCase(caseData, scroll = true) {
 
  cropShieldElement('csVerificationDetails').innerHTML = `
  <div><dt>Status</dt><dd><span class="cropshield-status ${cropShieldStatusClass(caseData.status)}">${escapeHtml(caseData.status)}</span></dd></div>
- <div><dt>Policy / application</dt><dd>${escapeHtml(caseData.policy_number || 'Not recorded')}</dd></div>
- <div><dt>Survey / Khasra</dt><dd>${escapeHtml(caseData.survey_number || 'Not recorded')}</dd></div>
- <div><dt>Loss intimation</dt><dd>${escapeHtml(caseData.intimation_status || 'Not recorded')}</dd></div>
- <div><dt>Claim documents</dt><dd>${caseData.claim_checklist?.completed ?? 0} of ${caseData.claim_checklist?.total ?? 5} ready</dd></div>
+ <div><dt>Policy / application</dt><dd>${escapeHtml(caseData.policy_number || cropShieldTranslate('Not recorded'))}</dd></div>
+ <div><dt>Survey / Khasra</dt><dd>${escapeHtml(caseData.survey_number || cropShieldTranslate('Not recorded'))}</dd></div>
+ <div><dt>Loss intimation</dt><dd>${escapeHtml(caseData.intimation_status || cropShieldTranslate('Not recorded'))}</dd></div>
+ <div><dt>Claim documents</dt><dd>${cropShieldTranslate('{completed} of {total} ready', { completed: caseData.claim_checklist?.completed ?? 0, total: caseData.claim_checklist?.total ?? 5 })}</dd></div>
  <div><dt>Damage type</dt><dd>${escapeHtml(caseData.damage_type)}</dd></div>
  <div><dt>Expected crop value</dt><dd>${cropShieldMoney(caseData.expected_revenue)}</dd></div>
  <div><dt>Potential salvage</dt><dd>${cropShieldMoney(caseData.estimated_salvage_value)}</dd></div>
@@ -867,8 +895,8 @@ function cropShieldRenderCase(caseData, scroll = true) {
 }
 
 function cropShieldUpdateOverview(cases) {
- cropShieldElement('csTotalCases').textContent = cases.length.toLocaleString('en-IN');
- cropShieldElement('csSubmittedCases').textContent = cases.filter(item => item.status !== 'Report Ready').length.toLocaleString('en-IN');
+ cropShieldElement('csTotalCases').textContent = cases.length.toLocaleString(cropShieldLocale());
+ cropShieldElement('csSubmittedCases').textContent = cases.filter(item => item.status !== 'Report Ready').length.toLocaleString(cropShieldLocale());
  const exposure = cases.reduce((sum, item) => sum + cropShieldNumber(item.estimated_loss), 0);
  cropShieldElement('csTotalExposure').textContent = cropShieldMoney(exposure);
 }
@@ -898,9 +926,9 @@ function cropShieldRenderCases(cases = cropShieldFilteredCases()) {
  <article class="cropshield-case-card">
  <header><div><span>${escapeHtml(item.reference)}</span><h3>${escapeHtml(item.crop_name)}</h3><small>${escapeHtml([item.season, item.season_year].filter(Boolean).join(' ') || 'Season not recorded')}</small></div><span class="cropshield-status ${cropShieldStatusClass(item.status)}">${escapeHtml(item.status)}</span></header>
  <dl>
- <div><dt>Survey / Khasra</dt><dd>${escapeHtml(item.survey_number || 'Not recorded')}</dd></div>
- <div><dt>Insured area</dt><dd>${item.field_area_acres} acres</dd></div>
- <div><dt>Intimation</dt><dd>${escapeHtml(item.intimation_status || 'Not recorded')}</dd></div>
+ <div><dt>Survey / Khasra</dt><dd>${escapeHtml(item.survey_number || cropShieldTranslate('Not recorded'))}</dd></div>
+ <div><dt>Insured area</dt><dd>${cropShieldTranslate('{area} acres', { area: item.field_area_acres })}</dd></div>
+ <div><dt>Intimation</dt><dd>${escapeHtml(item.intimation_status || cropShieldTranslate('Not recorded'))}</dd></div>
  <div><dt>Estimated loss</dt><dd>${cropShieldMoney(item.estimated_loss)}</dd></div>
  <div><dt>Created</dt><dd>${cropShieldFormatDateTime(item.created_at)}</dd></div>
  </dl>
@@ -1139,7 +1167,9 @@ function cropShieldResetForm() {
  ['Damage'].forEach(type => {
  cropShieldElement(`cs${type}Zone`).classList.remove('has-image');
  cropShieldElement(`cs${type}Preview`).removeAttribute('src');
- cropShieldElement(`cs${type}Meta`).textContent = 'JPG, PNG or WEBP';
+ cropShieldElement(`cs${type}Meta`).textContent = type === 'Damage'
+  ? 'Any resolution - JPG, PNG or WEBP up to 15 MB'
+  : 'JPG, PNG or WEBP';
  });
  ['Map', 'Ai'].forEach(type => {
   cropShieldElement(`cs${type}Zone`).classList.remove('has-image');
@@ -1272,3 +1302,15 @@ function initCropShield() {
 }
 
 document.addEventListener('DOMContentLoaded', initCropShield);
+
+window.addEventListener('agri:languagechange', () => {
+ if (!cropShieldElement('cropShieldForm')) return;
+ cropShieldUpdateEstimate();
+ cropShieldUpdateIntimation();
+ cropShieldUpdateCompletion();
+ cropShieldUpdateClaimChecklist();
+ cropShieldUpdateOverview(cropShieldState.cases);
+ cropShieldRenderCases();
+ if (cropShieldState.currentCase) cropShieldRenderCase(cropShieldState.currentCase, false);
+ window.applyStaticUiTranslations?.();
+});
