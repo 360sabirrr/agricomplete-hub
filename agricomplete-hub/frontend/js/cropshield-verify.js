@@ -1,3 +1,23 @@
+let lastVerificationData = null;
+let lastVerificationError = '';
+
+function verificationTranslate(source) {
+ return typeof window.getStaticUiText === 'function'
+  ? window.getStaticUiText(source)
+  : source;
+}
+
+function verificationLocale() {
+ return {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  mr: 'mr-IN',
+  pa: 'pa-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+ }[window.getCurrentLanguage?.() || 'en'] || 'en-IN';
+}
+
 function verificationEscape(value) {
  return String(value ?? '').replace(/[&<>"']/g, character => ({
  '&': '&amp;',
@@ -45,6 +65,8 @@ async function fetchVerification(reference) {
 }
 
 function renderVerification(data) {
+ lastVerificationData = data;
+ lastVerificationError = '';
  const state = document.getElementById('verificationState');
  state.className = 'cropshield-verify-state success';
  state.innerHTML = `
@@ -54,18 +76,18 @@ function renderVerification(data) {
  <p>This reference and evidence fingerprint match a report stored by AgriComplete Hub.</p>
  <dl class="cropshield-verify-summary">
  <div><dt>Reference</dt><dd>${verificationEscape(data.reference)}</dd></div>
- <div><dt>Season</dt><dd>${verificationEscape([data.season, data.season_year].filter(Boolean).join(' ') || 'Not recorded')}</dd></div>
+ <div><dt>Season</dt><dd>${verificationEscape([data.season, data.season_year].filter(Boolean).join(' ') || verificationTranslate('Not recorded'))}</dd></div>
  <div><dt>Crop</dt><dd>${verificationEscape(data.crop_name)}</dd></div>
- <div><dt>District / village</dt><dd>${verificationEscape([data.district, data.village].filter(Boolean).join(' / ') || 'Not recorded')}</dd></div>
- <div><dt>Survey / Khasra</dt><dd>${verificationEscape(data.survey_number || 'Not recorded')}</dd></div>
- <div><dt>Insured area</dt><dd>${verificationEscape(data.field_area_acres)} acres</dd></div>
- <div><dt>Policy / application</dt><dd>${verificationEscape(data.policy_number || 'Not recorded')}</dd></div>
+ <div><dt>District / village</dt><dd>${verificationEscape([data.district, data.village].filter(Boolean).join(' / ') || verificationTranslate('Not recorded'))}</dd></div>
+ <div><dt>Survey / Khasra</dt><dd>${verificationEscape(data.survey_number || verificationTranslate('Not recorded'))}</dd></div>
+ <div><dt>Insured area</dt><dd>${verificationEscape(window.cropShieldT?.('{area} acres', { area: data.field_area_acres }) || `${data.field_area_acres} acres`)}</dd></div>
+ <div><dt>Policy / application</dt><dd>${verificationEscape(data.policy_number || verificationTranslate('Not recorded'))}</dd></div>
  <div><dt>Damage type</dt><dd>${verificationEscape(data.damage_type)}</dd></div>
  <div><dt>Reported damage</dt><dd>${verificationEscape(data.reported_damage_percent)}%</dd></div>
  <div><dt>Claim readiness</dt><dd>${verificationEscape(data.claim_score || 0)}/100 - ${verificationEscape(data.claim_status || 'Evidence incomplete')}</dd></div>
- <div><dt>Loss intimation</dt><dd>${verificationEscape(data.intimation_status || 'Not recorded')}</dd></div>
+ <div><dt>Loss intimation</dt><dd>${verificationEscape(data.intimation_status || verificationTranslate('Not recorded'))}</dd></div>
  <div><dt>Current status</dt><dd>${verificationEscape(data.status)}</dd></div>
- <div><dt>Assessment date</dt><dd>${verificationEscape(new Date(data.assessment_date).toLocaleDateString('en-IN'))}</dd></div>
+ <div><dt>Assessment date</dt><dd>${verificationEscape(new Date(data.assessment_date).toLocaleDateString(verificationLocale()))}</dd></div>
  </dl>
  <div class="cropshield-verify-fingerprint">
  <span>Evidence fingerprint</span>
@@ -74,9 +96,12 @@ function renderVerification(data) {
  <p class="cropshield-verify-note"><i class="fas fa-circle-info"></i><span>Verification proves that the record exists and identifies its evidence package. It does not represent government inspection or insurance approval.</span></p>
  <div class="cropshield-verify-actions"><a href="index.html"><i class="fas fa-house"></i> AgriComplete Hub</a></div>
  `;
+ window.applyStaticUiTranslations?.(state);
 }
 
 function renderVerificationError(message) {
+ lastVerificationData = null;
+ lastVerificationError = message;
  const state = document.getElementById('verificationState');
  state.className = 'cropshield-verify-state error';
  state.innerHTML = `
@@ -86,6 +111,7 @@ function renderVerificationError(message) {
  <p>${verificationEscape(message)}</p>
  <div class="cropshield-verify-actions"><a href="index.html"><i class="fas fa-house"></i> Return home</a></div>
  `;
+ window.applyStaticUiTranslations?.(state);
 }
 
 async function initCropShieldVerification() {
@@ -106,3 +132,9 @@ async function initCropShieldVerification() {
 }
 
 document.addEventListener('DOMContentLoaded', initCropShieldVerification);
+
+window.addEventListener('agri:languagechange', () => {
+ if (lastVerificationData) renderVerification(lastVerificationData);
+ else if (lastVerificationError) renderVerificationError(lastVerificationError);
+ window.applyStaticUiTranslations?.();
+});
