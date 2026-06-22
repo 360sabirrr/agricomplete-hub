@@ -5137,12 +5137,28 @@ const API_BASE_URLS = (() => {
  return urls;
 })();
 
+function getApiSessionScope(url) {
+ const normalized = normalizeApiUrl(url || '');
+ if (!normalized || normalized === '/api') return '';
+ if (/^(https?:\/\/)?(localhost|127\.0\.0\.1|\[::1\]):5000\/api$/i.test(normalized)) {
+ return 'local';
+ }
+ if (/^https:\/\/agricomplete-(backend|frontend)\.onrender\.com\/api$/i.test(normalized)) {
+ return 'render';
+ }
+ return normalized;
+}
+
 function syncApiSessionScope() {
- const sessionApiUrl = localStorage.getItem('agri_api_session_base');
- if (sessionApiUrl && sessionApiUrl !== API_URL) {
+ const currentScope = getApiSessionScope(API_URL);
+ const previousScope =
+ localStorage.getItem('agri_api_session_scope')
+ || getApiSessionScope(localStorage.getItem('agri_api_session_base'));
+ if (previousScope && previousScope !== currentScope) {
  localStorage.removeItem('agri_token');
  localStorage.removeItem('agri_user');
  }
+ localStorage.setItem('agri_api_session_scope', currentScope);
  localStorage.setItem('agri_api_session_base', API_URL);
 }
 
