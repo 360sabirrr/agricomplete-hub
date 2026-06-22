@@ -57,6 +57,7 @@ const translations = {
  nav_water: "Water Management",
  nav_fertilizer: "Fertilizer Planner",
  nav_resources: "Resource Management",
+ nav_pm_kisan: "PM-KISAN Helper",
  nav_profile: "My Profile",
  nav_settings: "Settings",
  nav_logout: "Logout",
@@ -130,6 +131,7 @@ const translations = {
  nav_water: "जल प्रबंधन",
  nav_fertilizer: "खाद योजना",
  nav_resources: "संसाधन प्रबंधन",
+ nav_pm_kisan: "पीएम-किसान सहायक",
  nav_profile: "मेरी प्रोफ़ाइल",
  nav_settings: "सेटिंग्स",
  nav_logout: "लॉगआउट",
@@ -203,6 +205,7 @@ const translations = {
  nav_water: "जल व्यवस्थापन",
  nav_fertilizer: "खत नियोजक",
  nav_resources: "संसाधन व्यवस्थापन",
+ nav_pm_kisan: "पीएम-किसान सहाय्यक",
  nav_profile: "माझी प्रोफाइल",
  nav_settings: "सेटिंग्ज",
  nav_logout: "लॉगआउट",
@@ -272,6 +275,7 @@ const translations = {
  nav_market: "ਮੰਡੀ ਭਾਅ",
  nav_marketplace: "ਬਾਜ਼ਾਰ",
  nav_resources: "ਸੰਸਾਧਨ ਬਿਬਾਦ",
+ nav_pm_kisan: "ਪੀਐਮ-ਕਿਸਾਨ ਸਹਾਇਕ",
  dash_welcome: "ਵਾਪਸ ਸੁਆਗਤ, ਰਾਜੇਸ਼! "
  },
  ta: {
@@ -322,6 +326,7 @@ const translations = {
  nav_disease: "நோய் கண்டறிதல்",
  nav_market: "சந்தை விலைகள்",
  nav_resources: "ஆதார மேலாண்மை",
+ nav_pm_kisan: "PM-KISAN உதவி",
  dash_welcome: "மீண்டும் வரவேற்கிறேன், ராஜேஷ்! "
  },
  te: {
@@ -372,6 +377,7 @@ const translations = {
  nav_disease: "వ్యాధి గుర్తింపు",
  nav_market: "మార్కెట్ ధరలు",
  nav_resources: "వనరుల నిర్వహణ",
+ nav_pm_kisan: "PM-KISAN సహాయం",
  dash_welcome: "తిరిగి స్వాగతం, రాజేష్! "
  }
 };
@@ -2403,17 +2409,452 @@ Object.keys(dynamicStaticUiTranslations).forEach(lang => {
 });
 
 const sharedFeatureStaticUiTranslations = {
- hi: { CropShield: 'क्रॉपशील्ड', New: 'नया' },
- mr: { CropShield: 'क्रॉपशील्ड', New: 'नवीन' },
- pa: { CropShield: 'ਕ੍ਰਾਪਸ਼ੀਲਡ', New: 'ਨਵਾਂ' },
- ta: { CropShield: 'கிராப்ஷீல்ட்', New: 'புதியது' },
- te: { CropShield: 'క్రాప్‌షీల్డ్', New: 'కొత్త' }
+ hi: { CropShield: 'क्रॉपशील्ड', New: 'नया', 'PM-KISAN Helper': 'पीएम-किसान सहायक', Govt: 'सरकारी' },
+ mr: { CropShield: 'क्रॉपशील्ड', New: 'नवीन', 'PM-KISAN Helper': 'पीएम-किसान सहाय्यक', Govt: 'सरकारी' },
+ pa: { CropShield: 'ਕ੍ਰਾਪਸ਼ੀਲਡ', New: 'ਨਵਾਂ', 'PM-KISAN Helper': 'ਪੀਐਮ-ਕਿਸਾਨ ਸਹਾਇਕ', Govt: 'ਸਰਕਾਰੀ' },
+ ta: { CropShield: 'கிராப்ஷீல்ட்', New: 'புதியது', 'PM-KISAN Helper': 'PM-KISAN உதவி', Govt: 'அரசு' },
+ te: { CropShield: 'క్రాప్‌షీల్డ్', New: 'కొత్త', 'PM-KISAN Helper': 'PM-KISAN సహాయం', Govt: 'ప్రభుత్వం' }
 };
 
 Object.keys(sharedFeatureStaticUiTranslations).forEach(lang => {
  staticUiTranslations[lang] = {
  ...(staticUiTranslations[lang] || {}),
  ...sharedFeatureStaticUiTranslations[lang]
+ };
+});
+
+const settingsStaticUiTranslations = {
+ hi: {
+  "Manage app preferences and quick actions.": "ऐप प्राथमिकताएं और त्वरित कार्य प्रबंधित करें।",
+  "Language": "भाषा",
+  "Choose your preferred language for this browser.": "इस ब्राउज़र के लिए अपनी पसंदीदा भाषा चुनें।",
+  "Profile": "प्रोफ़ाइल",
+  "Update profile and farm details.": "प्रोफ़ाइल और खेत विवरण अपडेट करें।",
+  "Open Profile": "प्रोफ़ाइल खोलें",
+  "Assistant": "सहायक",
+  "Ask AgriMate for help.": "मदद के लिए AgriMate से पूछें।",
+  "Open AgriMate": "AgriMate खोलें",
+  "Display": "डिस्प्ले",
+  "Collapse or expand the sidebar on desktop.": "डेस्कटॉप पर साइडबार छोटा या बड़ा करें।",
+  "Toggle Sidebar": "साइडबार बदलें"
+ },
+ mr: {
+  "Manage app preferences and quick actions.": "अॅप प्राधान्ये आणि जलद कृती व्यवस्थापित करा.",
+  "Language": "भाषा",
+  "Choose your preferred language for this browser.": "या ब्राउझरसाठी तुमची पसंतीची भाषा निवडा.",
+  "Profile": "प्रोफाइल",
+  "Update profile and farm details.": "प्रोफाइल आणि शेत तपशील अपडेट करा.",
+  "Open Profile": "प्रोफाइल उघडा",
+  "Assistant": "सहाय्यक",
+  "Ask AgriMate for help.": "मदतीसाठी AgriMate ला विचारा.",
+  "Open AgriMate": "AgriMate उघडा",
+  "Display": "डिस्प्ले",
+  "Collapse or expand the sidebar on desktop.": "डेस्कटॉपवर साइडबार छोटा किंवा मोठा करा.",
+  "Toggle Sidebar": "साइडबार बदला"
+ },
+ pa: {
+  "Manage app preferences and quick actions.": "ਐਪ ਪਸੰਦਾਂ ਅਤੇ ਤੇਜ਼ ਕਾਰਵਾਈਆਂ ਸੰਭਾਲੋ।",
+  "Language": "ਭਾਸ਼ਾ",
+  "Choose your preferred language for this browser.": "ਇਸ ਬ੍ਰਾਊਜ਼ਰ ਲਈ ਆਪਣੀ ਪਸੰਦੀਦਾ ਭਾਸ਼ਾ ਚੁਣੋ।",
+  "Profile": "ਪ੍ਰੋਫਾਈਲ",
+  "Update profile and farm details.": "ਪ੍ਰੋਫਾਈਲ ਅਤੇ ਖੇਤ ਵੇਰਵੇ ਅਪਡੇਟ ਕਰੋ।",
+  "Open Profile": "ਪ੍ਰੋਫਾਈਲ ਖੋਲ੍ਹੋ",
+  "Assistant": "ਸਹਾਇਕ",
+  "Ask AgriMate for help.": "ਮਦਦ ਲਈ AgriMate ਨੂੰ ਪੁੱਛੋ।",
+  "Open AgriMate": "AgriMate ਖੋਲ੍ਹੋ",
+  "Display": "ਡਿਸਪਲੇ",
+  "Collapse or expand the sidebar on desktop.": "ਡੈਸਕਟਾਪ ਤੇ ਸਾਈਡਬਾਰ ਛੋਟਾ ਜਾਂ ਵੱਡਾ ਕਰੋ।",
+  "Toggle Sidebar": "ਸਾਈਡਬਾਰ ਬਦਲੋ"
+ },
+ ta: {
+  "Manage app preferences and quick actions.": "பயன்பாட்டு விருப்பங்கள் மற்றும் விரைவு செயல்களை நிர்வகிக்கவும்.",
+  "Language": "மொழி",
+  "Choose your preferred language for this browser.": "இந்த உலாவிக்கான விருப்ப மொழியை தேர்வு செய்யவும்.",
+  "Profile": "சுயவிவரம்",
+  "Update profile and farm details.": "சுயவிவரம் மற்றும் பண்ணை விவரங்களை புதுப்பிக்கவும்.",
+  "Open Profile": "சுயவிவரம் திற",
+  "Assistant": "உதவியாளர்",
+  "Ask AgriMate for help.": "உதவிக்கு AgriMate-ஐ கேளுங்கள்.",
+  "Open AgriMate": "AgriMate திற",
+  "Display": "காட்சி",
+  "Collapse or expand the sidebar on desktop.": "டெஸ்க்டாப்பில் பக்கப்பட்டியை சுருக்கு அல்லது விரி.",
+  "Toggle Sidebar": "பக்கப்பட்டி மாற்று"
+ },
+ te: {
+  "Manage app preferences and quick actions.": "యాప్ ప్రాధాన్యతలు మరియు త్వరిత చర్యలను నిర్వహించండి.",
+  "Language": "భాష",
+  "Choose your preferred language for this browser.": "ఈ బ్రౌజర్ కోసం మీకు నచ్చిన భాషను ఎంచుకోండి.",
+  "Profile": "ప్రొఫైల్",
+  "Update profile and farm details.": "ప్రొఫైల్ మరియు ఫార్మ్ వివరాలను అప్డేట్ చేయండి.",
+  "Open Profile": "ప్రొఫైల్ తెరవండి",
+  "Assistant": "సహాయకుడు",
+  "Ask AgriMate for help.": "సహాయం కోసం AgriMate ను అడగండి.",
+  "Open AgriMate": "AgriMate తెరవండి",
+  "Display": "డిస్ప్లే",
+  "Collapse or expand the sidebar on desktop.": "డెస్క్‌టాప్‌లో సైడ్‌బార్‌ను కుదించండి లేదా విస్తరించండి.",
+  "Toggle Sidebar": "సైడ్‌బార్ మార్చండి"
+ }
+};
+
+Object.keys(settingsStaticUiTranslations).forEach(lang => {
+ staticUiTranslations[lang] = {
+ ...(staticUiTranslations[lang] || {}),
+ ...settingsStaticUiTranslations[lang]
+ };
+});
+
+const diseaseDynamicUiTranslations = {
+ hi: {
+  "Supports JPG, PNG, WEBP - Max 8MB": "JPG, PNG, WEBP सपोर्ट - अधिकतम 8MB",
+  "Print Report": "रिपोर्ट प्रिंट करें",
+  "Confidence Score": "विश्वास स्कोर",
+  "Confidence": "विश्वास",
+  "Symptoms": "लक्षण",
+  "Treatment": "उपचार",
+  "Prevention": "बचाव",
+  "Severity": "गंभीरता",
+  "Unknown": "अज्ञात",
+  "Detected Disease": "पहचाना गया रोग",
+  "The model returned a prediction without detailed notes.": "मॉडल ने विस्तृत जानकारी के बिना परिणाम दिया।",
+  "No recent scans yet.": "अभी कोई हाल का स्कैन नहीं है।",
+  "Loading recent scans...": "हाल के स्कैन लोड हो रहे हैं...",
+  "Analyze a leaf photo to see recent scans here.": "यहां हाल के स्कैन देखने के लिए पत्ते की फोटो जांचें।",
+  "Recent scans are unavailable right now.": "हाल के स्कैन अभी उपलब्ध नहीं हैं।",
+  "Local": "लोकल",
+  "Live": "लाइव",
+  "Offline": "ऑफलाइन",
+  "Healthy": "स्वस्थ",
+  "Critical": "गंभीर",
+  "High": "अधिक",
+  "Moderate": "मध्यम",
+  "Medium": "मध्यम",
+  "Low": "कम",
+  "Try Again": "फिर कोशिश करें",
+  "Analysis Unavailable": "विश्लेषण उपलब्ध नहीं",
+  "Diagnosis took too long": "जांच में ज्यादा समय लगा",
+  "Diagnosis unavailable": "जांच उपलब्ध नहीं",
+  "Still analyzing...": "अभी विश्लेषण हो रहा है...",
+  "Analyzing leaf": "पत्ता जांच रहा है",
+  "Finishing the AI diagnosis...": "AI जांच पूरी की जा रही है...",
+  "AI model is analyzing the leaf...": "AI मॉडल पत्ते का विश्लेषण कर रहा है...",
+  "Please keep this page open until the diagnosis appears.": "जांच दिखने तक यह पेज खुला रखें।",
+  "The first scan may briefly wake the cloud service.": "पहला स्कैन क्लाउड सेवा को शुरू करने में थोड़ा समय ले सकता है।",
+  "The cloud service did not become ready. Please try again in a moment.": "क्लाउड सेवा तैयार नहीं हुई। कृपया थोड़ी देर बाद फिर कोशिश करें।",
+  "The disease model could not analyze this image.": "रोग मॉडल इस फोटो का विश्लेषण नहीं कर सका।",
+  "Analyze a leaf image before printing a report.": "रिपोर्ट प्रिंट करने से पहले पत्ते की फोटो जांचें।",
+  "No details available.": "कोई विवरण उपलब्ध नहीं है।",
+  "Close": "बंद करें",
+  "Print / Download PDF": "प्रिंट / PDF डाउनलोड करें",
+  "AgriComplete Disease Advisory Report": "AgriComplete रोग सलाह रिपोर्ट",
+  "Generated on": "बनाया गया",
+  "Diagnosis Summary": "जांच सारांश",
+  "Disease Result": "रोग परिणाम",
+  "Source": "स्रोत",
+  "AI leaf image analysis": "AI पत्ती फोटो विश्लेषण",
+  "This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.": "यह सलाह खेत के निर्णयों में मदद करती है। रसायन लगाने से पहले स्थानीय कृषि विशेषज्ञ से पुष्टि करें।"
+ },
+ mr: {
+  "Supports JPG, PNG, WEBP - Max 8MB": "JPG, PNG, WEBP सपोर्ट - कमाल 8MB",
+  "Print Report": "रिपोर्ट प्रिंट करा",
+  "Confidence Score": "विश्वास गुण",
+  "Confidence": "विश्वास",
+  "Symptoms": "लक्षणे",
+  "Treatment": "उपचार",
+  "Prevention": "प्रतिबंध",
+  "Severity": "तीव्रता",
+  "Unknown": "अज्ञात",
+  "Detected Disease": "ओळखलेला रोग",
+  "The model returned a prediction without detailed notes.": "मॉडेलने सविस्तर माहितीशिवाय अंदाज दिला.",
+  "No recent scans yet.": "अजून अलीकडील स्कॅन नाहीत.",
+  "Loading recent scans...": "अलीकडील स्कॅन लोड होत आहेत...",
+  "Analyze a leaf photo to see recent scans here.": "येथे अलीकडील स्कॅन पाहण्यासाठी पानाचा फोटो तपासा.",
+  "Recent scans are unavailable right now.": "अलीकडील स्कॅन सध्या उपलब्ध नाहीत.",
+  "Local": "लोकल",
+  "Live": "लाइव्ह",
+  "Offline": "ऑफलाइन",
+  "Healthy": "निरोगी",
+  "Critical": "गंभीर",
+  "High": "जास्त",
+  "Moderate": "मध्यम",
+  "Medium": "मध्यम",
+  "Low": "कमी",
+  "Try Again": "पुन्हा प्रयत्न करा",
+  "Analysis Unavailable": "विश्लेषण उपलब्ध नाही",
+  "Diagnosis took too long": "निदानास जास्त वेळ लागला",
+  "Diagnosis unavailable": "निदान उपलब्ध नाही",
+  "Still analyzing...": "अजून विश्लेषण सुरू आहे...",
+  "Analyzing leaf": "पान तपासत आहे",
+  "Finishing the AI diagnosis...": "AI निदान पूर्ण होत आहे...",
+  "AI model is analyzing the leaf...": "AI मॉडेल पानाचे विश्लेषण करत आहे...",
+  "Please keep this page open until the diagnosis appears.": "निदान दिसेपर्यंत हे पेज उघडे ठेवा.",
+  "The first scan may briefly wake the cloud service.": "पहिला स्कॅन क्लाउड सेवा सुरू होण्यासाठी थोडा वेळ घेऊ शकतो.",
+  "The cloud service did not become ready. Please try again in a moment.": "क्लाउड सेवा तयार झाली नाही. कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.",
+  "The disease model could not analyze this image.": "रोग मॉडेल हा फोटो विश्लेषित करू शकले नाही.",
+  "Analyze a leaf image before printing a report.": "रिपोर्ट प्रिंट करण्यापूर्वी पानाचा फोटो तपासा.",
+  "No details available.": "तपशील उपलब्ध नाही.",
+  "Close": "बंद करा",
+  "Print / Download PDF": "प्रिंट / PDF डाउनलोड करा",
+  "AgriComplete Disease Advisory Report": "AgriComplete रोग सल्ला रिपोर्ट",
+  "Generated on": "तयार केले",
+  "Diagnosis Summary": "निदान सारांश",
+  "Disease Result": "रोग परिणाम",
+  "Source": "स्रोत",
+  "AI leaf image analysis": "AI पान फोटो विश्लेषण",
+  "This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.": "हा सल्ला शेतातील निर्णयांसाठी मदत करतो. रसायने वापरण्यापूर्वी स्थानिक कृषी मार्गदर्शन घ्या."
+ },
+ pa: {
+  "Supports JPG, PNG, WEBP - Max 8MB": "JPG, PNG, WEBP ਸਪੋਰਟ - ਵੱਧ ਤੋਂ ਵੱਧ 8MB",
+  "Print Report": "ਰਿਪੋਰਟ ਪ੍ਰਿੰਟ ਕਰੋ",
+  "Confidence Score": "ਭਰੋਸਾ ਸਕੋਰ",
+  "Confidence": "ਭਰੋਸਾ",
+  "Symptoms": "ਲੱਛਣ",
+  "Treatment": "ਇਲਾਜ",
+  "Prevention": "ਬਚਾਅ",
+  "Severity": "ਗੰਭੀਰਤਾ",
+  "Unknown": "ਅਣਜਾਣ",
+  "Detected Disease": "ਪਛਾਣਿਆ ਗਿਆ ਰੋਗ",
+  "The model returned a prediction without detailed notes.": "ਮਾਡਲ ਨੇ ਵਿਸਥਾਰ ਜਾਣਕਾਰੀ ਤੋਂ ਬਿਨਾਂ ਨਤੀਜਾ ਦਿੱਤਾ।",
+  "No recent scans yet.": "ਹਾਲੇ ਕੋਈ ਤਾਜ਼ਾ ਸਕੈਨ ਨਹੀਂ।",
+  "Loading recent scans...": "ਤਾਜ਼ਾ ਸਕੈਨ ਲੋਡ ਹੋ ਰਹੇ ਹਨ...",
+  "Analyze a leaf photo to see recent scans here.": "ਇੱਥੇ ਤਾਜ਼ਾ ਸਕੈਨ ਵੇਖਣ ਲਈ ਪੱਤੇ ਦੀ ਫੋਟੋ ਜਾਂਚੋ।",
+  "Recent scans are unavailable right now.": "ਤਾਜ਼ਾ ਸਕੈਨ ਇਸ ਵੇਲੇ ਉਪਲਬਧ ਨਹੀਂ।",
+  "Local": "ਲੋਕਲ",
+  "Live": "ਲਾਈਵ",
+  "Offline": "ਆਫਲਾਈਨ",
+  "Healthy": "ਸਿਹਤਮੰਦ",
+  "Critical": "ਗੰਭੀਰ",
+  "High": "ਉੱਚ",
+  "Moderate": "ਦਰਮਿਆਨਾ",
+  "Medium": "ਦਰਮਿਆਨਾ",
+  "Low": "ਘੱਟ",
+  "Try Again": "ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+  "Analysis Unavailable": "ਵਿਸ਼ਲੇਸ਼ਣ ਉਪਲਬਧ ਨਹੀਂ",
+  "Diagnosis took too long": "ਜਾਂਚ ਵਿੱਚ ਜ਼ਿਆਦਾ ਸਮਾਂ ਲੱਗਿਆ",
+  "Diagnosis unavailable": "ਜਾਂਚ ਉਪਲਬਧ ਨਹੀਂ",
+  "Still analyzing...": "ਹਾਲੇ ਵਿਸ਼ਲੇਸ਼ਣ ਹੋ ਰਿਹਾ ਹੈ...",
+  "Analyzing leaf": "ਪੱਤਾ ਜਾਂਚ ਰਿਹਾ ਹੈ",
+  "Finishing the AI diagnosis...": "AI ਜਾਂਚ ਪੂਰੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...",
+  "AI model is analyzing the leaf...": "AI ਮਾਡਲ ਪੱਤੇ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਕਰ ਰਿਹਾ ਹੈ...",
+  "Please keep this page open until the diagnosis appears.": "ਜਾਂਚ ਆਉਣ ਤੱਕ ਇਹ ਪੇਜ ਖੁੱਲ੍ਹਾ ਰੱਖੋ।",
+  "The first scan may briefly wake the cloud service.": "ਪਹਿਲਾ ਸਕੈਨ ਕਲਾਉਡ ਸੇਵਾ ਨੂੰ ਸ਼ੁਰੂ ਕਰਨ ਵਿੱਚ ਥੋੜਾ ਸਮਾਂ ਲੈ ਸਕਦਾ ਹੈ।",
+  "The cloud service did not become ready. Please try again in a moment.": "ਕਲਾਉਡ ਸੇਵਾ ਤਿਆਰ ਨਹੀਂ ਹੋਈ। ਕਿਰਪਾ ਕਰਕੇ ਕੁਝ ਦੇਰ ਬਾਅਦ ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰੋ।",
+  "The disease model could not analyze this image.": "ਰੋਗ ਮਾਡਲ ਇਸ ਤਸਵੀਰ ਦਾ ਵਿਸ਼ਲੇਸ਼ਣ ਨਹੀਂ ਕਰ ਸਕਿਆ।",
+  "Analyze a leaf image before printing a report.": "ਰਿਪੋਰਟ ਪ੍ਰਿੰਟ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਪੱਤੇ ਦੀ ਫੋਟੋ ਜਾਂਚੋ।",
+  "No details available.": "ਕੋਈ ਵੇਰਵਾ ਉਪਲਬਧ ਨਹੀਂ।",
+  "Close": "ਬੰਦ ਕਰੋ",
+  "Print / Download PDF": "ਪ੍ਰਿੰਟ / PDF ਡਾਊਨਲੋਡ ਕਰੋ",
+  "AgriComplete Disease Advisory Report": "AgriComplete ਰੋਗ ਸਲਾਹ ਰਿਪੋਰਟ",
+  "Generated on": "ਤਿਆਰ ਕੀਤਾ",
+  "Diagnosis Summary": "ਜਾਂਚ ਸੰਖੇਪ",
+  "Disease Result": "ਰੋਗ ਨਤੀਜਾ",
+  "Source": "ਸਰੋਤ",
+  "AI leaf image analysis": "AI ਪੱਤਾ ਫੋਟੋ ਵਿਸ਼ਲੇਸ਼ਣ",
+  "This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.": "ਇਹ ਸਲਾਹ ਖੇਤ ਦੇ ਫੈਸਲਿਆਂ ਵਿੱਚ ਮਦਦ ਕਰਦੀ ਹੈ। ਰਸਾਇਣ ਵਰਤਣ ਤੋਂ ਪਹਿਲਾਂ ਸਥਾਨਕ ਖੇਤੀ ਮਾਹਿਰ ਨਾਲ ਪੁਸ਼ਟੀ ਕਰੋ।"
+ },
+ ta: {
+  "Supports JPG, PNG, WEBP - Max 8MB": "JPG, PNG, WEBP ஆதரவு - அதிகபட்சம் 8MB",
+  "Print Report": "அறிக்கையை அச்சிடு",
+  "Confidence Score": "நம்பிக்கை மதிப்பெண்",
+  "Confidence": "நம்பிக்கை",
+  "Symptoms": "அறிகுறிகள்",
+  "Treatment": "சிகிச்சை",
+  "Prevention": "தடுப்பு",
+  "Severity": "தீவிரம்",
+  "Unknown": "தெரியவில்லை",
+  "Detected Disease": "கண்டறியப்பட்ட நோய்",
+  "The model returned a prediction without detailed notes.": "மாதிரி விரிவான குறிப்புகள் இல்லாமல் கணிப்பை வழங்கியது.",
+  "No recent scans yet.": "சமீபத்திய ஸ்கான்கள் இல்லை.",
+  "Loading recent scans...": "சமீபத்திய ஸ்கான்கள் ஏற்றப்படுகின்றன...",
+  "Analyze a leaf photo to see recent scans here.": "இங்கே சமீபத்திய ஸ்கான்களை காண இலைப் படத்தை பகுப்பாய்வு செய்யவும்.",
+  "Recent scans are unavailable right now.": "சமீபத்திய ஸ்கான்கள் இப்போது கிடைக்கவில்லை.",
+  "Local": "உள்ளூர்",
+  "Live": "நேரலை",
+  "Offline": "ஆஃப்லைன்",
+  "Healthy": "ஆரோக்கியம்",
+  "Critical": "கடுமை",
+  "High": "அதிக",
+  "Moderate": "மிதமான",
+  "Medium": "மிதமான",
+  "Low": "குறைந்த",
+  "Try Again": "மீண்டும் முயற்சி",
+  "Analysis Unavailable": "பகுப்பாய்வு கிடைக்கவில்லை",
+  "Diagnosis took too long": "நோயறிதல் அதிக நேரம் எடுத்தது",
+  "Diagnosis unavailable": "நோயறிதல் கிடைக்கவில்லை",
+  "Still analyzing...": "இன்னும் பகுப்பாய்வு செய்கிறது...",
+  "Analyzing leaf": "இலையை பகுப்பாய்வு செய்கிறது",
+  "Finishing the AI diagnosis...": "AI நோயறிதல் முடிக்கப்படுகிறது...",
+  "AI model is analyzing the leaf...": "AI மாதிரி இலையை பகுப்பாய்வு செய்கிறது...",
+  "Please keep this page open until the diagnosis appears.": "நோயறிதல் தோன்றும் வரை இந்தப் பக்கத்தை திறந்துவைத்திருக்கவும்.",
+  "The first scan may briefly wake the cloud service.": "முதல் ஸ்கேன் கிளவுட் சேவையை தொடங்க சிறிது நேரம் எடுக்கலாம்.",
+  "The cloud service did not become ready. Please try again in a moment.": "கிளவுட் சேவை தயாராகவில்லை. சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்.",
+  "The disease model could not analyze this image.": "நோய் மாதிரி இந்த படத்தை பகுப்பாய்வு செய்ய முடியவில்லை.",
+  "Analyze a leaf image before printing a report.": "அறிக்கையை அச்சிடுவதற்கு முன் இலைப் படத்தை பகுப்பாய்வு செய்யவும்.",
+  "No details available.": "விவரங்கள் கிடைக்கவில்லை.",
+  "Close": "மூடு",
+  "Print / Download PDF": "அச்சிடு / PDF பதிவிறக்கு",
+  "AgriComplete Disease Advisory Report": "AgriComplete நோய் ஆலோசனை அறிக்கை",
+  "Generated on": "உருவாக்கப்பட்டது",
+  "Diagnosis Summary": "நோயறிதல் சுருக்கம்",
+  "Disease Result": "நோய் முடிவு",
+  "Source": "மூலம்",
+  "AI leaf image analysis": "AI இலை படம் பகுப்பாய்வு",
+  "This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.": "இந்த ஆலோசனை வயல் முடிவெடுப்புக்கு உதவும். ரசாயனங்களை பயன்படுத்துவதற்கு முன் உள்ளூர் வேளாண்மை வழிகாட்டலை உறுதிப்படுத்தவும்."
+ },
+ te: {
+  "Supports JPG, PNG, WEBP - Max 8MB": "JPG, PNG, WEBP మద్దతు - గరిష్ఠం 8MB",
+  "Print Report": "రిపోర్ట్ ప్రింట్ చేయండి",
+  "Confidence Score": "నమ్మకం స్కోర్",
+  "Confidence": "నమ్మకం",
+  "Symptoms": "లక్షణాలు",
+  "Treatment": "చికిత్స",
+  "Prevention": "నివారణ",
+  "Severity": "తీవ్రత",
+  "Unknown": "తెలియదు",
+  "Detected Disease": "గుర్తించిన వ్యాధి",
+  "The model returned a prediction without detailed notes.": "మోడల్ వివరణాత్మక గమనికలు లేకుండా అంచనాను ఇచ్చింది.",
+  "No recent scans yet.": "ఇంకా తాజా స్కాన్లు లేవు.",
+  "Loading recent scans...": "తాజా స్కాన్లు లోడ్ అవుతున్నాయి...",
+  "Analyze a leaf photo to see recent scans here.": "ఇక్కడ తాజా స్కాన్లు చూడటానికి ఆకు ఫోటోను విశ్లేషించండి.",
+  "Recent scans are unavailable right now.": "తాజా స్కాన్లు ప్రస్తుతం అందుబాటులో లేవు.",
+  "Local": "లోకల్",
+  "Live": "లైవ్",
+  "Offline": "ఆఫ్లైన్",
+  "Healthy": "ఆరోగ్యంగా",
+  "Critical": "తీవ్రం",
+  "High": "అధిక",
+  "Moderate": "మధ్యస్థ",
+  "Medium": "మధ్యస్థ",
+  "Low": "తక్కువ",
+  "Try Again": "మళ్లీ ప్రయత్నించండి",
+  "Analysis Unavailable": "విశ్లేషణ అందుబాటులో లేదు",
+  "Diagnosis took too long": "నిర్ధారణకు ఎక్కువ సమయం పట్టింది",
+  "Diagnosis unavailable": "నిర్ధారణ అందుబాటులో లేదు",
+  "Still analyzing...": "ఇంకా విశ్లేషిస్తోంది...",
+  "Analyzing leaf": "ఆకును విశ్లేషిస్తోంది",
+  "Finishing the AI diagnosis...": "AI నిర్ధారణ పూర్తవుతోంది...",
+  "AI model is analyzing the leaf...": "AI మోడల్ ఆకును విశ్లేషిస్తోంది...",
+  "Please keep this page open until the diagnosis appears.": "నిర్ధారణ కనిపించే వరకు ఈ పేజీని తెరిచి ఉంచండి.",
+  "The first scan may briefly wake the cloud service.": "మొదటి స్కాన్ క్లౌడ్ సేవను ప్రారంభించడానికి కొంత సమయం తీసుకోవచ్చు.",
+  "The cloud service did not become ready. Please try again in a moment.": "క్లౌడ్ సేవ సిద్ధం కాలేదు. కొద్దిసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.",
+  "The disease model could not analyze this image.": "వ్యాధి మోడల్ ఈ చిత్రాన్ని విశ్లేషించలేకపోయింది.",
+  "Analyze a leaf image before printing a report.": "రిపోర్ట్ ప్రింట్ చేసే ముందు ఆకు చిత్రాన్ని విశ్లేషించండి.",
+  "No details available.": "వివరాలు అందుబాటులో లేవు.",
+  "Close": "మూసివేయండి",
+  "Print / Download PDF": "ప్రింట్ / PDF డౌన్‌లోడ్",
+  "AgriComplete Disease Advisory Report": "AgriComplete వ్యాధి సలహా రిపోర్ట్",
+  "Generated on": "సృష్టించిన తేదీ",
+  "Diagnosis Summary": "నిర్ధారణ సారాంశం",
+  "Disease Result": "వ్యాధి ఫలితం",
+  "Source": "మూలం",
+  "AI leaf image analysis": "AI ఆకు చిత్రం విశ్లేషణ",
+  "This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.": "ఈ సలహా పొలం నిర్ణయాలకు సహాయం చేస్తుంది. రసాయనాలు వాడే ముందు స్థానిక వ్యవసాయ మార్గదర్శకాన్ని ధృవీకరించండి."
+ }
+};
+
+Object.keys(diseaseDynamicUiTranslations).forEach(lang => {
+ staticUiTranslations[lang] = {
+ ...(staticUiTranslations[lang] || {}),
+ ...diseaseDynamicUiTranslations[lang]
+ };
+});
+
+const diseaseAdvisoryPhraseTranslations = {
+ hi: {
+  "Check nearby leaves for similar spots, yellowing, curling, mold, or pest activity.": "आसपास की पत्तियों में ऐसे ही धब्बे, पीलापन, मुड़ना, फफूंद या कीट गतिविधि जांचें।",
+  "Apply fungicides like Mancozeb": "Mancozeb जैसे फफूंदनाशक लगाएं",
+  "Apply fungicides like Mancozeb.": "Mancozeb जैसे फफूंदनाशक लगाएं।",
+  "Remove infected fruits and leaves": "संक्रमित फल और पत्तियां हटाएं",
+  "Remove infected fruits and leaves.": "संक्रमित फल और पत्तियां हटाएं।",
+  "No disease detected": "कोई रोग नहीं मिला",
+  "No treatment needed": "उपचार की आवश्यकता नहीं",
+  "Maintain proper irrigation and nutrition.": "सही सिंचाई और पोषण बनाए रखें।",
+  "Apply fungicides and remove infected leaves.": "फफूंदनाशक लगाएं और संक्रमित पत्तियां हटाएं।",
+  "Crop rotation.": "फसल चक्र अपनाएं।",
+  "Avoid humidity buildup.": "नमी जमा होने से बचाएं।",
+  "Use resistant varieties.": "प्रतिरोधी किस्मों का उपयोग करें।",
+  "Remove infected plants.": "संक्रमित पौधे हटाएं।",
+  "Use copper fungicides.": "कॉपर फफूंदनाशक का उपयोग करें।",
+  "Improve air circulation.": "हवा का प्रवाह बेहतर करें।",
+  "Avoid overhead irrigation.": "ऊपर से सिंचाई से बचें।"
+ },
+ mr: {
+  "Check nearby leaves for similar spots, yellowing, curling, mold, or pest activity.": "जवळच्या पानांवर असेच डाग, पिवळेपणा, वळणे, बुरशी किंवा किडींची हालचाल तपासा.",
+  "Apply fungicides like Mancozeb": "Mancozeb सारखी बुरशीनाशके वापरा",
+  "Apply fungicides like Mancozeb.": "Mancozeb सारखी बुरशीनाशके वापरा.",
+  "Remove infected fruits and leaves": "संक्रमित फळे आणि पाने काढून टाका",
+  "Remove infected fruits and leaves.": "संक्रमित फळे आणि पाने काढून टाका.",
+  "No disease detected": "रोग आढळला नाही",
+  "No treatment needed": "उपचाराची गरज नाही",
+  "Maintain proper irrigation and nutrition.": "योग्य सिंचन आणि पोषण राखा.",
+  "Apply fungicides and remove infected leaves.": "बुरशीनाशके वापरा आणि संक्रमित पाने काढा.",
+  "Crop rotation.": "पीक फेरपालट करा.",
+  "Avoid humidity buildup.": "ओलावा साठू देऊ नका.",
+  "Use resistant varieties.": "प्रतिरोधक वाण वापरा.",
+  "Remove infected plants.": "संक्रमित झाडे काढा.",
+  "Use copper fungicides.": "कॉपर बुरशीनाशके वापरा.",
+  "Improve air circulation.": "हवेचा प्रवाह सुधारा.",
+  "Avoid overhead irrigation.": "वरून पाणी देणे टाळा."
+ },
+ pa: {
+  "Check nearby leaves for similar spots, yellowing, curling, mold, or pest activity.": "ਨੇੜਲੇ ਪੱਤਿਆਂ ਵਿੱਚ ਇਸੇ ਤਰ੍ਹਾਂ ਦੇ ਧੱਬੇ, ਪੀਲਾਪਣ, ਮੁੜਨਾ, ਫੰਗਸ ਜਾਂ ਕੀੜਿਆਂ ਦੀ ਗਤੀਵਿਧੀ ਚੈੱਕ ਕਰੋ।",
+  "Apply fungicides like Mancozeb": "Mancozeb ਵਰਗੇ ਫੰਗੀਸਾਈਡ ਲਗਾਓ",
+  "Apply fungicides like Mancozeb.": "Mancozeb ਵਰਗੇ ਫੰਗੀਸਾਈਡ ਲਗਾਓ।",
+  "Remove infected fruits and leaves": "ਸੰਕਰਮਿਤ ਫਲ ਅਤੇ ਪੱਤੇ ਹਟਾਓ",
+  "Remove infected fruits and leaves.": "ਸੰਕਰਮਿਤ ਫਲ ਅਤੇ ਪੱਤੇ ਹਟਾਓ।",
+  "No disease detected": "ਕੋਈ ਰੋਗ ਨਹੀਂ ਮਿਲਿਆ",
+  "No treatment needed": "ਇਲਾਜ ਦੀ ਲੋੜ ਨਹੀਂ",
+  "Maintain proper irrigation and nutrition.": "ਸਹੀ ਸਿੰਚਾਈ ਅਤੇ ਪੋਸ਼ਣ ਬਣਾਈ ਰੱਖੋ।",
+  "Apply fungicides and remove infected leaves.": "ਫੰਗੀਸਾਈਡ ਲਗਾਓ ਅਤੇ ਸੰਕਰਮਿਤ ਪੱਤੇ ਹਟਾਓ।",
+  "Crop rotation.": "ਫਸਲ ਚੱਕਰ ਅਪਣਾਓ।",
+  "Avoid humidity buildup.": "ਨਮੀ ਇਕੱਠੀ ਹੋਣ ਤੋਂ ਬਚਾਓ।",
+  "Use resistant varieties.": "ਰੋਧਕ ਕਿਸਮਾਂ ਵਰਤੋ।",
+  "Remove infected plants.": "ਸੰਕਰਮਿਤ ਪੌਦੇ ਹਟਾਓ।",
+  "Use copper fungicides.": "ਕਾਪਰ ਫੰਗੀਸਾਈਡ ਵਰਤੋ।",
+  "Improve air circulation.": "ਹਵਾ ਦਾ ਪ੍ਰਵਾਹ ਸੁਧਾਰੋ।",
+  "Avoid overhead irrigation.": "ਉੱਪਰੋਂ ਸਿੰਚਾਈ ਤੋਂ ਬਚੋ।"
+ },
+ ta: {
+  "Check nearby leaves for similar spots, yellowing, curling, mold, or pest activity.": "அருகிலுள்ள இலைகளில் இதே போன்ற புள்ளிகள், மஞ்சள் நிறம், சுருட்டல், பூஞ்சை அல்லது பூச்சி செயற்பாடு உள்ளதா பார்க்கவும்.",
+  "Apply fungicides like Mancozeb": "Mancozeb போன்ற பூஞ்சைக்கொல்லிகளை பயன்படுத்தவும்",
+  "Apply fungicides like Mancozeb.": "Mancozeb போன்ற பூஞ்சைக்கொல்லிகளை பயன்படுத்தவும்.",
+  "Remove infected fruits and leaves": "பாதிக்கப்பட்ட பழங்கள் மற்றும் இலைகளை அகற்றவும்",
+  "Remove infected fruits and leaves.": "பாதிக்கப்பட்ட பழங்கள் மற்றும் இலைகளை அகற்றவும்.",
+  "No disease detected": "நோய் கண்டறியப்படவில்லை",
+  "No treatment needed": "சிகிச்சை தேவையில்லை",
+  "Maintain proper irrigation and nutrition.": "சரியான பாசனம் மற்றும் ஊட்டச்சத்தை பராமரிக்கவும்.",
+  "Apply fungicides and remove infected leaves.": "பூஞ்சைக்கொல்லி பயன்படுத்தி பாதிக்கப்பட்ட இலைகளை அகற்றவும்.",
+  "Crop rotation.": "பயிர் சுழற்சி பின்பற்றவும்.",
+  "Avoid humidity buildup.": "ஈரப்பதம் சேர்வதை தவிர்க்கவும்.",
+  "Use resistant varieties.": "எதிர்ப்பு திறன் கொண்ட வகைகளை பயன்படுத்தவும்.",
+  "Remove infected plants.": "பாதிக்கப்பட்ட செடிகளை அகற்றவும்.",
+  "Use copper fungicides.": "காப்பர் பூஞ்சைக்கொல்லிகளை பயன்படுத்தவும்.",
+  "Improve air circulation.": "காற்றோட்டத்தை மேம்படுத்தவும்.",
+  "Avoid overhead irrigation.": "மேலிருந்து பாசனம் செய்வதை தவிர்க்கவும்."
+ },
+ te: {
+  "Check nearby leaves for similar spots, yellowing, curling, mold, or pest activity.": "దగ్గరలోని ఆకుల్లో ఇలాంటి మచ్చలు, పసుపుదనం, ముడుచుకోవడం, బూజు లేదా పురుగు చర్య ఉందా చూడండి.",
+  "Apply fungicides like Mancozeb": "Mancozeb వంటి ఫంగిసైడ్లను ఉపయోగించండి",
+  "Apply fungicides like Mancozeb.": "Mancozeb వంటి ఫంగిసైడ్లను ఉపయోగించండి.",
+  "Remove infected fruits and leaves": "సంక్రమిత పండ్లు మరియు ఆకులను తొలగించండి",
+  "Remove infected fruits and leaves.": "సంక్రమిత పండ్లు మరియు ఆకులను తొలగించండి.",
+  "No disease detected": "వ్యాధి గుర్తించబడలేదు",
+  "No treatment needed": "చికిత్స అవసరం లేదు",
+  "Maintain proper irrigation and nutrition.": "సరైన నీటిపారుదల మరియు పోషణ కొనసాగించండి.",
+  "Apply fungicides and remove infected leaves.": "ఫంగిసైడ్లు ఉపయోగించి సంక్రమిత ఆకులను తొలగించండి.",
+  "Crop rotation.": "పంట మార్పిడి పాటించండి.",
+  "Avoid humidity buildup.": "తేమ పేరుకుపోవడాన్ని నివారించండి.",
+  "Use resistant varieties.": "నిరోధక రకాలను ఉపయోగించండి.",
+  "Remove infected plants.": "సంక్రమిత మొక్కలను తొలగించండి.",
+  "Use copper fungicides.": "కాపర్ ఫంగిసైడ్లను ఉపయోగించండి.",
+  "Improve air circulation.": "గాలి ప్రసరణను మెరుగుపరచండి.",
+  "Avoid overhead irrigation.": "పై నుంచి నీరు పెట్టడం నివారించండి."
+ }
+};
+
+Object.keys(diseaseAdvisoryPhraseTranslations).forEach(lang => {
+ staticUiTranslations[lang] = {
+ ...(staticUiTranslations[lang] || {}),
+ ...diseaseAdvisoryPhraseTranslations[lang]
  };
 });
 
@@ -2424,6 +2865,82 @@ function getStaticUiText(source) {
  if (!source) return '';
  if (currentLang === 'en') return source;
  return staticUiTranslations[currentLang]?.[source] || source;
+}
+
+const diseaseNameTerms = {
+ hi: {
+  Apple: 'सेब', Blueberry: 'ब्लूबेरी', Cherry: 'चेरी', Corn: 'मक्का', Grape: 'अंगूर', Orange: 'संतरा', Peach: 'आड़ू', Pepper: 'शिमला मिर्च', Potato: 'आलू', Raspberry: 'रसभरी', Soybean: 'सोयाबीन', Squash: 'कद्दू वर्ग', Strawberry: 'स्ट्रॉबेरी', Tomato: 'टमाटर',
+  'Apple scab': 'एप्पल स्कैब', 'Black rot': 'ब्लैक रॉट', 'Cedar apple rust': 'सीडर एप्पल रस्ट', healthy: 'स्वस्थ', 'Powdery mildew': 'पाउडरी मिल्ड्यू', 'Cercospora leaf spot Gray leaf spot': 'सर्कोस्पोरा/ग्रे लीफ स्पॉट', 'Common rust': 'कॉमन रस्ट', 'Northern Leaf Blight': 'नॉर्दर्न लीफ ब्लाइट', 'Esca (Black Measles)': 'एस्का (ब्लैक मीज़ल्स)', 'Leaf blight (Isariopsis Leaf Spot)': 'लीफ ब्लाइट', 'Haunglongbing (Citrus greening)': 'साइट्रस ग्रीनिंग', 'Bacterial spot': 'बैक्टीरियल स्पॉट', 'Early blight': 'अर्ली ब्लाइट', 'Late blight': 'लेट ब्लाइट', 'Leaf Mold': 'लीफ मोल्ड', 'Septoria leaf spot': 'सेप्टोरिया लीफ स्पॉट', 'Spider mites Two-spotted spider mite': 'दो-धब्बेदार स्पाइडर माइट', 'Target Spot': 'टारगेट स्पॉट', 'Tomato mosaic virus': 'टमाटर मोज़ेक वायरस', 'Tomato Yellow Leaf Curl Virus': 'टमाटर येलो लीफ कर्ल वायरस', 'Leaf scorch': 'लीफ स्कॉर्च', 'Background without leaves': 'पत्तों के बिना पृष्ठभूमि'
+ },
+ mr: {
+  Apple: 'सफरचंद', Blueberry: 'ब्लूबेरी', Cherry: 'चेरी', Corn: 'मका', Grape: 'द्राक्ष', Orange: 'संत्रा', Peach: 'पीच', Pepper: 'ढोबळी मिरची', Potato: 'बटाटा', Raspberry: 'रास्पबेरी', Soybean: 'सोयाबीन', Squash: 'भोपळा वर्ग', Strawberry: 'स्ट्रॉबेरी', Tomato: 'टोमॅटो',
+  'Apple scab': 'अॅपल स्कॅब', 'Black rot': 'ब्लॅक रॉट', 'Cedar apple rust': 'सीडर अॅपल रस्ट', healthy: 'निरोगी', 'Powdery mildew': 'पावडरी मिल्ड्यू', 'Cercospora leaf spot Gray leaf spot': 'सर्कोस्पोरा/ग्रे लीफ स्पॉट', 'Common rust': 'कॉमन रस्ट', 'Northern Leaf Blight': 'नॉर्दर्न लीफ ब्लाइट', 'Esca (Black Measles)': 'एस्का (ब्लॅक मीजल्स)', 'Leaf blight (Isariopsis Leaf Spot)': 'लीफ ब्लाइट', 'Haunglongbing (Citrus greening)': 'सिट्रस ग्रीनिंग', 'Bacterial spot': 'बॅक्टेरियल स्पॉट', 'Early blight': 'अर्ली ब्लाइट', 'Late blight': 'लेट ब्लाइट', 'Leaf Mold': 'लीफ मोल्ड', 'Septoria leaf spot': 'सेप्टोरिया लीफ स्पॉट', 'Spider mites Two-spotted spider mite': 'टू-स्पॉटेड स्पायडर माइट', 'Target Spot': 'टार्गेट स्पॉट', 'Tomato mosaic virus': 'टोमॅटो मोझॅक वायरस', 'Tomato Yellow Leaf Curl Virus': 'टोमॅटो यलो लीफ कर्ल वायरस', 'Leaf scorch': 'लीफ स्कॉर्च', 'Background without leaves': 'पानांशिवाय पार्श्वभूमी'
+ },
+ pa: {
+  Apple: 'ਸੇਬ', Blueberry: 'ਬਲੂਬੇਰੀ', Cherry: 'ਚੈਰੀ', Corn: 'ਮੱਕੀ', Grape: 'ਅੰਗੂਰ', Orange: 'ਸੰਤਰਾ', Peach: 'ਆੜੂ', Pepper: 'ਸ਼ਿਮਲਾ ਮਿਰਚ', Potato: 'ਆਲੂ', Raspberry: 'ਰੈਸਪਬੈਰੀ', Soybean: 'ਸੋਯਾਬੀਨ', Squash: 'ਕੱਦੂ ਵਰਗ', Strawberry: 'ਸਟ੍ਰਾਬੈਰੀ', Tomato: 'ਟਮਾਟਰ',
+  'Apple scab': 'ਐਪਲ ਸਕੈਬ', 'Black rot': 'ਬਲੈਕ ਰਾਟ', 'Cedar apple rust': 'ਸੀਡਰ ਐਪਲ ਰਸਟ', healthy: 'ਸਿਹਤਮੰਦ', 'Powdery mildew': 'ਪਾਊਡਰੀ ਮਿਲਡਿਊ', 'Cercospora leaf spot Gray leaf spot': 'ਸਰਕੋਸਪੋਰਾ/ਗ੍ਰੇ ਲੀਫ ਸਪਾਟ', 'Common rust': 'ਕਾਮਨ ਰਸਟ', 'Northern Leaf Blight': 'ਨਾਰਦਰਨ ਲੀਫ ਬਲਾਈਟ', 'Esca (Black Measles)': 'ਏਸਕਾ (ਬਲੈਕ ਮੀਜ਼ਲਜ਼)', 'Leaf blight (Isariopsis Leaf Spot)': 'ਲੀਫ ਬਲਾਈਟ', 'Haunglongbing (Citrus greening)': 'ਸਿਟਰਸ ਗ੍ਰੀਨਿੰਗ', 'Bacterial spot': 'ਬੈਕਟੀਰੀਅਲ ਸਪਾਟ', 'Early blight': 'ਅਰਲੀ ਬਲਾਈਟ', 'Late blight': 'ਲੇਟ ਬਲਾਈਟ', 'Leaf Mold': 'ਲੀਫ ਮੋਲਡ', 'Septoria leaf spot': 'ਸੈਪਟੋਰੀਆ ਲੀਫ ਸਪਾਟ', 'Spider mites Two-spotted spider mite': 'ਦੋ-ਧੱਬੇ ਵਾਲਾ ਸਪਾਈਡਰ ਮਾਈਟ', 'Target Spot': 'ਟਾਰਗੇਟ ਸਪਾਟ', 'Tomato mosaic virus': 'ਟਮਾਟਰ ਮੋਜ਼ੇਕ ਵਾਇਰਸ', 'Tomato Yellow Leaf Curl Virus': 'ਟਮਾਟਰ ਯੈਲੋ ਲੀਫ ਕਰਲ ਵਾਇਰਸ', 'Leaf scorch': 'ਲੀਫ ਸਕਾਰਚ', 'Background without leaves': 'ਪੱਤਿਆਂ ਤੋਂ ਬਿਨਾਂ ਪਿਛੋਕੜ'
+ },
+ ta: {
+  Apple: 'ஆப்பிள்', Blueberry: 'ப்ளூபெர்ரி', Cherry: 'செர்ரி', Corn: 'சோளம்', Grape: 'திராட்சை', Orange: 'ஆரஞ்சு', Peach: 'பீச்', Pepper: 'குடைமிளகாய்', Potato: 'உருளைக்கிழங்கு', Raspberry: 'ராஸ்பெர்ரி', Soybean: 'சோயாபீன்', Squash: 'பூசணி வகை', Strawberry: 'ஸ்ட்ராபெர்ரி', Tomato: 'தக்காளி',
+  'Apple scab': 'ஆப்பிள் ஸ்கேப்', 'Black rot': 'பிளாக் ராட்', 'Cedar apple rust': 'சீடர் ஆப்பிள் ரஸ்ட்', healthy: 'ஆரோக்கியம்', 'Powdery mildew': 'பவுடரி மில்டியூ', 'Cercospora leaf spot Gray leaf spot': 'செர்கோஸ்போரா/சாம்பல் இலை புள்ளி', 'Common rust': 'பொது ரஸ்ட்', 'Northern Leaf Blight': 'வடக்கு இலை கருகல்', 'Esca (Black Measles)': 'எஸ்கா (பிளாக் மீஸில்ஸ்)', 'Leaf blight (Isariopsis Leaf Spot)': 'இலை கருகல்', 'Haunglongbing (Citrus greening)': 'சிட்ரஸ் கிரீனிங்', 'Bacterial spot': 'பாக்டீரியல் புள்ளி', 'Early blight': 'ஆரம்ப கருகல்', 'Late blight': 'லேட் பிளைட்', 'Leaf Mold': 'இலை பூஞ்சை', 'Septoria leaf spot': 'செப்டோரியா இலை புள்ளி', 'Spider mites Two-spotted spider mite': 'இரு புள்ளி சிலந்தி மைட்', 'Target Spot': 'டார்கெட் ஸ்பாட்', 'Tomato mosaic virus': 'தக்காளி மோசைக் வைரஸ்', 'Tomato Yellow Leaf Curl Virus': 'தக்காளி மஞ்சள் இலை சுருள் வைரஸ்', 'Leaf scorch': 'இலை கருகல்', 'Background without leaves': 'இலைகள் இல்லா பின்னணி'
+ },
+ te: {
+  Apple: 'ఆపిల్', Blueberry: 'బ్లూబెర్రీ', Cherry: 'చెర్రీ', Corn: 'మొక్కజొన్న', Grape: 'ద్రాక్ష', Orange: 'నారింజ', Peach: 'పీచ్', Pepper: 'క్యాప్సికం', Potato: 'బంగాళాదుంప', Raspberry: 'రాస్ప్బెర్రీ', Soybean: 'సోయాబీన్', Squash: 'గుమ్మడికాయ వర్గం', Strawberry: 'స్ట్రాబెర్రీ', Tomato: 'టమాటా',
+  'Apple scab': 'ఆపిల్ స్క్యాబ్', 'Black rot': 'బ్లాక్ రాట్', 'Cedar apple rust': 'సీడర్ ఆపిల్ రస్ట్', healthy: 'ఆరోగ్యంగా', 'Powdery mildew': 'పౌడరీ మిల్డ్యూ', 'Cercospora leaf spot Gray leaf spot': 'సెర్కోస్పోరా/గ్రే లీఫ్ స్పాట్', 'Common rust': 'కామన్ రస్ట్', 'Northern Leaf Blight': 'నార్తర్న్ లీఫ్ బ్లైట్', 'Esca (Black Measles)': 'ఎస్కా (బ్లాక్ మీజిల్స్)', 'Leaf blight (Isariopsis Leaf Spot)': 'లీఫ్ బ్లైట్', 'Haunglongbing (Citrus greening)': 'సిట్రస్ గ్రీనింగ్', 'Bacterial spot': 'బ్యాక్టీరియల్ స్పాట్', 'Early blight': 'ఎర్లీ బ్లైట్', 'Late blight': 'లేట్ బ్లైట్', 'Leaf Mold': 'లీఫ్ మోల్డ్', 'Septoria leaf spot': 'సెప్టోరియా లీఫ్ స్పాట్', 'Spider mites Two-spotted spider mite': 'రెండు మచ్చల స్పైడర్ మైట్', 'Target Spot': 'టార్గెట్ స్పాట్', 'Tomato mosaic virus': 'టమాటా మోసైక్ వైరస్', 'Tomato Yellow Leaf Curl Virus': 'టమాటా యెల్లో లీఫ్ కర్ల్ వైరస్', 'Leaf scorch': 'లీఫ్ స్కార్చ్', 'Background without leaves': 'ఆకులు లేని నేపథ్యం'
+ }
+};
+
+function translateDiseaseDisplayName(value) {
+ const text = String(value || '').trim();
+ if (!text || currentLang === 'en') return text;
+ const terms = diseaseNameTerms[currentLang] || {};
+ const normalized = text.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+ if (terms[normalized]) return terms[normalized];
+ const parts = normalized.split(/\s+-\s+/);
+ if (parts.length === 2) {
+ const crop = terms[parts[0]] || parts[0];
+ const disease = terms[parts[1]] || parts[1];
+ return `${crop} - ${disease}`;
+ }
+ return normalized.replace(/\b(Apple|Blueberry|Cherry|Corn|Grape|Orange|Peach|Pepper|Potato|Raspberry|Soybean|Squash|Strawberry|Tomato|Black rot|healthy|Powdery mildew|Bacterial spot|Early blight|Late blight|Target Spot)\b/g, match => terms[match] || match);
+}
+
+function translateDiseaseText(value) {
+ const text = String(value || '').trim();
+ if (!text || currentLang === 'en') return text;
+ const direct = getStaticUiText(text);
+ if (direct !== text) return direct;
+ if (/^[A-Za-z,_ ]+\s+-\s+.+/.test(text)) return translateDiseaseDisplayName(text);
+
+ const visualMatch = text.match(/^Visual leaf pattern matched the (.+) class\.$/i);
+ if (visualMatch) {
+ const diseaseName = translateDiseaseDisplayName(visualMatch[1]);
+ const templates = {
+  hi: `दृश्य पत्ती पैटर्न ${diseaseName} वर्ग से मेल खाता है।`,
+  mr: `दृश्य पानाचा नमुना ${diseaseName} वर्गाशी जुळतो.`,
+  pa: `ਦਿੱਖ ਵਾਲਾ ਪੱਤਾ ਪੈਟਰਨ ${diseaseName} ਕਲਾਸ ਨਾਲ ਮਿਲਦਾ ਹੈ।`,
+  ta: `காண்பியல் இலை வடிவம் ${diseaseName} வகையுடன் பொருந்துகிறது.`,
+  te: `దృశ్య ఆకు నమూనా ${diseaseName} తరగతితో సరిపోలింది.`
+ };
+ return templates[currentLang] || text;
+ }
+
+ const fungalMatch = text.match(/^Fungal infection(?: caused by)?\s+(.+)$/i);
+ if (fungalMatch) {
+ const prefix = { hi: 'फफूंद संक्रमण', mr: 'बुरशीजन्य संसर्ग', pa: 'ਫੰਗਸ ਸੰਕਰਮਣ', ta: 'பூஞ்சை தொற்று', te: 'ఫంగల్ సంక్రమణ' }[currentLang];
+ return `${prefix || 'Fungal infection'} ${fungalMatch[1]}`;
+ }
+ const fungusMatch = text.match(/^Fungus\s+(.+)$/i);
+ if (fungusMatch) {
+ const prefix = { hi: 'फफूंद', mr: 'बुरशी', pa: 'ਫੰਗਸ', ta: 'பூஞ்சை', te: 'ఫంగస్' }[currentLang];
+ return `${prefix || 'Fungus'} ${fungusMatch[1]}`;
+ }
+ const bacteriumMatch = text.match(/^Bacterium\s+(.+)$/i);
+ if (bacteriumMatch) {
+ const prefix = { hi: 'बैक्टीरिया', mr: 'जीवाणू', pa: 'ਬੈਕਟੀਰੀਆ', ta: 'பாக்டீரியா', te: 'బ్యాక్టీరియా' }[currentLang];
+ return `${prefix || 'Bacterium'} ${bacteriumMatch[1]}`;
+ }
+ return text;
 }
 
 function translateStaticTextNodes(root = document.body) {
@@ -2581,7 +3098,20 @@ function setButtonWithIcon(selector, iconClass, key) {
  button.innerHTML = `<i class="${iconClass}"></i> ${value}`;
 }
 
+function ensurePmKisanNavigation() {
+ const nav = document.querySelector('.sidebar-nav');
+ if (!nav || nav.querySelector('a[href="pm-kisan.html"]')) return;
+ const cropShieldLink = nav.querySelector('a[href="cropshield.html"]');
+ if (!cropShieldLink) return;
+ const item = document.createElement('a');
+ item.href = 'pm-kisan.html';
+ item.className = 'nav-item';
+ item.innerHTML = '<i class="fas fa-landmark"></i><span>PM-KISAN Helper</span><span class="nav-badge">Govt</span>';
+ cropShieldLink.insertAdjacentElement('afterend', item);
+}
+
 function applyStaticPageTranslations() {
+ ensurePmKisanNavigation();
  // Shared sidebar labels
  setTextForSelector('.sidebar-brand p', 'smart_farming_platform');
 
@@ -2595,6 +3125,7 @@ function applyStaticPageTranslations() {
  setTextForSelector('a[href="market-prices.html"] span', 'nav_market');
  setTextForSelector('a[href="marketplace.html"] span', 'nav_marketplace');
  setTextForSelector('a[href="resource-management.html"] span', 'nav_resources');
+ setTextForSelector('a[href="pm-kisan.html"] span:first-of-type', 'nav_pm_kisan');
  setTextForSelector('a[href="profile.html"] span', 'nav_profile');
  setTextForSelector('a[onclick*="handleLogout"] span', 'nav_logout');
  document.querySelectorAll('.sidebar-nav a .fa-cog').forEach(icon => {
@@ -2602,6 +3133,8 @@ function applyStaticPageTranslations() {
  if (label) label.textContent = translateLabel('nav_settings');
  });
  setTextForSelector('.nav-badge', 'nav_live');
+ const pmKisanBadge = document.querySelector('a[href="pm-kisan.html"] .nav-badge');
+ if (pmKisanBadge) pmKisanBadge.textContent = getStaticUiText('Govt');
  setTextForSelector('#loginTab', 'login_tab', false);
  setTextForSelector('#registerTab', 'register_tab', false);
 
@@ -2610,6 +3143,13 @@ function applyStaticPageTranslations() {
  if (fileName === 'disease-detection.html') {
  setHeadingWithIcon('.topbar-left h3', 'fas fa-leaf', 'var(--color-primary)', 'disease_page_title');
  setTextForSelector('.topbar-left p', 'disease_page_subtitle', false);
+ setTextForSelector('.chatbot-header span', 'Ask me about plant diseases', false);
+ const diseaseChatWelcome = document.querySelector('#chatbotBody .chat-msg.bot');
+ if (diseaseChatWelcome && !diseaseChatWelcome.dataset.userMessage) {
+ diseaseChatWelcome.textContent = getStaticUiText('Namaste! Upload a leaf photo or ask me about any crop disease.');
+ }
+ const diseaseChatInput = document.getElementById('chatInput');
+ if (diseaseChatInput) diseaseChatInput.placeholder = getStaticUiText('Ask about diseases...');
  }
 
  if (fileName === 'market-prices.html') {
@@ -2626,6 +3166,13 @@ function applyStaticPageTranslations() {
  if (fileName === 'resource-management.html') {
  setHeadingWithIcon('.topbar-left h3', 'fas fa-recycle', 'var(--color-primary)', 'resource_page_title');
  setTextForSelector('.topbar-left p', 'resource_page_subtitle', false);
+ }
+
+ if (fileName === 'pm-kisan.html') {
+ const heading = document.querySelector('.topbar-left h3');
+ const subtitle = document.querySelector('.topbar-left p');
+ if (heading) heading.innerHTML = '<i class="fas fa-landmark" style="color:var(--color-primary);margin-right:8px;"></i> PM-KISAN Helper';
+ if (subtitle) subtitle.textContent = 'Eligibility guidance, eKYC checklist, and official PM-KISAN links';
  }
 
  if (fileName === 'profile.html') {
@@ -2664,6 +3211,13 @@ function applyTranslations() {
  if (value) el.placeholder = value;
  });
  applyStaticPageTranslations();
+ applyPmkisanTranslations();
+ if (document.getElementById('diagnosisResult') && latestDiseaseReport) {
+ renderDiseaseResult(latestDiseaseReport);
+ }
+ if (document.getElementById('recentScansList') && diseaseRecentScans.length) {
+ renderRecentDiseaseScans(diseaseRecentScans);
+ }
  if (document.getElementById('marketplaceCount')) {
  window.setTimeout(() => {
  renderMarketplaceCount();
@@ -3179,6 +3733,7 @@ function getSafeListingImageData(value) {
 
 let marketplaceListingsById = new Map();
 let marketplaceAllListings = [];
+let marketplaceOwnedListingIds = new Set();
 const MARKETPLACE_SAVED_KEY = 'agri_marketplace_saved_listings_v2';
 const MARKETPLACE_REPORTED_KEY = 'agri_marketplace_reported_listings_v2';
 
@@ -3413,6 +3968,11 @@ function getCurrentAuthUserIds() {
 function isListingOwnedByCurrentUser(listing) {
  if (!listing) return false;
 
+ const listingId = listing.id ?? listing.listing_id;
+ if (listingId !== undefined && listingId !== null && marketplaceOwnedListingIds.has(String(listingId))) {
+ return true;
+ }
+
  const currentUserIds = getCurrentAuthUserIds();
  const sellerIds = [listing.seller_id, listing.sellerId].filter(value => value!== undefined && value!== null).map(value => String(value));
 
@@ -3494,13 +4054,25 @@ async function renderMarketplaceListings() {
  buyGrid.innerHTML = '';
 
  try {
- const listings = await apiFetch('/market/listings?include_images=true', {
-  cache: 'no-store'
- });
+ const [listings, ownedListings] = await Promise.all([
+  apiFetch('/market/listings?include_images=true', { cache: 'no-store' }),
+  apiFetch('/market/my-listings?include_images=true', { cache: 'no-store' }).catch(err => {
+   console.warn('Failed to load authenticated marketplace listings:', err);
+   return [];
+  })
+ ]);
  const safeListings = Array.isArray(listings)? listings.map(normalizeMarketplaceListing): [];
- marketplaceAllListings = safeListings;
- marketplaceListingsById = new Map(safeListings.map(listing => [String(listing.id), listing]));
- const databaseIds = new Set(safeListings.map(listing => String(listing.id)));
+ const safeOwnedListings = Array.isArray(ownedListings)? ownedListings.map(normalizeMarketplaceListing): [];
+ marketplaceOwnedListingIds = new Set(safeOwnedListings.map(listing => String(listing.id)));
+ const listingsById = new Map(safeListings.map(listing => [String(listing.id), listing]));
+ safeOwnedListings.forEach(listing => {
+  if (!listingsById.has(String(listing.id))) {
+   listingsById.set(String(listing.id), listing);
+  }
+ });
+ marketplaceAllListings = Array.from(listingsById.values());
+ marketplaceListingsById = new Map(marketplaceAllListings.map(listing => [String(listing.id), listing]));
+ const databaseIds = new Set(marketplaceAllListings.map(listing => String(listing.id)));
  setMarketplaceStoredIds(
   MARKETPLACE_SAVED_KEY,
   getSavedMarketplaceListingIds().filter(id => databaseIds.has(id))
@@ -3514,6 +4086,7 @@ async function renderMarketplaceListings() {
  } catch (err) {
  console.warn('Failed to load marketplace listings from backend:', err);
  marketplaceAllListings = [];
+ marketplaceOwnedListingIds = new Set();
  marketplaceListingsById = new Map();
  populateMarketplaceLocationFilter([]);
  myGrid.innerHTML = '';
@@ -3610,16 +4183,12 @@ function renderMarketplaceFilteredListings() {
  const buyGrid = document.getElementById('buyListingsGrid');
  if (!myGrid ||!buyGrid) return;
 
- const myListings = [];
- const buyListings = [];
+ const myListings = marketplaceAllListings
+ .filter(listing => isListingOwnedByCurrentUser(listing))
+ .sort((a, b) => getListingTimestamp(b) - getListingTimestamp(a));
 
- getFilteredMarketplaceListings().forEach(listing => {
- if (isListingOwnedByCurrentUser(listing)) {
- myListings.push(listing);
- } else if (!shouldHideMarketplaceListing(listing)) {
- buyListings.push(listing);
- }
- });
+ const buyListings = getFilteredMarketplaceListings()
+ .filter(listing => !isListingOwnedByCurrentUser(listing) && !shouldHideMarketplaceListing(listing));
 
  myGrid.innerHTML = myListings.map(createMarketplaceCardHtml).join('');
  buyGrid.innerHTML = buyListings.map(createMarketplaceCardHtml).join('');
@@ -3641,10 +4210,10 @@ function updateMarketplaceSectionState(myCount, buyCount, hasError = false) {
  const heading = myEmpty.querySelector('h4');
  const text = myEmpty.querySelector('p');
  if (heading) {
- heading.textContent = hasError? 'Could not load your listings': filtered? 'No matching crops listed by you': 'No crops listed by you yet';
+ heading.textContent = hasError? 'Could not load your listings': 'No crops listed by you yet';
  }
  if (text) {
- text.textContent = hasError? 'Please refresh the page and try again.': filtered? 'Change the filters above or create a new matching listing.': 'Create your first listing so buyers can contact you.';
+ text.textContent = hasError? 'Please refresh the page and try again.': 'Create your first listing so buyers can contact you.';
  }
  }
  if (buyEmpty) {
@@ -4256,6 +4825,130 @@ function initHelpMenu() {
  });
 }
 
+function getSettingsModal() {
+ let modal = document.getElementById('appSettingsModal');
+ if (modal) return modal;
+
+ modal = document.createElement('div');
+ modal.id = 'appSettingsModal';
+ modal.className = 'settings-modal';
+ modal.setAttribute('role', 'dialog');
+ modal.setAttribute('aria-modal', 'true');
+ modal.setAttribute('aria-hidden', 'true');
+ document.body.appendChild(modal);
+ modal.addEventListener('click', (event) => {
+ if (event.target === modal) closeSettingsModal();
+ });
+ return modal;
+}
+
+function renderSettingsModal() {
+ const modal = getSettingsModal();
+ const languageOptions = SUPPORTED_LANGUAGES.map(lang =>
+ `<option value="${lang}" ${lang === currentLang? 'selected': ''}>${escapeHtml(LANGUAGE_LABELS[lang] || lang.toUpperCase())}</option>`
+ ).join('');
+ modal.innerHTML = `
+ <div class="settings-modal-panel">
+ <div class="settings-modal-head">
+ <div>
+ <span class="settings-modal-kicker"><i class="fas fa-cog"></i> ${escapeHtml(getStaticUiText('Settings'))}</span>
+ <h2>${escapeHtml(getStaticUiText('Settings'))}</h2>
+ <p>${escapeHtml(getStaticUiText('Manage app preferences and quick actions.'))}</p>
+ </div>
+ <button type="button" class="settings-modal-close" onclick="closeSettingsModal()" aria-label="Close settings"><i class="fas fa-times"></i></button>
+ </div>
+ <div class="settings-modal-grid">
+ <section class="settings-option-card settings-option-wide">
+ <div class="settings-option-icon"><i class="fas fa-globe"></i></div>
+ <div>
+ <h3>${escapeHtml(getStaticUiText('Language'))}</h3>
+ <p>${escapeHtml(getStaticUiText('Choose your preferred language for this browser.'))}</p>
+ <select id="settingsLanguageSelect" class="input-field">${languageOptions}</select>
+ </div>
+ </section>
+ <section class="settings-option-card">
+ <div class="settings-option-icon"><i class="fas fa-user-circle"></i></div>
+ <div>
+ <h3>${escapeHtml(getStaticUiText('Profile'))}</h3>
+ <p>${escapeHtml(getStaticUiText('Update profile and farm details.'))}</p>
+ <button type="button" class="btn btn-secondary btn-sm" data-settings-action="profile"><i class="fas fa-arrow-right"></i> ${escapeHtml(getStaticUiText('Open Profile'))}</button>
+ </div>
+ </section>
+ <section class="settings-option-card">
+ <div class="settings-option-icon"><i class="fas fa-robot"></i></div>
+ <div>
+ <h3>${escapeHtml(getStaticUiText('Assistant'))}</h3>
+ <p>${escapeHtml(getStaticUiText('Ask AgriMate for help.'))}</p>
+ <button type="button" class="btn btn-secondary btn-sm" data-settings-action="chat"><i class="fas fa-comment-dots"></i> ${escapeHtml(getStaticUiText('Open AgriMate'))}</button>
+ </div>
+ </section>
+ <section class="settings-option-card">
+ <div class="settings-option-icon"><i class="fas fa-columns"></i></div>
+ <div>
+ <h3>${escapeHtml(getStaticUiText('Display'))}</h3>
+ <p>${escapeHtml(getStaticUiText('Collapse or expand the sidebar on desktop.'))}</p>
+ <button type="button" class="btn btn-secondary btn-sm" data-settings-action="sidebar"><i class="fas fa-bars"></i> ${escapeHtml(getStaticUiText('Toggle Sidebar'))}</button>
+ </div>
+ </section>
+ </div>
+ </div>
+ `;
+
+ modal.querySelector('#settingsLanguageSelect')?.addEventListener('change', (event) => {
+ changeLanguage(event.target.value);
+ renderSettingsModal();
+ });
+ modal.querySelector('[data-settings-action="profile"]')?.addEventListener('click', () => {
+ window.location.href = 'profile.html';
+ });
+ modal.querySelector('[data-settings-action="chat"]')?.addEventListener('click', () => {
+ closeSettingsModal();
+ if (typeof toggleChatbot === 'function' && document.getElementById('chatbotPanel')) {
+ toggleChatbot();
+ } else {
+ showToast('AgriMate is available on app pages with chat support.', 'info');
+ }
+ });
+ modal.querySelector('[data-settings-action="sidebar"]')?.addEventListener('click', () => {
+ toggleSidebar();
+ });
+}
+
+function openSettingsModal() {
+ renderSettingsModal();
+ const modal = getSettingsModal();
+ modal.classList.add('open');
+ modal.setAttribute('aria-hidden', 'false');
+ document.body.classList.add('settings-modal-open');
+ window.setTimeout(() => modal.querySelector('.settings-modal-close')?.focus(), 50);
+}
+
+function closeSettingsModal() {
+ const modal = document.getElementById('appSettingsModal');
+ if (!modal) return;
+ modal.classList.remove('open');
+ modal.setAttribute('aria-hidden', 'true');
+ document.body.classList.remove('settings-modal-open');
+}
+
+function initSettingsNavigation() {
+ const settingsLinks = Array.from(document.querySelectorAll('.sidebar-nav a')).filter(link =>
+ link.querySelector('.fa-cog') || /settings/i.test(link.textContent || '')
+ );
+ settingsLinks.forEach(link => {
+ link.setAttribute('href', '#settings');
+ link.setAttribute('role', 'button');
+ link.addEventListener('click', (event) => {
+ event.preventDefault();
+ closeSidebarMenu();
+ openSettingsModal();
+ });
+ });
+ document.addEventListener('keydown', (event) => {
+ if (event.key === 'Escape') closeSettingsModal();
+ });
+}
+
 function toggleSidebar() {
  const sidebar = document.getElementById('sidebar');
  const overlay = document.getElementById('sidebarOverlay');
@@ -4406,6 +5099,18 @@ function normalizeApiUrl(url) {
 
 const LOCAL_API_HOSTS = ['', 'localhost', '127.0.0.1', '::1'];
 const DEFAULT_RENDER_API_URL = 'https://agricomplete-backend.onrender.com/api';
+const LOCAL_FLASK_API_URL = 'http://localhost:5000/api';
+
+function getLocalApiPreference() {
+ const params = new URLSearchParams(window.location.search);
+ const requested = String(params.get('api') || '').trim().toLowerCase();
+ if (requested === 'local' || requested === 'render') {
+ localStorage.setItem('agri_api_target', requested);
+ return requested;
+ }
+ const stored = String(localStorage.getItem('agri_api_target') || '').trim().toLowerCase();
+ return stored === 'local' || stored === 'render' ? stored : 'render';
+}
 
 const API_URL = (() => {
  const isLocalHost = LOCAL_API_HOSTS.includes(window.location.hostname);
@@ -4415,7 +5120,7 @@ const API_URL = (() => {
  if (configuredUrl) return normalizeApiUrl(configuredUrl);
 
  if (isLocalHost) {
- return 'http://localhost:5000/api';
+ return getLocalApiPreference() === 'local' ? LOCAL_FLASK_API_URL : DEFAULT_RENDER_API_URL;
  }
 
  return `${window.location.origin}/api`;
@@ -4424,11 +5129,24 @@ const API_URL = (() => {
 const API_BASE_URLS = (() => {
  const urls = [API_URL];
  const isLocal = LOCAL_API_HOSTS.includes(window.location.hostname);
- if (!isLocal && API_URL !== DEFAULT_RENDER_API_URL) {
+ if (isLocal && API_URL === DEFAULT_RENDER_API_URL) {
+ urls.push(LOCAL_FLASK_API_URL);
+ } else if (!isLocal && API_URL !== DEFAULT_RENDER_API_URL) {
  urls.push(DEFAULT_RENDER_API_URL);
  }
  return urls;
 })();
+
+function syncApiSessionScope() {
+ const sessionApiUrl = localStorage.getItem('agri_api_session_base');
+ if (sessionApiUrl && sessionApiUrl !== API_URL) {
+ localStorage.removeItem('agri_token');
+ localStorage.removeItem('agri_user');
+ }
+ localStorage.setItem('agri_api_session_base', API_URL);
+}
+
+syncApiSessionScope();
 
 // API Helper
 function isAuthExpiredMessage(message) {
@@ -5097,7 +5815,7 @@ function setRecentScansStatus(text, className = 'badge badge-info') {
  const status = document.getElementById('recentScansStatus');
  if (!status) return;
  status.className = className;
- status.textContent = text;
+ status.textContent = getStaticUiText(text);
 }
 
 function recentScansMessageHtml(message) {
@@ -5121,10 +5839,10 @@ function renderRecentDiseaseScans(scans, emptyMessage = 'No recent scans yet.') 
  <div style="display:flex;align-items:center;gap:12px;padding:10px;background:var(--bg-body);border-radius:var(--radius-sm);">
  <div style="width:40px;height:40px;background:${tone.bg};border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex:0 0 40px;"><i class="fas fa-leaf" style="color:${tone.color};"></i></div>
  <div style="flex:1;min-width:0;">
- <strong style="font-size:.88rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(scan.name)}</strong>
- <p style="font-size:.75rem;">Confidence: ${Math.round(scan.confidence)}% - ${escapeHtml(formatListingTime(scan.created_at))}</p>
+ <strong style="font-size:.88rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(translateDiseaseDisplayName(scan.name))}</strong>
+ <p style="font-size:.75rem;">${escapeHtml(getStaticUiText('Confidence'))}: ${Math.round(scan.confidence)}% - ${escapeHtml(formatListingTime(scan.created_at))}</p>
  </div>
- <span class="badge ${escapeHtml(badgeClass)}">${escapeHtml(diseaseScanStatusText(scan))}</span>
+ <span class="badge ${escapeHtml(badgeClass)}">${escapeHtml(getStaticUiText(diseaseScanStatusText(scan)))}</span>
  </div>
  `;
  }).join('');
@@ -5135,12 +5853,12 @@ async function loadRecentDiseaseScans(options = {}) {
  if (!list) return;
 
  if (!options.silent) {
- list.innerHTML = recentScansMessageHtml('Loading recent scans...');
+ list.innerHTML = recentScansMessageHtml(getStaticUiText('Loading recent scans...'));
  }
 
  if (!localStorage.getItem('agri_token')) {
  setRecentScansStatus('Local', 'badge badge-warning');
- renderRecentDiseaseScans(getLocalDiseaseScans(), 'Analyze a leaf photo to see recent scans here.');
+ renderRecentDiseaseScans(getLocalDiseaseScans(), getStaticUiText('Analyze a leaf photo to see recent scans here.'));
  return;
  }
 
@@ -5153,7 +5871,7 @@ async function loadRecentDiseaseScans(options = {}) {
  console.warn('Failed to load recent disease scans:', err);
  const localScans = getLocalDiseaseScans();
  setRecentScansStatus('Offline', 'badge badge-warning');
- renderRecentDiseaseScans(localScans, err.msg || 'Recent scans are unavailable right now.');
+ renderRecentDiseaseScans(localScans, err.msg || getStaticUiText('Recent scans are unavailable right now.'));
  }
 }
 
@@ -5177,6 +5895,693 @@ function startRecentDiseaseScansLiveRefresh() {
  diseaseScansRefreshTimer = window.setInterval(() => {
  loadRecentDiseaseScans({ silent: true });
  }, 20000);
+}
+
+// ============ PM-KISAN HELPER ============
+const PMKISAN_STATUS_KEY = 'agri_pm_kisan_status_v1';
+const PMKISAN_CHECKLIST_KEY = 'agri_pm_kisan_checklist_v1';
+const pmkisanTranslations = {
+ en: {
+ page_title: 'PM-KISAN Helper',
+ page_subtitle: 'Eligibility guidance, eKYC checklist, and official PM-KISAN links',
+ hero_kicker: 'Government scheme assistance',
+ hero_title: 'PM-KISAN readiness and guidance for farmers.',
+ hero_desc: 'Check likely eligibility, prepare documents, track eKYC readiness, and open the official PM-KISAN portal from one simple page.',
+ trust_official: 'Official links only',
+ trust_private: 'No Aadhaar number stored',
+ trust_ready: 'Readiness tracking',
+ official_portal: 'Official PM-KISAN Portal',
+ know_status: 'Know Your Status',
+ income_support: 'Income support',
+ income_amount: 'Rs.6,000/year',
+ income_desc: 'Paid in 3 equal installments to eligible landholding farmer families through DBT.',
+ installments: 'installments',
+ direct_transfer: 'direct transfer',
+ required_check: 'required check',
+ official_notice_title: 'Farmer guidance, not government approval',
+ official_notice_desc: 'This page helps you prepare and track PM-KISAN readiness. Final registration, eKYC, correction, and beneficiary status must be completed only through official government channels.',
+ process_eligibility: 'Check eligibility',
+ process_eligibility_desc: 'Confirm landholding and exclusion conditions.',
+ process_documents: 'Prepare documents',
+ process_documents_desc: 'Keep Aadhaar, land record, bank, and mobile ready.',
+ process_ekyc: 'Complete eKYC',
+ process_ekyc_desc: 'Finish eKYC only through official channels.',
+ process_status: 'Track status',
+ process_status_desc: 'Save follow-up status and next reminder.',
+ eligibility_kicker: '01 Eligibility checker',
+ eligibility_title: 'Quick farmer eligibility check',
+ q_land: 'Farmer family owns cultivable agricultural land',
+ q_aadhaar: 'Aadhaar is available and mobile number is active',
+ q_bank: 'Bank account is available for DBT transfer',
+ q_ekyc: 'eKYC is completed or can be completed',
+ q_tax: 'Any family member paid income tax in the last assessment year',
+ q_excluded: 'Institutional landholder or excluded government/professional category',
+ result_initial_title: 'Answer the questions to estimate readiness.',
+ result_initial_desc: 'This is only guidance. Final eligibility is decided by government records and PM-KISAN rules.',
+ result_need_title: 'Needs more information',
+ result_need_desc: 'Complete the checklist and verify final eligibility on the official PM-KISAN portal.',
+ result_not_title: 'Likely not eligible or needs official review',
+ result_not_desc: 'One or more exclusion conditions may apply. Confirm with the official PM-KISAN portal or local agriculture office.',
+ result_ready_title: 'Likely ready for PM-KISAN verification',
+ result_ready_desc: 'The farmer appears document-ready. Final status still depends on official land, Aadhaar, eKYC, and bank records.',
+ result_partial_title: 'Partially ready',
+ result_partial_desc: 'Some required items are available, but eKYC, bank, mobile, or land record verification may still be pending.',
+ checklist_kicker: '02 Document checklist',
+ checklist_title: 'PM-KISAN readiness checklist',
+ ready_label: 'ready',
+ check_aadhaar: 'Aadhaar available',
+ check_aadhaar_small: 'No Aadhaar number is stored.',
+ check_land: 'Land record / 7-12 / khasra available',
+ check_bank: 'Bank account available and active',
+ check_mobile: 'Mobile number linked and reachable',
+ check_ekyc: 'eKYC completed or planned',
+ check_status: 'Beneficiary status checked on official portal',
+ actions_kicker: '03 Official actions',
+ actions_title: 'Open official PM-KISAN services',
+ new_registration: 'New Farmer Registration',
+ ekyc_process: 'eKYC Process',
+ beneficiary_list: 'Beneficiary List',
+ helpdesk: 'Helpdesk',
+ mobile_app: 'PM-KISAN Mobile App',
+ tracker_kicker: '04 Status tracker',
+ tracker_title: 'Save your PM-KISAN follow-up',
+ reference_label: 'Registration / application reference',
+ reference_placeholder: 'Optional reference number',
+ status_label: 'Current status',
+ status_not_checked: 'Not checked',
+ status_registration_pending: 'Registration pending',
+ status_ekyc_pending: 'eKYC pending',
+ status_under_verification: 'Under verification',
+ status_beneficiary_active: 'Beneficiary active',
+ status_issue_found: 'Issue found',
+ reminder_label: 'Next reminder date',
+ save_status: 'Save PM-KISAN Status',
+ saved_empty: 'No saved PM-KISAN status yet.',
+ saved_reference: 'Reference',
+ saved_status: 'Status',
+ saved_reminder: 'Next reminder',
+ saved_on: 'Saved on',
+ saved_toast: 'PM-KISAN status saved on this device.',
+ safety_kicker: 'Important safety note',
+ safety_title: 'Use official portal for final action',
+ safety_desc: 'AgriComplete Hub provides readiness guidance only. Do not share Aadhaar OTP, bank OTP, or sensitive identity numbers with any unofficial person. Complete registration, eKYC, beneficiary status, and corrections only through the official PM-KISAN website, CSC, or authorized government channels.',
+ chat_subtitle: 'PM-KISAN help',
+ chat_welcome: 'Namaste! Ask me about PM-KISAN eligibility, eKYC, documents, or status checking.',
+ chat_placeholder: 'Ask about PM-KISAN...'
+ },
+ hi: {
+ page_title: 'पीएम-किसान सहायक',
+ page_subtitle: 'पात्रता, eKYC चेकलिस्ट और आधिकारिक पीएम-किसान लिंक',
+ hero_kicker: 'सरकारी योजना सहायता',
+ hero_title: 'किसानों के लिए पीएम-किसान तैयारी और मार्गदर्शन।',
+ hero_desc: 'संभावित पात्रता जांचें, दस्तावेज तैयार करें, eKYC तैयारी ट्रैक करें और आधिकारिक पीएम-किसान पोर्टल एक ही पेज से खोलें।',
+ trust_official: 'केवल आधिकारिक लिंक',
+ trust_private: 'आधार नंबर स्टोर नहीं',
+ trust_ready: 'तैयारी ट्रैकिंग',
+ official_portal: 'आधिकारिक पीएम-किसान पोर्टल',
+ know_status: 'अपना स्टेटस जानें',
+ income_support: 'आय सहायता',
+ income_amount: 'Rs.6,000/वर्ष',
+ income_desc: 'पात्र भूमिधारी किसान परिवारों को DBT के माध्यम से 3 बराबर किस्तों में भुगतान।',
+ installments: 'किस्तें',
+ direct_transfer: 'सीधा ट्रांसफर',
+ required_check: 'जरूरी जांच',
+ official_notice_title: 'किसान मार्गदर्शन, सरकारी स्वीकृति नहीं',
+ official_notice_desc: 'यह पेज पीएम-किसान तैयारी और ट्रैकिंग में मदद करता है। अंतिम पंजीकरण, eKYC, सुधार और लाभार्थी स्थिति केवल आधिकारिक सरकारी चैनलों से पूरी करें।',
+ process_eligibility: 'पात्रता जांचें',
+ process_eligibility_desc: 'भूमिधारक और अपात्रता शर्तों की पुष्टि करें।',
+ process_documents: 'दस्तावेज तैयार करें',
+ process_documents_desc: 'आधार, भूमि रिकॉर्ड, बैंक और मोबाइल तैयार रखें।',
+ process_ekyc: 'eKYC पूरी करें',
+ process_ekyc_desc: 'eKYC केवल आधिकारिक चैनलों से पूरी करें।',
+ process_status: 'स्थिति ट्रैक करें',
+ process_status_desc: 'फॉलो-अप स्थिति और अगली याद सेव करें।',
+ eligibility_kicker: '01 पात्रता जांच',
+ eligibility_title: 'त्वरित किसान पात्रता जांच',
+ q_land: 'किसान परिवार के पास खेती योग्य कृषि भूमि है',
+ q_aadhaar: 'आधार उपलब्ध है और मोबाइल नंबर सक्रिय है',
+ q_bank: 'DBT ट्रांसफर के लिए बैंक खाता उपलब्ध है',
+ q_ekyc: 'eKYC पूरी है या पूरी की जा सकती है',
+ q_tax: 'परिवार के किसी सदस्य ने पिछले आकलन वर्ष में आयकर भरा है',
+ q_excluded: 'संस्थागत भूमिधारक या अपात्र सरकारी/पेशेवर श्रेणी',
+ result_initial_title: 'तैयारी का अनुमान लगाने के लिए प्रश्नों का उत्तर दें।',
+ result_initial_desc: 'यह केवल मार्गदर्शन है। अंतिम पात्रता सरकारी रिकॉर्ड और पीएम-किसान नियमों से तय होती है।',
+ result_need_title: 'अधिक जानकारी चाहिए',
+ result_need_desc: 'चेकलिस्ट पूरी करें और आधिकारिक पीएम-किसान पोर्टल पर अंतिम पात्रता जांचें।',
+ result_not_title: 'संभवतः पात्र नहीं या आधिकारिक समीक्षा आवश्यक',
+ result_not_desc: 'एक या अधिक अपात्रता शर्तें लागू हो सकती हैं। आधिकारिक पोर्टल या स्थानीय कृषि कार्यालय से पुष्टि करें।',
+ result_ready_title: 'पीएम-किसान सत्यापन के लिए लगभग तैयार',
+ result_ready_desc: 'दस्तावेज तैयार लगते हैं। अंतिम स्थिति भूमि, आधार, eKYC और बैंक रिकॉर्ड पर निर्भर रहेगी।',
+ result_partial_title: 'आंशिक रूप से तैयार',
+ result_partial_desc: 'कुछ जरूरी चीजें उपलब्ध हैं, लेकिन eKYC, बैंक, मोबाइल या भूमि रिकॉर्ड सत्यापन लंबित हो सकता है।',
+ checklist_kicker: '02 दस्तावेज चेकलिस्ट',
+ checklist_title: 'पीएम-किसान तैयारी चेकलिस्ट',
+ ready_label: 'तैयार',
+ check_aadhaar: 'आधार उपलब्ध',
+ check_aadhaar_small: 'आधार नंबर स्टोर नहीं किया जाता।',
+ check_land: 'भूमि रिकॉर्ड / 7-12 / खसरा उपलब्ध',
+ check_bank: 'बैंक खाता उपलब्ध और सक्रिय',
+ check_mobile: 'मोबाइल नंबर लिंक और उपलब्ध',
+ check_ekyc: 'eKYC पूरी या नियोजित',
+ check_status: 'आधिकारिक पोर्टल पर लाभार्थी स्थिति जांची',
+ actions_kicker: '03 आधिकारिक कार्य',
+ actions_title: 'आधिकारिक पीएम-किसान सेवाएं खोलें',
+ new_registration: 'नया किसान पंजीकरण',
+ ekyc_process: 'eKYC प्रक्रिया',
+ beneficiary_list: 'लाभार्थी सूची',
+ helpdesk: 'हेल्पडेस्क',
+ mobile_app: 'पीएम-किसान मोबाइल ऐप',
+ tracker_kicker: '04 स्टेटस ट्रैकर',
+ tracker_title: 'अपना पीएम-किसान फॉलो-अप सेव करें',
+ reference_label: 'पंजीकरण / आवेदन संदर्भ',
+ reference_placeholder: 'वैकल्पिक संदर्भ नंबर',
+ status_label: 'वर्तमान स्थिति',
+ status_not_checked: 'जांच नहीं की',
+ status_registration_pending: 'पंजीकरण लंबित',
+ status_ekyc_pending: 'eKYC लंबित',
+ status_under_verification: 'सत्यापन में',
+ status_beneficiary_active: 'लाभार्थी सक्रिय',
+ status_issue_found: 'समस्या मिली',
+ reminder_label: 'अगली याद दिलाने की तारीख',
+ save_status: 'पीएम-किसान स्टेटस सेव करें',
+ saved_empty: 'अभी कोई पीएम-किसान स्टेटस सेव नहीं है।',
+ saved_reference: 'संदर्भ',
+ saved_status: 'स्थिति',
+ saved_reminder: 'अगली याद',
+ saved_on: 'सेव किया गया',
+ saved_toast: 'पीएम-किसान स्टेटस इस डिवाइस पर सेव हो गया।',
+ safety_kicker: 'महत्वपूर्ण सुरक्षा नोट',
+ safety_title: 'अंतिम कार्य के लिए आधिकारिक पोर्टल का उपयोग करें',
+ safety_desc: 'AgriComplete Hub केवल तैयारी मार्गदर्शन देता है। आधार OTP, बैंक OTP या संवेदनशील पहचान नंबर किसी अनधिकृत व्यक्ति से साझा न करें। पंजीकरण, eKYC, लाभार्थी स्थिति और सुधार केवल आधिकारिक पीएम-किसान वेबसाइट, CSC या अधिकृत सरकारी चैनल से करें।',
+ chat_subtitle: 'पीएम-किसान सहायता',
+ chat_welcome: 'नमस्ते! पीएम-किसान पात्रता, eKYC, दस्तावेज या स्टेटस जांच के बारे में पूछें।',
+ chat_placeholder: 'पीएम-किसान के बारे में पूछें...'
+ },
+ mr: {
+ page_title: 'पीएम-किसान सहाय्यक',
+ page_subtitle: 'पात्रता मार्गदर्शन, eKYC चेकलिस्ट आणि अधिकृत पीएम-किसान लिंक',
+ hero_kicker: 'सरकारी योजना सहाय्य',
+ hero_title: 'शेतकऱ्यांसाठी पीएम-किसान तयारी आणि मार्गदर्शन.',
+ hero_desc: 'संभाव्य पात्रता तपासा, कागदपत्रे तयार ठेवा, eKYC तयारी ट्रॅक करा आणि अधिकृत पीएम-किसान पोर्टल एका पेजवरून उघडा.',
+ trust_official: 'फक्त अधिकृत लिंक',
+ trust_private: 'आधार नंबर साठवला नाही',
+ trust_ready: 'तयारी ट्रॅकिंग',
+ official_portal: 'अधिकृत पीएम-किसान पोर्टल',
+ know_status: 'आपली स्थिती जाणून घ्या',
+ income_support: 'आर्थिक सहाय्य',
+ income_amount: 'Rs.6,000/वर्ष',
+ income_desc: 'पात्र भूमिधारक शेतकरी कुटुंबांना DBT द्वारे 3 समान हप्त्यांत रक्कम दिली जाते.',
+ installments: 'हप्ते',
+ direct_transfer: 'थेट हस्तांतरण',
+ required_check: 'आवश्यक तपासणी',
+ official_notice_title: 'शेतकरी मार्गदर्शन, सरकारी मंजुरी नाही',
+ official_notice_desc: 'हे पेज पीएम-किसान तयारी आणि ट्रॅकिंगसाठी मदत करते. अंतिम नोंदणी, eKYC, दुरुस्ती आणि लाभार्थी स्थिती फक्त अधिकृत सरकारी माध्यमातून पूर्ण करा.',
+ process_eligibility: 'पात्रता तपासा',
+ process_eligibility_desc: 'जमीनधारणा आणि अपात्रता अटींची पुष्टी करा.',
+ process_documents: 'कागदपत्रे तयार ठेवा',
+ process_documents_desc: 'आधार, जमीन नोंद, बँक आणि मोबाइल तयार ठेवा.',
+ process_ekyc: 'eKYC पूर्ण करा',
+ process_ekyc_desc: 'eKYC फक्त अधिकृत माध्यमातून पूर्ण करा.',
+ process_status: 'स्थिती ट्रॅक करा',
+ process_status_desc: 'फॉलो-अप स्थिती आणि पुढील स्मरण सेव करा.',
+ eligibility_kicker: '01 पात्रता तपासणी',
+ eligibility_title: 'जलद शेतकरी पात्रता तपासणी',
+ q_land: 'शेतकरी कुटुंबाकडे लागवडीयोग्य शेती जमीन आहे',
+ q_aadhaar: 'आधार उपलब्ध आहे आणि मोबाइल नंबर सक्रिय आहे',
+ q_bank: 'DBT साठी बँक खाते उपलब्ध आहे',
+ q_ekyc: 'eKYC पूर्ण आहे किंवा पूर्ण करता येईल',
+ q_tax: 'कुटुंबातील कोणत्याही सदस्याने मागील मूल्यांकन वर्षात आयकर भरला आहे',
+ q_excluded: 'संस्थात्मक भूमिधारक किंवा अपात्र सरकारी/व्यावसायिक श्रेणी',
+ result_initial_title: 'तयारीचा अंदाज घेण्यासाठी प्रश्नांची उत्तरे द्या.',
+ result_initial_desc: 'हे फक्त मार्गदर्शन आहे. अंतिम पात्रता सरकारी नोंदी आणि पीएम-किसान नियमांनुसार ठरते.',
+ result_need_title: 'अधिक माहिती आवश्यक',
+ result_need_desc: 'चेकलिस्ट पूर्ण करा आणि अधिकृत पीएम-किसान पोर्टलवर अंतिम पात्रता तपासा.',
+ result_not_title: 'कदाचित पात्र नाही किंवा अधिकृत तपासणी आवश्यक',
+ result_not_desc: 'एक किंवा अधिक अपात्रता अटी लागू होऊ शकतात. अधिकृत पोर्टल किंवा स्थानिक कृषी कार्यालयाशी पुष्टी करा.',
+ result_ready_title: 'पीएम-किसान पडताळणीसाठी जवळपास तयार',
+ result_ready_desc: 'कागदपत्रे तयार दिसतात. अंतिम स्थिती जमीन, आधार, eKYC आणि बँक नोंदींवर अवलंबून असेल.',
+ result_partial_title: 'अंशतः तयार',
+ result_partial_desc: 'काही आवश्यक बाबी उपलब्ध आहेत, पण eKYC, बँक, मोबाइल किंवा जमीन नोंद पडताळणी बाकी असू शकते.',
+ checklist_kicker: '02 कागदपत्र चेकलिस्ट',
+ checklist_title: 'पीएम-किसान तयारी चेकलिस्ट',
+ ready_label: 'तयार',
+ check_aadhaar: 'आधार उपलब्ध',
+ check_aadhaar_small: 'आधार नंबर साठवला जात नाही.',
+ check_land: 'जमीन नोंद / 7-12 / खसरा उपलब्ध',
+ check_bank: 'बँक खाते उपलब्ध आणि सक्रिय',
+ check_mobile: 'मोबाइल नंबर लिंक आणि उपलब्ध',
+ check_ekyc: 'eKYC पूर्ण किंवा नियोजित',
+ check_status: 'अधिकृत पोर्टलवर लाभार्थी स्थिती तपासली',
+ actions_kicker: '03 अधिकृत कृती',
+ actions_title: 'अधिकृत पीएम-किसान सेवा उघडा',
+ new_registration: 'नवीन शेतकरी नोंदणी',
+ ekyc_process: 'eKYC प्रक्रिया',
+ beneficiary_list: 'लाभार्थी यादी',
+ helpdesk: 'हेल्पडेस्क',
+ mobile_app: 'पीएम-किसान मोबाइल अॅप',
+ tracker_kicker: '04 स्थिती ट्रॅकर',
+ tracker_title: 'आपला पीएम-किसान फॉलो-अप सेव करा',
+ reference_label: 'नोंदणी / अर्ज संदर्भ',
+ reference_placeholder: 'ऐच्छिक संदर्भ क्रमांक',
+ status_label: 'सध्याची स्थिती',
+ status_not_checked: 'तपासले नाही',
+ status_registration_pending: 'नोंदणी प्रलंबित',
+ status_ekyc_pending: 'eKYC प्रलंबित',
+ status_under_verification: 'पडताळणीमध्ये',
+ status_beneficiary_active: 'लाभार्थी सक्रिय',
+ status_issue_found: 'समस्या आढळली',
+ reminder_label: 'पुढील स्मरण तारीख',
+ save_status: 'पीएम-किसान स्थिती सेव करा',
+ saved_empty: 'अजून कोणतीही पीएम-किसान स्थिती सेव नाही.',
+ saved_reference: 'संदर्भ',
+ saved_status: 'स्थिती',
+ saved_reminder: 'पुढील स्मरण',
+ saved_on: 'सेव केले',
+ saved_toast: 'पीएम-किसान स्थिती या डिव्हाइसवर सेव झाली.',
+ safety_kicker: 'महत्त्वाची सुरक्षा सूचना',
+ safety_title: 'अंतिम कृतीसाठी अधिकृत पोर्टल वापरा',
+ safety_desc: 'AgriComplete Hub फक्त तयारी मार्गदर्शन देते. आधार OTP, बँक OTP किंवा संवेदनशील ओळख क्रमांक कोणत्याही अनधिकृत व्यक्तीसोबत शेअर करू नका. नोंदणी, eKYC, लाभार्थी स्थिती आणि दुरुस्ती फक्त अधिकृत पीएम-किसान वेबसाइट, CSC किंवा अधिकृत सरकारी माध्यमातून करा.',
+ chat_subtitle: 'पीएम-किसान मदत',
+ chat_welcome: 'नमस्कार! पीएम-किसान पात्रता, eKYC, कागदपत्रे किंवा स्थिती तपासणीबद्दल विचारा.',
+ chat_placeholder: 'पीएम-किसान बद्दल विचारा...'
+ },
+ pa: {
+ page_title: 'ਪੀਐਮ-ਕਿਸਾਨ ਸਹਾਇਕ',
+ page_subtitle: 'ਯੋਗਤਾ ਮਾਰਗਦਰਸ਼ਨ, eKYC ਚੈਕਲਿਸਟ ਅਤੇ ਅਧਿਕਾਰਕ PM-KISAN ਲਿੰਕ',
+ hero_kicker: 'ਸਰਕਾਰੀ ਯੋਜਨਾ ਸਹਾਇਤਾ',
+ hero_title: 'ਕਿਸਾਨਾਂ ਲਈ PM-KISAN ਤਿਆਰੀ ਅਤੇ ਮਾਰਗਦਰਸ਼ਨ।',
+ hero_desc: 'ਸੰਭਾਵੀ ਯੋਗਤਾ ਚੈੱਕ ਕਰੋ, ਦਸਤਾਵੇਜ਼ ਤਿਆਰ ਕਰੋ, eKYC ਤਿਆਰੀ ਟਰੈਕ ਕਰੋ ਅਤੇ ਅਧਿਕਾਰਕ PM-KISAN ਪੋਰਟਲ ਇੱਕ ਹੀ ਪੇਜ ਤੋਂ ਖੋਲ੍ਹੋ।',
+ trust_official: 'ਸਿਰਫ਼ ਅਧਿਕਾਰਕ ਲਿੰਕ',
+ trust_private: 'ਆਧਾਰ ਨੰਬਰ ਸਟੋਰ ਨਹੀਂ',
+ trust_ready: 'ਤਿਆਰੀ ਟ੍ਰੈਕਿੰਗ',
+ official_portal: 'ਅਧਿਕਾਰਕ PM-KISAN ਪੋਰਟਲ',
+ know_status: 'ਆਪਣਾ ਸਟੇਟਸ ਜਾਣੋ',
+ income_support: 'ਆਮਦਨੀ ਸਹਾਇਤਾ',
+ income_amount: 'Rs.6,000/ਸਾਲ',
+ income_desc: 'ਯੋਗ ਜ਼ਮੀਨਧਾਰੀ ਕਿਸਾਨ ਪਰਿਵਾਰਾਂ ਨੂੰ DBT ਰਾਹੀਂ 3 ਬਰਾਬਰ ਕਿਸ਼ਤਾਂ ਵਿੱਚ ਭੁਗਤਾਨ।',
+ installments: 'ਕਿਸ਼ਤਾਂ',
+ direct_transfer: 'ਸਿੱਧਾ ਟ੍ਰਾਂਸਫਰ',
+ required_check: 'ਲਾਜ਼ਮੀ ਜਾਂਚ',
+ official_notice_title: 'ਕਿਸਾਨ ਮਾਰਗਦਰਸ਼ਨ, ਸਰਕਾਰੀ ਮਨਜ਼ੂਰੀ ਨਹੀਂ',
+ official_notice_desc: 'ਇਹ ਪੇਜ PM-KISAN ਤਿਆਰੀ ਅਤੇ ਟ੍ਰੈਕਿੰਗ ਵਿੱਚ ਮਦਦ ਕਰਦਾ ਹੈ। ਅੰਤਿਮ ਰਜਿਸਟ੍ਰੇਸ਼ਨ, eKYC, ਸੁਧਾਰ ਅਤੇ ਲਾਭਪਾਤਰੀ ਸਥਿਤੀ ਸਿਰਫ਼ ਅਧਿਕਾਰਕ ਸਰਕਾਰੀ ਚੈਨਲਾਂ ਰਾਹੀਂ ਕਰੋ।',
+ process_eligibility: 'ਯੋਗਤਾ ਚੈੱਕ ਕਰੋ',
+ process_eligibility_desc: 'ਜ਼ਮੀਨਧਾਰੀ ਅਤੇ ਬਾਹਰ ਰੱਖਣ ਵਾਲੀਆਂ ਸ਼ਰਤਾਂ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ।',
+ process_documents: 'ਦਸਤਾਵੇਜ਼ ਤਿਆਰ ਕਰੋ',
+ process_documents_desc: 'ਆਧਾਰ, ਜ਼ਮੀਨ ਰਿਕਾਰਡ, ਬੈਂਕ ਅਤੇ ਮੋਬਾਈਲ ਤਿਆਰ ਰੱਖੋ।',
+ process_ekyc: 'eKYC ਪੂਰੀ ਕਰੋ',
+ process_ekyc_desc: 'eKYC ਸਿਰਫ਼ ਅਧਿਕਾਰਕ ਚੈਨਲਾਂ ਰਾਹੀਂ ਪੂਰੀ ਕਰੋ।',
+ process_status: 'ਸਥਿਤੀ ਟ੍ਰੈਕ ਕਰੋ',
+ process_status_desc: 'ਫਾਲੋ-ਅਪ ਸਥਿਤੀ ਅਤੇ ਅਗਲੀ ਯਾਦ ਸੇਵ ਕਰੋ।',
+ eligibility_kicker: '01 ਯੋਗਤਾ ਚੈਕਰ',
+ eligibility_title: 'ਤੇਜ਼ ਕਿਸਾਨ ਯੋਗਤਾ ਜਾਂਚ',
+ q_land: 'ਕਿਸਾਨ ਪਰਿਵਾਰ ਕੋਲ ਕਾਸ਼ਤਯੋਗ ਖੇਤੀ ਜ਼ਮੀਨ ਹੈ',
+ q_aadhaar: 'ਆਧਾਰ ਉਪਲਬਧ ਹੈ ਅਤੇ ਮੋਬਾਈਲ ਨੰਬਰ ਚਾਲੂ ਹੈ',
+ q_bank: 'DBT ਟ੍ਰਾਂਸਫਰ ਲਈ ਬੈਂਕ ਖਾਤਾ ਉਪਲਬਧ ਹੈ',
+ q_ekyc: 'eKYC ਪੂਰੀ ਹੈ ਜਾਂ ਪੂਰੀ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ',
+ q_tax: 'ਪਰਿਵਾਰ ਦੇ ਕਿਸੇ ਮੈਂਬਰ ਨੇ ਪਿਛਲੇ ਅਸੈਸਮੈਂਟ ਸਾਲ ਵਿੱਚ ਆਮਦਨ ਕਰ ਭਰਿਆ ਹੈ',
+ q_excluded: 'ਸੰਸਥਾਗਤ ਜ਼ਮੀਨਧਾਰਕ ਜਾਂ ਬਾਹਰ ਰੱਖੀ ਸਰਕਾਰੀ/ਪੇਸ਼ੇਵਰ ਸ਼੍ਰੇਣੀ',
+ result_initial_title: 'ਤਿਆਰੀ ਦਾ ਅੰਦਾਜ਼ਾ ਲਗਾਉਣ ਲਈ ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਦਿਓ।',
+ result_initial_desc: 'ਇਹ ਸਿਰਫ਼ ਮਾਰਗਦਰਸ਼ਨ ਹੈ। ਅੰਤਿਮ ਯੋਗਤਾ ਸਰਕਾਰੀ ਰਿਕਾਰਡ ਅਤੇ PM-KISAN ਨਿਯਮਾਂ ਤੋਂ ਤੈਅ ਹੁੰਦੀ ਹੈ।',
+ result_need_title: 'ਹੋਰ ਜਾਣਕਾਰੀ ਦੀ ਲੋੜ ਹੈ',
+ result_need_desc: 'ਚੈਕਲਿਸਟ ਪੂਰੀ ਕਰੋ ਅਤੇ ਅਧਿਕਾਰਕ PM-KISAN ਪੋਰਟਲ ਤੇ ਅੰਤਿਮ ਯੋਗਤਾ ਜਾਂਚੋ।',
+ result_not_title: 'ਸ਼ਾਇਦ ਯੋਗ ਨਹੀਂ ਜਾਂ ਅਧਿਕਾਰਕ ਸਮੀਖਿਆ ਦੀ ਲੋੜ',
+ result_not_desc: 'ਇੱਕ ਜਾਂ ਵੱਧ ਬਾਹਰ ਰੱਖਣ ਵਾਲੀਆਂ ਸ਼ਰਤਾਂ ਲਾਗੂ ਹੋ ਸਕਦੀਆਂ ਹਨ। ਅਧਿਕਾਰਕ ਪੋਰਟਲ ਜਾਂ ਸਥਾਨਕ ਖੇਤੀ ਦਫ਼ਤਰ ਨਾਲ ਪੁਸ਼ਟੀ ਕਰੋ।',
+ result_ready_title: 'PM-KISAN ਤਸਦੀਕ ਲਈ ਲਗਭਗ ਤਿਆਰ',
+ result_ready_desc: 'ਕਿਸਾਨ ਦਸਤਾਵੇਜ਼ੀ ਤੌਰ ਤੇ ਤਿਆਰ ਲੱਗਦਾ ਹੈ। ਅੰਤਿਮ ਸਥਿਤੀ ਜ਼ਮੀਨ, ਆਧਾਰ, eKYC ਅਤੇ ਬੈਂਕ ਰਿਕਾਰਡ ਤੇ ਨਿਰਭਰ ਕਰੇਗੀ।',
+ result_partial_title: 'ਅੰਸ਼ਿਕ ਤੌਰ ਤੇ ਤਿਆਰ',
+ result_partial_desc: 'ਕੁਝ ਲੋੜੀਂਦੀਆਂ ਚੀਜ਼ਾਂ ਉਪਲਬਧ ਹਨ, ਪਰ eKYC, ਬੈਂਕ, ਮੋਬਾਈਲ ਜਾਂ ਜ਼ਮੀਨ ਰਿਕਾਰਡ ਤਸਦੀਕ ਬਾਕੀ ਹੋ ਸਕਦੀ ਹੈ।',
+ checklist_kicker: '02 ਦਸਤਾਵੇਜ਼ ਚੈਕਲਿਸਟ',
+ checklist_title: 'PM-KISAN ਤਿਆਰੀ ਚੈਕਲਿਸਟ',
+ ready_label: 'ਤਿਆਰ',
+ check_aadhaar: 'ਆਧਾਰ ਉਪਲਬਧ',
+ check_aadhaar_small: 'ਆਧਾਰ ਨੰਬਰ ਸਟੋਰ ਨਹੀਂ ਕੀਤਾ ਜਾਂਦਾ।',
+ check_land: 'ਜ਼ਮੀਨ ਰਿਕਾਰਡ / 7-12 / ਖਸਰਾ ਉਪਲਬਧ',
+ check_bank: 'ਬੈਂਕ ਖਾਤਾ ਉਪਲਬਧ ਅਤੇ ਚਾਲੂ',
+ check_mobile: 'ਮੋਬਾਈਲ ਨੰਬਰ ਲਿੰਕ ਅਤੇ ਉਪਲਬਧ',
+ check_ekyc: 'eKYC ਪੂਰੀ ਜਾਂ ਯੋਜਿਤ',
+ check_status: 'ਅਧਿਕਾਰਕ ਪੋਰਟਲ ਤੇ ਲਾਭਪਾਤਰੀ ਸਥਿਤੀ ਚੈੱਕ ਕੀਤੀ',
+ actions_kicker: '03 ਅਧਿਕਾਰਕ ਕਾਰਵਾਈਆਂ',
+ actions_title: 'ਅਧਿਕਾਰਕ PM-KISAN ਸੇਵਾਵਾਂ ਖੋਲ੍ਹੋ',
+ new_registration: 'ਨਵਾਂ ਕਿਸਾਨ ਰਜਿਸਟ੍ਰੇਸ਼ਨ',
+ ekyc_process: 'eKYC ਪ੍ਰਕਿਰਿਆ',
+ beneficiary_list: 'ਲਾਭਪਾਤਰੀ ਸੂਚੀ',
+ helpdesk: 'ਹੈਲਪਡੈਸਕ',
+ mobile_app: 'PM-KISAN ਮੋਬਾਈਲ ਐਪ',
+ tracker_kicker: '04 ਸਟੇਟਸ ਟ੍ਰੈਕਰ',
+ tracker_title: 'ਆਪਣਾ PM-KISAN ਫਾਲੋ-ਅਪ ਸੇਵ ਕਰੋ',
+ reference_label: 'ਰਜਿਸਟ੍ਰੇਸ਼ਨ / ਅਰਜ਼ੀ ਰੈਫਰੈਂਸ',
+ reference_placeholder: 'ਵਿਕਲਪਿਕ ਰੈਫਰੈਂਸ ਨੰਬਰ',
+ status_label: 'ਮੌਜੂਦਾ ਸਥਿਤੀ',
+ status_not_checked: 'ਚੈੱਕ ਨਹੀਂ ਕੀਤਾ',
+ status_registration_pending: 'ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਬਾਕੀ',
+ status_ekyc_pending: 'eKYC ਬਾਕੀ',
+ status_under_verification: 'ਤਸਦੀਕ ਅਧੀਨ',
+ status_beneficiary_active: 'ਲਾਭਪਾਤਰੀ ਸਰਗਰਮ',
+ status_issue_found: 'ਸਮੱਸਿਆ ਮਿਲੀ',
+ reminder_label: 'ਅਗਲੀ ਯਾਦ ਮਿਤੀ',
+ save_status: 'PM-KISAN ਸਟੇਟਸ ਸੇਵ ਕਰੋ',
+ saved_empty: 'ਹਾਲੇ ਕੋਈ PM-KISAN ਸਟੇਟਸ ਸੇਵ ਨਹੀਂ ਹੈ।',
+ saved_reference: 'ਰੈਫਰੈਂਸ',
+ saved_status: 'ਸਥਿਤੀ',
+ saved_reminder: 'ਅਗਲੀ ਯਾਦ',
+ saved_on: 'ਸੇਵ ਕੀਤਾ',
+ saved_toast: 'PM-KISAN ਸਟੇਟਸ ਇਸ ਡਿਵਾਈਸ ਤੇ ਸੇਵ ਹੋ ਗਿਆ।',
+ safety_kicker: 'ਮਹੱਤਵਪੂਰਨ ਸੁਰੱਖਿਆ ਨੋਟ',
+ safety_title: 'ਅੰਤਿਮ ਕਾਰਵਾਈ ਲਈ ਅਧਿਕਾਰਕ ਪੋਰਟਲ ਵਰਤੋ',
+ safety_desc: 'AgriComplete Hub ਸਿਰਫ਼ ਤਿਆਰੀ ਮਾਰਗਦਰਸ਼ਨ ਦਿੰਦਾ ਹੈ। ਆਧਾਰ OTP, ਬੈਂਕ OTP ਜਾਂ ਸੰਵੇਦਨਸ਼ੀਲ ਪਛਾਣ ਨੰਬਰ ਕਿਸੇ ਅਣਅਧਿਕਾਰਤ ਵਿਅਕਤੀ ਨਾਲ ਸਾਂਝੇ ਨਾ ਕਰੋ। ਰਜਿਸਟ੍ਰੇਸ਼ਨ, eKYC, ਲਾਭਪਾਤਰੀ ਸਥਿਤੀ ਅਤੇ ਸੁਧਾਰ ਸਿਰਫ਼ ਅਧਿਕਾਰਕ PM-KISAN ਵੈੱਬਸਾਈਟ, CSC ਜਾਂ ਅਧਿਕਾਰਤ ਸਰਕਾਰੀ ਚੈਨਲਾਂ ਰਾਹੀਂ ਕਰੋ।',
+ chat_subtitle: 'PM-KISAN ਮਦਦ',
+ chat_welcome: 'ਸਤ ਸ੍ਰੀ ਅਕਾਲ! PM-KISAN ਯੋਗਤਾ, eKYC, ਦਸਤਾਵੇਜ਼ ਜਾਂ ਸਟੇਟਸ ਚੈਕਿੰਗ ਬਾਰੇ ਪੁੱਛੋ।',
+ chat_placeholder: 'PM-KISAN ਬਾਰੇ ਪੁੱਛੋ...'
+ },
+ ta: {
+ page_title: 'PM-KISAN உதவி',
+ page_subtitle: 'தகுதி வழிகாட்டல், eKYC சரிபார்ப்பு பட்டியல் மற்றும் அதிகாரப்பூர்வ PM-KISAN இணைப்புகள்',
+ hero_kicker: 'அரசு திட்ட உதவி',
+ hero_title: 'விவசாயிகளுக்கான PM-KISAN தயார்நிலை மற்றும் வழிகாட்டல்.',
+ hero_desc: 'சாத்தியமான தகுதியை சரிபார்க்கவும், ஆவணங்களை தயார் செய்யவும், eKYC தயார்நிலையை கண்காணிக்கவும், அதிகாரப்பூர்வ PM-KISAN போர்டலை ஒரே பக்கத்தில் திறக்கவும்.',
+ trust_official: 'அதிகாரப்பூர்வ இணைப்புகள் மட்டும்',
+ trust_private: 'ஆதார் எண் சேமிக்கப்படாது',
+ trust_ready: 'தயார்நிலை கண்காணிப்பு',
+ official_portal: 'அதிகாரப்பூர்வ PM-KISAN போர்டல்',
+ know_status: 'உங்கள் நிலையை அறிக',
+ income_support: 'வருமான உதவி',
+ income_amount: 'Rs.6,000/ஆண்டு',
+ income_desc: 'தகுதியான நிலம் கொண்ட விவசாய குடும்பங்களுக்கு DBT மூலம் 3 சம தவணைகளில் செலுத்தப்படும்.',
+ installments: 'தவணைகள்',
+ direct_transfer: 'நேரடி பரிமாற்றம்',
+ required_check: 'தேவையான சரிபார்ப்பு',
+ official_notice_title: 'விவசாயி வழிகாட்டல், அரசு ஒப்புதல் அல்ல',
+ official_notice_desc: 'இந்த பக்கம் PM-KISAN தயார்நிலையை தயார் செய்து கண்காணிக்க உதவுகிறது. இறுதி பதிவு, eKYC, திருத்தம் மற்றும் பயனாளர் நிலை அதிகாரப்பூர்வ அரசு சேனல்கள் மூலம் மட்டுமே செய்யப்பட வேண்டும்.',
+ process_eligibility: 'தகுதியை சரிபார்க்கவும்',
+ process_eligibility_desc: 'நில உரிமை மற்றும் விலக்கு நிபந்தனைகளை உறுதிப்படுத்தவும்.',
+ process_documents: 'ஆவணங்களை தயார் செய்யவும்',
+ process_documents_desc: 'ஆதார், நிலப் பதிவு, வங்கி மற்றும் மொபைலை தயார் வைத்திருக்கவும்.',
+ process_ekyc: 'eKYC முடிக்கவும்',
+ process_ekyc_desc: 'eKYC அதிகாரப்பூர்வ சேனல்கள் மூலம் மட்டுமே முடிக்கவும்.',
+ process_status: 'நிலையை கண்காணிக்கவும்',
+ process_status_desc: 'பின்தொடர்வு நிலை மற்றும் அடுத்த நினைவூட்டலை சேமிக்கவும்.',
+ eligibility_kicker: '01 தகுதி சரிபார்ப்பு',
+ eligibility_title: 'விவசாயி தகுதி விரைவு சரிபார்ப்பு',
+ q_land: 'விவசாயி குடும்பத்திடம் பயிரிடக்கூடிய விவசாய நிலம் உள்ளது',
+ q_aadhaar: 'ஆதார் உள்ளது மற்றும் மொபைல் எண் செயல்பாட்டில் உள்ளது',
+ q_bank: 'DBT பரிமாற்றத்திற்கு வங்கி கணக்கு உள்ளது',
+ q_ekyc: 'eKYC முடிந்துள்ளது அல்லது முடிக்கலாம்',
+ q_tax: 'குடும்ப உறுப்பினர் ஒருவர் கடந்த மதிப்பீட்டு ஆண்டில் வருமானவரி செலுத்தியுள்ளார்',
+ q_excluded: 'நிறுவன நில உரிமையாளர் அல்லது விலக்கப்பட்ட அரசு/தொழில்முறை பிரிவு',
+ result_initial_title: 'தயார்நிலையை மதிப்பிட கேள்விகளுக்கு பதில் அளிக்கவும்.',
+ result_initial_desc: 'இது வழிகாட்டல் மட்டுமே. இறுதி தகுதி அரசு பதிவுகள் மற்றும் PM-KISAN விதிகளால் தீர்மானிக்கப்படும்.',
+ result_need_title: 'மேலும் தகவல் தேவை',
+ result_need_desc: 'சரிபார்ப்பு பட்டியலை முடித்து அதிகாரப்பூர்வ PM-KISAN போர்டலில் இறுதி தகுதியை சரிபார்க்கவும்.',
+ result_not_title: 'தகுதி இருக்காமல் இருக்கலாம் அல்லது அதிகாரப்பூர்வ மதிப்பாய்வு தேவை',
+ result_not_desc: 'ஒன்று அல்லது அதற்கு மேற்பட்ட விலக்கு நிபந்தனைகள் பொருந்தலாம். அதிகாரப்பூர்வ போர்டல் அல்லது உள்ளூர் வேளாண்மை அலுவலகத்தில் உறுதிப்படுத்தவும்.',
+ result_ready_title: 'PM-KISAN சரிபார்ப்பிற்கு தயாராக உள்ளது போல் தெரிகிறது',
+ result_ready_desc: 'ஆவணங்கள் தயாராக உள்ளதாக தெரிகிறது. இறுதி நிலை நிலம், ஆதார், eKYC மற்றும் வங்கி பதிவுகளின் அடிப்படையில் அமையும்.',
+ result_partial_title: 'பகுதியாக தயாராக உள்ளது',
+ result_partial_desc: 'சில தேவைகள் உள்ளன, ஆனால் eKYC, வங்கி, மொபைல் அல்லது நிலப் பதிவுச் சரிபார்ப்பு இன்னும் நிலுவையில் இருக்கலாம்.',
+ checklist_kicker: '02 ஆவண சரிபார்ப்பு பட்டியல்',
+ checklist_title: 'PM-KISAN தயார்நிலை சரிபார்ப்பு பட்டியல்',
+ ready_label: 'தயார்',
+ check_aadhaar: 'ஆதார் உள்ளது',
+ check_aadhaar_small: 'ஆதார் எண் சேமிக்கப்படாது.',
+ check_land: 'நிலப் பதிவு / 7-12 / கஸ்ரா உள்ளது',
+ check_bank: 'வங்கி கணக்கு உள்ளது மற்றும் செயல்பாட்டில் உள்ளது',
+ check_mobile: 'மொபைல் எண் இணைக்கப்பட்டு அணுகக்கூடியது',
+ check_ekyc: 'eKYC முடிந்தது அல்லது திட்டமிடப்பட்டது',
+ check_status: 'அதிகாரப்பூர்வ போர்டலில் பயனாளர் நிலை சரிபார்க்கப்பட்டது',
+ actions_kicker: '03 அதிகாரப்பூர்வ செயல்கள்',
+ actions_title: 'அதிகாரப்பூர்வ PM-KISAN சேவைகளை திறக்கவும்',
+ new_registration: 'புதிய விவசாயி பதிவு',
+ ekyc_process: 'eKYC செயல்முறை',
+ beneficiary_list: 'பயனாளர் பட்டியல்',
+ helpdesk: 'உதவி மையம்',
+ mobile_app: 'PM-KISAN மொபைல் ஆப்',
+ tracker_kicker: '04 நிலை கண்காணிப்பு',
+ tracker_title: 'உங்கள் PM-KISAN பின்தொடர்வை சேமிக்கவும்',
+ reference_label: 'பதிவு / விண்ணப்ப குறிப்பு',
+ reference_placeholder: 'விருப்ப குறிப்பு எண்',
+ status_label: 'தற்போதைய நிலை',
+ status_not_checked: 'சரிபார்க்கப்படவில்லை',
+ status_registration_pending: 'பதிவு நிலுவையில் உள்ளது',
+ status_ekyc_pending: 'eKYC நிலுவையில் உள்ளது',
+ status_under_verification: 'சரிபார்ப்பில் உள்ளது',
+ status_beneficiary_active: 'பயனாளர் செயலில் உள்ளார்',
+ status_issue_found: 'சிக்கல் கண்டறியப்பட்டது',
+ reminder_label: 'அடுத்த நினைவூட்டல் தேதி',
+ save_status: 'PM-KISAN நிலையை சேமிக்கவும்',
+ saved_empty: 'PM-KISAN நிலை இன்னும் சேமிக்கப்படவில்லை.',
+ saved_reference: 'குறிப்பு',
+ saved_status: 'நிலை',
+ saved_reminder: 'அடுத்த நினைவூட்டல்',
+ saved_on: 'சேமித்த தேதி',
+ saved_toast: 'PM-KISAN நிலை இந்த சாதனத்தில் சேமிக்கப்பட்டது.',
+ safety_kicker: 'முக்கிய பாதுகாப்பு குறிப்பு',
+ safety_title: 'இறுதி நடவடிக்கைக்கு அதிகாரப்பூர்வ போர்டலை பயன்படுத்தவும்',
+ safety_desc: 'AgriComplete Hub தயார்நிலை வழிகாட்டல் மட்டுமே வழங்குகிறது. ஆதார் OTP, வங்கி OTP அல்லது நுணுக்கமான அடையாள எண்களை அதிகாரப்பூர்வமற்றவர்களுடன் பகிர வேண்டாம். பதிவு, eKYC, பயனாளர் நிலை மற்றும் திருத்தங்களை அதிகாரப்பூர்வ PM-KISAN இணையதளம், CSC அல்லது அங்கீகரிக்கப்பட்ட அரசு சேனல்கள் மூலம் மட்டுமே செய்யவும்.',
+ chat_subtitle: 'PM-KISAN உதவி',
+ chat_welcome: 'வணக்கம்! PM-KISAN தகுதி, eKYC, ஆவணங்கள் அல்லது நிலை சரிபார்ப்பு பற்றி கேளுங்கள்.',
+ chat_placeholder: 'PM-KISAN பற்றி கேளுங்கள்...'
+ },
+ te: {
+ page_title: 'PM-KISAN సహాయం',
+ page_subtitle: 'అర్హత మార్గదర్శకం, eKYC చెక్లిస్ట్ మరియు అధికారిక PM-KISAN లింకులు',
+ hero_kicker: 'ప్రభుత్వ పథకం సహాయం',
+ hero_title: 'రైతుల కోసం PM-KISAN సిద్ధత మరియు మార్గదర్శకం.',
+ hero_desc: 'సంభావ్య అర్హతను తనిఖీ చేయండి, పత్రాలను సిద్ధం చేయండి, eKYC సిద్ధతను ట్రాక్ చేయండి మరియు అధికారిక PM-KISAN పోర్టల్‌ను ఒకే పేజీ నుండి తెరవండి.',
+ trust_official: 'అధికారిక లింకులు మాత్రమే',
+ trust_private: 'ఆధార్ నంబర్ నిల్వ చేయదు',
+ trust_ready: 'సిద్ధత ట్రాకింగ్',
+ official_portal: 'అధికారిక PM-KISAN పోర్టల్',
+ know_status: 'మీ స్థితిని తెలుసుకోండి',
+ income_support: 'ఆదాయ సహాయం',
+ income_amount: 'Rs.6,000/సంవత్సరం',
+ income_desc: 'అర్హత గల భూమి కలిగిన రైతు కుటుంబాలకు DBT ద్వారా 3 సమాన విడతల్లో చెల్లింపు.',
+ installments: 'విడతలు',
+ direct_transfer: 'నేరుగా బదిలీ',
+ required_check: 'అవసరమైన తనిఖీ',
+ official_notice_title: 'రైతు మార్గదర్శకం, ప్రభుత్వ ఆమోదం కాదు',
+ official_notice_desc: 'ఈ పేజీ PM-KISAN సిద్ధతను సిద్ధం చేయడానికి మరియు ట్రాక్ చేయడానికి సహాయపడుతుంది. తుది నమోదు, eKYC, సవరణ మరియు లబ్ధిదారు స్థితి అధికారిక ప్రభుత్వ ఛానళ్ల ద్వారానే పూర్తి చేయాలి.',
+ process_eligibility: 'అర్హతను తనిఖీ చేయండి',
+ process_eligibility_desc: 'భూమి యాజమాన్యం మరియు మినహాయింపు షరతులను నిర్ధారించండి.',
+ process_documents: 'పత్రాలను సిద్ధం చేయండి',
+ process_documents_desc: 'ఆధార్, భూమి రికార్డు, బ్యాంక్ మరియు మొబైల్ సిద్ధంగా ఉంచండి.',
+ process_ekyc: 'eKYC పూర్తి చేయండి',
+ process_ekyc_desc: 'eKYC అధికారిక ఛానళ్ల ద్వారానే పూర్తి చేయండి.',
+ process_status: 'స్థితిని ట్రాక్ చేయండి',
+ process_status_desc: 'ఫాలో-అప్ స్థితి మరియు తదుపరి రిమైండర్‌ను సేవ్ చేయండి.',
+ eligibility_kicker: '01 అర్హత తనిఖీ',
+ eligibility_title: 'త్వరిత రైతు అర్హత తనిఖీ',
+ q_land: 'రైతు కుటుంబానికి సాగు చేయగల వ్యవసాయ భూమి ఉంది',
+ q_aadhaar: 'ఆధార్ అందుబాటులో ఉంది మరియు మొబైల్ నంబర్ యాక్టివ్‌గా ఉంది',
+ q_bank: 'DBT బదిలీ కోసం బ్యాంక్ ఖాతా అందుబాటులో ఉంది',
+ q_ekyc: 'eKYC పూర్తయింది లేదా పూర్తి చేయవచ్చు',
+ q_tax: 'కుటుంబ సభ్యుల్లో ఎవరైనా గత అసెస్‌మెంట్ సంవత్సరంలో ఆదాయ పన్ను చెల్లించారు',
+ q_excluded: 'సంస్థాగత భూమి యజమాని లేదా మినహాయించిన ప్రభుత్వ/వృత్తి వర్గం',
+ result_initial_title: 'సిద్ధతను అంచనా వేయడానికి ప్రశ్నలకు సమాధానం ఇవ్వండి.',
+ result_initial_desc: 'ఇది కేవలం మార్గదర్శకం మాత్రమే. తుది అర్హత ప్రభుత్వ రికార్డులు మరియు PM-KISAN నియమాల ఆధారంగా నిర్ణయించబడుతుంది.',
+ result_need_title: 'మరింత సమాచారం అవసరం',
+ result_need_desc: 'చెక్లిస్ట్ పూర్తి చేసి అధికారిక PM-KISAN పోర్టల్‌లో తుది అర్హతను తనిఖీ చేయండి.',
+ result_not_title: 'అర్హత ఉండకపోవచ్చు లేదా అధికారిక సమీక్ష అవసరం',
+ result_not_desc: 'ఒకటి లేదా అంతకంటే ఎక్కువ మినహాయింపు షరతులు వర్తించవచ్చు. అధికారిక పోర్టల్ లేదా స్థానిక వ్యవసాయ కార్యాలయంలో ధృవీకరించండి.',
+ result_ready_title: 'PM-KISAN ధృవీకరణకు దాదాపు సిద్ధంగా ఉంది',
+ result_ready_desc: 'రైతు పత్రాలు సిద్ధంగా ఉన్నట్లు కనిపిస్తోంది. తుది స్థితి భూమి, ఆధార్, eKYC మరియు బ్యాంక్ రికార్డులపై ఆధారపడి ఉంటుంది.',
+ result_partial_title: 'పాక్షికంగా సిద్ధంగా ఉంది',
+ result_partial_desc: 'కొన్ని అవసరమైన అంశాలు అందుబాటులో ఉన్నాయి, కానీ eKYC, బ్యాంక్, మొబైల్ లేదా భూమి రికార్డు ధృవీకరణ ఇంకా పెండింగ్‌లో ఉండవచ్చు.',
+ checklist_kicker: '02 పత్రాల చెక్లిస్ట్',
+ checklist_title: 'PM-KISAN సిద్ధత చెక్లిస్ట్',
+ ready_label: 'సిద్ధం',
+ check_aadhaar: 'ఆధార్ అందుబాటులో ఉంది',
+ check_aadhaar_small: 'ఆధార్ నంబర్ నిల్వ చేయబడదు.',
+ check_land: 'భూమి రికార్డు / 7-12 / ఖస్రా అందుబాటులో ఉంది',
+ check_bank: 'బ్యాంక్ ఖాతా అందుబాటులో మరియు యాక్టివ్‌గా ఉంది',
+ check_mobile: 'మొబైల్ నంబర్ లింక్ అయి అందుబాటులో ఉంది',
+ check_ekyc: 'eKYC పూర్తయింది లేదా ప్లాన్ చేయబడింది',
+ check_status: 'అధికారిక పోర్టల్‌లో లబ్ధిదారు స్థితి తనిఖీ చేయబడింది',
+ actions_kicker: '03 అధికారిక చర్యలు',
+ actions_title: 'అధికారిక PM-KISAN సేవలను తెరవండి',
+ new_registration: 'కొత్త రైతు నమోదు',
+ ekyc_process: 'eKYC ప్రక్రియ',
+ beneficiary_list: 'లబ్ధిదారుల జాబితా',
+ helpdesk: 'హెల్ప్‌డెస్క్',
+ mobile_app: 'PM-KISAN మొబైల్ యాప్',
+ tracker_kicker: '04 స్థితి ట్రాకర్',
+ tracker_title: 'మీ PM-KISAN ఫాలో-అప్‌ను సేవ్ చేయండి',
+ reference_label: 'నమోదు / దరఖాస్తు సూచన',
+ reference_placeholder: 'ఐచ్ఛిక సూచన నంబర్',
+ status_label: 'ప్రస్తుత స్థితి',
+ status_not_checked: 'తనిఖీ చేయలేదు',
+ status_registration_pending: 'నమోదు పెండింగ్‌లో ఉంది',
+ status_ekyc_pending: 'eKYC పెండింగ్‌లో ఉంది',
+ status_under_verification: 'ధృవీకరణలో ఉంది',
+ status_beneficiary_active: 'లబ్ధిదారు యాక్టివ్‌గా ఉన్నారు',
+ status_issue_found: 'సమస్య కనుగొనబడింది',
+ reminder_label: 'తదుపరి గుర్తుచేసే తేదీ',
+ save_status: 'PM-KISAN స్థితిని సేవ్ చేయండి',
+ saved_empty: 'PM-KISAN స్థితి ఇంకా సేవ్ చేయబడలేదు.',
+ saved_reference: 'సూచన',
+ saved_status: 'స్థితి',
+ saved_reminder: 'తదుపరి గుర్తుచేసే తేదీ',
+ saved_on: 'సేవ్ చేసిన తేదీ',
+ saved_toast: 'PM-KISAN స్థితి ఈ పరికరంలో సేవ్ చేయబడింది.',
+ safety_kicker: 'ముఖ్యమైన భద్రతా గమనిక',
+ safety_title: 'తుది చర్యలకు అధికారిక పోర్టల్ ఉపయోగించండి',
+ safety_desc: 'AgriComplete Hub సిద్ధత మార్గదర్శకాన్ని మాత్రమే అందిస్తుంది. ఆధార్ OTP, బ్యాంక్ OTP లేదా సున్నితమైన గుర్తింపు నంబర్లను అనధికారిక వ్యక్తులతో పంచుకోవద్దు. నమోదు, eKYC, లబ్ధిదారు స్థితి మరియు సవరణలను అధికారిక PM-KISAN వెబ్‌సైట్, CSC లేదా అధికృత ప్రభుత్వ ఛానళ్ల ద్వారా మాత్రమే పూర్తి చేయండి.',
+ chat_subtitle: 'PM-KISAN సహాయం',
+ chat_welcome: 'నమస్తే! PM-KISAN అర్హత, eKYC, పత్రాలు లేదా స్థితి తనిఖీ గురించి అడగండి.',
+ chat_placeholder: 'PM-KISAN గురించి అడగండి...'
+ }
+};
+const PMKISAN_STATUS_LABEL_KEYS = {
+ 'Not checked': 'status_not_checked',
+ 'Registration pending': 'status_registration_pending',
+ 'eKYC pending': 'status_ekyc_pending',
+ 'Under verification': 'status_under_verification',
+ 'Beneficiary active': 'status_beneficiary_active',
+ 'Issue found': 'status_issue_found'
+};
+
+function getPmkisanText(key) {
+ const langPack = pmkisanTranslations[normalizeLanguage(currentLang)] || pmkisanTranslations.en;
+ return langPack[key] || pmkisanTranslations.en[key] || '';
+}
+
+function getPmkisanStatusLabel(status) {
+ return getPmkisanText(PMKISAN_STATUS_LABEL_KEYS[status] || 'status_not_checked');
+}
+
+function getPmkisanCheckedValues(selector) {
+ return Array.from(document.querySelectorAll(selector)).filter(input => input.checked);
+}
+
+function applyPmkisanTranslations() {
+ if (!document.querySelector('.pmk-page')) return;
+
+ document.querySelectorAll('[data-pmk-i18n]').forEach(el => {
+ const key = el.getAttribute('data-pmk-i18n');
+ const value = getPmkisanText(key);
+ if (value) el.textContent = value;
+ });
+ document.querySelectorAll('[data-pmk-placeholder]').forEach(el => {
+ const key = el.getAttribute('data-pmk-placeholder');
+ const value = getPmkisanText(key);
+ if (value) el.placeholder = value;
+ });
+
+ const heading = document.querySelector('.topbar-left h3');
+ const subtitle = document.querySelector('.topbar-left p');
+ if (heading) heading.innerHTML = `<i class="fas fa-landmark" style="color:var(--color-primary);margin-right:8px;"></i> ${escapeHtml(getPmkisanText('page_title'))}`;
+ if (subtitle) subtitle.textContent = getPmkisanText('page_subtitle');
+ document.title = `${getPmkisanText('page_title')} - AgriComplete Hub`;
+ const metaDescription = document.querySelector('meta[name="description"]');
+ if (metaDescription) metaDescription.setAttribute('content', getPmkisanText('page_subtitle'));
+
+ const chatBody = document.getElementById('chatbotBody');
+ const botMsg = chatBody?.querySelector('.chat-msg.bot');
+ if (botMsg && botMsg.dataset.pmkWelcome === 'true') {
+ botMsg.textContent = getPmkisanText('chat_welcome');
+ }
+ updatePmkisanEligibility();
+ updatePmkisanChecklist();
+ renderPmkisanSavedStatus();
+}
+
+function updatePmkisanEligibility() {
+ const form = document.getElementById('pmkEligibilityForm');
+ if (!form) return;
+ const positives = getPmkisanCheckedValues('#pmkEligibilityForm input[data-pmk-eligible="positive"]')
+ .reduce((sum, input) => sum + Number(input.value || 0), 0);
+ const negatives = getPmkisanCheckedValues('#pmkEligibilityForm input[data-pmk-eligible="negative"]')
+ .reduce((sum, input) => sum + Number(input.value || 0), 0);
+ const score = Math.max(0, Math.min(100, positives - negatives + 30));
+ const scoreEl = document.getElementById('pmkEligibilityScore');
+ const resultEl = document.getElementById('pmkEligibilityResult');
+ if (scoreEl) scoreEl.textContent = `${score}/100`;
+ if (!resultEl) return;
+
+ let title = getPmkisanText('result_need_title');
+ let desc = getPmkisanText('result_need_desc');
+ if (negatives >= 25) {
+ title = getPmkisanText('result_not_title');
+ desc = getPmkisanText('result_not_desc');
+ } else if (score >= 80) {
+ title = getPmkisanText('result_ready_title');
+ desc = getPmkisanText('result_ready_desc');
+ } else if (score >= 55) {
+ title = getPmkisanText('result_partial_title');
+ desc = getPmkisanText('result_partial_desc');
+ }
+ resultEl.innerHTML = `<strong>${escapeHtml(title)}</strong><p>${escapeHtml(desc)}</p>`;
+}
+
+function updatePmkisanChecklist() {
+ const checks = document.querySelectorAll('#pmkChecklist input[data-pmk-check]');
+ if (!checks.length) return;
+ const ready = Array.from(checks).filter(input => input.checked).length;
+ const scoreEl = document.getElementById('pmkChecklistScore');
+ if (scoreEl) scoreEl.textContent = `${ready}/${checks.length} ${getPmkisanText('ready_label')}`;
+ localStorage.setItem(PMKISAN_CHECKLIST_KEY, JSON.stringify(
+  Array.from(checks).reduce((state, input) => {
+   state[input.dataset.pmkCheck] = input.checked;
+   return state;
+  }, {})
+ ));
+}
+
+function loadPmkisanChecklist() {
+ try {
+ const saved = JSON.parse(localStorage.getItem(PMKISAN_CHECKLIST_KEY) || '{}');
+ document.querySelectorAll('#pmkChecklist input[data-pmk-check]').forEach(input => {
+  input.checked = Boolean(saved[input.dataset.pmkCheck]);
+ });
+ } catch (err) {
+ console.warn('Could not load PM-KISAN checklist:', err);
+ }
+ updatePmkisanChecklist();
+}
+
+function renderPmkisanSavedStatus() {
+ const statusEl = document.getElementById('pmkSavedStatus');
+ if (!statusEl) return;
+ let saved = null;
+ try {
+ saved = JSON.parse(localStorage.getItem(PMKISAN_STATUS_KEY) || 'null');
+ } catch (err) {
+ saved = null;
+ }
+ if (!saved) {
+ statusEl.textContent = getPmkisanText('saved_empty');
+ return;
+ }
+ const reference = saved.reference ? `<strong>${escapeHtml(getPmkisanText('saved_reference'))}:</strong> ${escapeHtml(saved.reference)}<br>` : '';
+ const reminder = saved.reminder ? `<strong>${escapeHtml(getPmkisanText('saved_reminder'))}:</strong> ${escapeHtml(saved.reminder)}<br>` : '';
+ statusEl.innerHTML = `${reference}<strong>${escapeHtml(getPmkisanText('saved_status'))}:</strong> ${escapeHtml(getPmkisanStatusLabel(saved.status || 'Not checked'))}<br>${reminder}<span>${escapeHtml(getPmkisanText('saved_on'))} ${escapeHtml(saved.savedAt || '')}</span>`;
+}
+
+function savePmkisanStatus() {
+ const reference = document.getElementById('pmkReference')?.value.trim() || '';
+ const status = document.getElementById('pmkStatus')?.value || 'Not checked';
+ const reminder = document.getElementById('pmkReminder')?.value || '';
+ localStorage.setItem(PMKISAN_STATUS_KEY, JSON.stringify({
+  reference,
+  status,
+  reminder,
+  savedAt: new Date().toLocaleString('en-IN')
+ }));
+ renderPmkisanSavedStatus();
+ showToast(getPmkisanText('saved_toast'), 'success');
+}
+
+function initPmkisanHelper() {
+ if (!document.getElementById('pmkEligibilityForm')) return;
+ document.querySelectorAll('#pmkEligibilityForm input').forEach(input => {
+ input.addEventListener('change', updatePmkisanEligibility);
+ });
+ document.querySelectorAll('#pmkChecklist input').forEach(input => {
+ input.addEventListener('change', updatePmkisanChecklist);
+ });
+ loadPmkisanChecklist();
+ updatePmkisanEligibility();
+ renderPmkisanSavedStatus();
+ applyPmkisanTranslations();
 }
 
 function previewLeafImage(event) {
@@ -5241,8 +6646,8 @@ function buildDiseaseReportList(title, items) {
  const safeItems = Array.isArray(items)? items.filter(Boolean): [];
  return `
  <section>
- <h2>${escapeHtml(title)}</h2>
- ${safeItems.length? `<ul>${safeItems.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`: '<p>No details available.</p>'}
+ <h2>${escapeHtml(getStaticUiText(title))}</h2>
+ ${safeItems.length? `<ul>${safeItems.map(item => `<li>${escapeHtml(translateDiseaseText(item))}</li>`).join('')}</ul>`: `<p>${escapeHtml(getStaticUiText('No details available.'))}</p>`}
  </section>
  `;
 }
@@ -5311,27 +6716,27 @@ function openPrintableDiseaseReport(report, weather) {
  </head>
  <body>
  <main>
- <div class="actions"><button class="close" onclick="window.close()">Close</button><button class="print" onclick="window.print()">Print / Download PDF</button></div>
+ <div class="actions"><button class="close" onclick="window.close()">${escapeHtml(getStaticUiText('Close'))}</button><button class="print" onclick="window.print()">${escapeHtml(getStaticUiText('Print / Download PDF'))}</button></div>
  <header>
- <h1>AgriComplete Disease Advisory Report</h1>
- <p>Generated on ${escapeHtml(generatedAt)}</p>
+ <h1>${escapeHtml(getStaticUiText('AgriComplete Disease Advisory Report'))}</h1>
+ <p>${escapeHtml(getStaticUiText('Generated on'))} ${escapeHtml(generatedAt)}</p>
  </header>
  ${imageHtml}
  <section>
- <h2>Diagnosis Summary</h2>
+ <h2>${escapeHtml(getStaticUiText('Diagnosis Summary'))}</h2>
  <div class="summary">
- <div><span>Disease Result</span><strong>${escapeHtml(report.name)}</strong></div>
- <div><span>Confidence</span><strong>${escapeHtml(String(report.confidence))}%</strong></div>
- <div><span>Severity</span><strong><span class="badge">${escapeHtml(report.severity)}</span></strong></div>
- <div><span>Source</span><strong>AI leaf image analysis</strong></div>
+ <div><span>${escapeHtml(getStaticUiText('Disease Result'))}</span><strong>${escapeHtml(translateDiseaseDisplayName(report.name))}</strong></div>
+ <div><span>${escapeHtml(getStaticUiText('Confidence'))}</span><strong>${escapeHtml(String(report.confidence))}%</strong></div>
+ <div><span>${escapeHtml(getStaticUiText('Severity'))}</span><strong><span class="badge">${escapeHtml(getStaticUiText(report.severity))}</span></strong></div>
+ <div><span>${escapeHtml(getStaticUiText('Source'))}</span><strong>${escapeHtml(getStaticUiText('AI leaf image analysis'))}</strong></div>
  </div>
- <p>${escapeHtml(report.description)}</p>
+ <p>${escapeHtml(translateDiseaseText(report.description))}</p>
  </section>
  ${buildDiseaseReportList('Symptoms', report.symptoms)}
  ${buildDiseaseReportList('Treatment', report.treatment)}
  ${buildDiseaseReportList('Prevention', report.prevention)}
  ${diseaseReportWeatherHtml(weather)}
- <footer>This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.</footer>
+ <footer>${escapeHtml(getStaticUiText('This advisory supports field decision-making. Confirm with local agronomy guidance before applying chemicals.'))}</footer>
  </main>
  </body>
  </html>`);
@@ -5341,7 +6746,7 @@ function openPrintableDiseaseReport(report, weather) {
 
 async function printDiseaseReport() {
  if (!latestDiseaseReport) {
- alert('Analyze a leaf image before printing a report.');
+ alert(getStaticUiText('Analyze a leaf image before printing a report.'));
  return;
  }
  const city = getDiseaseReportCity();
@@ -5367,36 +6772,36 @@ function renderDiseaseResult(disease) {
  if (reportBtn) reportBtn.style.display = 'inline-flex';
  if (badge) {
  badge.className = `badge ${disease.badgeClass || 'badge-info'}`;
- badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${escapeHtml(disease.severity || 'Unknown')} Severity`;
+ badge.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${escapeHtml(getStaticUiText(disease.severity || 'Unknown'))} ${escapeHtml(getStaticUiText('Severity'))}`;
  }
  
  if (info) {
  info.innerHTML = `
- <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${escapeHtml(disease.name || 'Detected Disease')}</h3>
+ <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${escapeHtml(disease.name ? translateDiseaseDisplayName(disease.name) : getStaticUiText('Detected Disease'))}</h3>
  <div style="margin-bottom:var(--space-md);">
  <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;">
- <span>Confidence Score</span>
+ <span>${escapeHtml(getStaticUiText('Confidence Score'))}</span>
  <strong style="color:var(--color-primary);">${confidence}%</strong>
  </div>
  <div class="confidence-bar">
  <div class="confidence-fill" style="width:${confidence}%;"></div>
  </div>
  </div>
- <p style="font-size:.88rem;margin-bottom:var(--space-md);">${escapeHtml(disease.description || 'The model returned a prediction without detailed notes.')}</p>
+ <p style="font-size:.88rem;margin-bottom:var(--space-md);">${escapeHtml(disease.description ? translateDiseaseText(disease.description) : getStaticUiText('The model returned a prediction without detailed notes.'))}</p>
  
- <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-exclamation-circle" style="color:#C62828;margin-right:6px;"></i>Symptoms</h4>
+ <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-exclamation-circle" style="color:#C62828;margin-right:6px;"></i>${escapeHtml(getStaticUiText('Symptoms'))}</h4>
  <ul style="font-size:.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);padding-left:16px;">
- ${symptoms.map(s => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(s)}</li>`).join('')}
+ ${symptoms.map(s => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(translateDiseaseText(s))}</li>`).join('')}
  </ul>
  
- <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-prescription-bottle-alt" style="color:var(--color-primary);margin-right:6px;"></i>Treatment</h4>
+ <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-prescription-bottle-alt" style="color:var(--color-primary);margin-right:6px;"></i>${escapeHtml(getStaticUiText('Treatment'))}</h4>
  <ul style="font-size:.85rem;color:var(--text-secondary);margin-bottom:var(--space-md);padding-left:16px;">
- ${treatment.map(t => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(t)}</li>`).join('')}
+ ${treatment.map(t => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(translateDiseaseText(t))}</li>`).join('')}
  </ul>
  
- <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-shield-alt" style="color:var(--color-accent);margin-right:6px;"></i>Prevention</h4>
+ <h4 style="font-size:.9rem;margin-bottom:var(--space-sm);"><i class="fas fa-shield-alt" style="color:var(--color-accent);margin-right:6px;"></i>${escapeHtml(getStaticUiText('Prevention'))}</h4>
  <ul style="font-size:.85rem;color:var(--text-secondary);padding-left:16px;">
- ${prevention.map(p => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(p)}</li>`).join('')}
+ ${prevention.map(p => `<li style="margin-bottom:4px;list-style:disc;">${escapeHtml(translateDiseaseText(p))}</li>`).join('')}
  </ul>
  `;
  }
@@ -5510,7 +6915,7 @@ async function analyzeDisease() {
  return;
  }
  const selectedFile = input.files[0];
- const originalButtonHtml = analyzeBtn?.innerHTML || '<i class="fas fa-search-plus"></i> Analyze Disease';
+ const originalButtonHtml = analyzeBtn?.innerHTML || `<i class="fas fa-search-plus"></i> ${getStaticUiText('Analyze Disease')}`;
 
  if (placeholder) placeholder.style.display = 'none';
  if (result) result.style.display = 'block';
@@ -5525,15 +6930,15 @@ async function analyzeDisease() {
  if (info) {
  info.innerHTML = `
  <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Preparing the AI diagnosis...</strong></p>
- <p style="font-size:.85rem;color:var(--text-secondary);">The first scan may briefly wake the cloud service.</p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">${escapeHtml(getStaticUiText('The first scan may briefly wake the cloud service.'))}</p>
  `;
  }
 
  const slowScanTimer = window.setTimeout(() => {
  if (info) {
  info.innerHTML = `
- <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>Still analyzing...</strong></p>
- <p style="font-size:.85rem;color:var(--text-secondary);">Finishing the AI diagnosis...</p>
+ <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>${escapeHtml(getStaticUiText('Still analyzing...'))}</strong></p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">${escapeHtml(getStaticUiText('Finishing the AI diagnosis...'))}</p>
  `;
  }
  }, 8000);
@@ -5546,12 +6951,12 @@ async function analyzeDisease() {
  const formData = new FormData();
  formData.append('image', uploadFile, uploadFile.name || selectedFile.name || 'leaf-image.jpg');
  if (badge) {
- badge.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing leaf';
+ badge.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${escapeHtml(getStaticUiText('Analyzing leaf'))}`;
  }
  if (info) {
  info.innerHTML = `
- <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>AI model is analyzing the leaf...</strong></p>
- <p style="font-size:.85rem;color:var(--text-secondary);">Please keep this page open until the diagnosis appears.</p>
+ <p style="font-size:.9rem;margin-bottom:var(--space-sm);"><strong>${escapeHtml(getStaticUiText('AI model is analyzing the leaf...'))}</strong></p>
+ <p style="font-size:.85rem;color:var(--text-secondary);">${escapeHtml(getStaticUiText('Please keep this page open until the diagnosis appears.'))}</p>
  `;
  }
  const controller = new AbortController();
@@ -5591,13 +6996,13 @@ async function analyzeDisease() {
  const timedOut = err?.name === 'AbortError' || err?.timeout;
  if (badge) {
  badge.className = 'badge badge-warning';
- badge.innerHTML = `<i class="fas fa-info-circle"></i> ${timedOut? 'Try Again': 'Analysis Unavailable'}`;
+ badge.innerHTML = `<i class="fas fa-info-circle"></i> ${escapeHtml(getStaticUiText(timedOut? 'Try Again': 'Analysis Unavailable'))}`;
  }
  if (info) {
  info.innerHTML = `
- <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${timedOut? 'Diagnosis took too long': 'Diagnosis unavailable'}</h3>
+ <h3 style="margin-bottom:var(--space-sm);color:var(--text-primary);">${escapeHtml(getStaticUiText(timedOut? 'Diagnosis took too long': 'Diagnosis unavailable'))}</h3>
  <p style="font-size:.9rem;margin-bottom:var(--space-md);">
- ${escapeHtml(timedOut? 'The cloud service did not become ready. Please try again in a moment.': (err.msg || err.message || 'The disease model could not analyze this image.'))}
+ ${escapeHtml(timedOut? getStaticUiText('The cloud service did not become ready. Please try again in a moment.'): (err.msg || err.message || getStaticUiText('The disease model could not analyze this image.')))}
  </p>
  `;
  }
@@ -5643,6 +7048,8 @@ document.addEventListener('DOMContentLoaded', () => {
  initMarketplaceListingFlow();
  initNotifications();
  startRecentDiseaseScansLiveRefresh();
+ initPmkisanHelper();
+ initSettingsNavigation();
  initHelpMenu();
  initChatbotAssistant();
  if (window.location.hash === '#weatherWidget') {
@@ -5806,6 +7213,10 @@ const assistantKnowledge = [
  {
  keys: ['government', 'scheme', 'subsidy', 'loan', 'insurance'],
  answer: 'For schemes, subsidy, crop insurance, or loans, confirm the latest rules from your local agriculture office or official government portal. I can help you prepare documents: Aadhaar, bank details, land record, crop details, and phone number.'
+ },
+ {
+ keys: ['pm kisan', 'pm-kisan', 'pmkisan', 'samman nidhi', 'ekyc', 'beneficiary status'],
+ answer: 'Open the PM-KISAN Helper page to check likely eligibility, document readiness, eKYC status, and official links. Do not share Aadhaar OTP or bank OTP with anyone. Final registration and status checks should be done only on the official PM-KISAN portal.'
  },
  {
  keys: ['photosynthesis'],
@@ -6320,6 +7731,7 @@ function getAssistantCommand(message) {
  { keys: ['market price', 'prices', 'mandi'], page: 'market-prices.html', label: 'Market Prices' },
  { keys: ['resource', 'water', 'fertilizer', 'irrigation'], page: 'resource-management.html', label: 'Resource Management' },
  { keys: ['crop loss', 'insurance', 'claim evidence', 'cropshield'], page: 'cropshield.html', label: 'CropShield' },
+ { keys: ['pm kisan', 'pm-kisan', 'pmkisan', 'samman nidhi', 'ekyc', 'beneficiary status'], page: 'pm-kisan.html', label: 'PM-KISAN Helper' },
  { keys: ['profile', 'account'], page: 'profile.html', label: 'Profile' },
  { keys: ['dashboard', 'home'], page: 'dashboard.html', label: 'Dashboard' }
  ];

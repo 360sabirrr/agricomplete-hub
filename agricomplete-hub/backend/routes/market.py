@@ -139,6 +139,28 @@ def get_listings():
         for l in listings
     ])
 
+@market_bp.route('/my-listings', methods=['GET'])
+@jwt_required()
+def get_my_listings():
+    from models import MarketListing, User
+    user_id = _get_current_user_id()
+    if user_id is None:
+        return jsonify({"msg": "Invalid authentication token"}), 401
+
+    include_images = _truthy_query_arg('include_images') or _truthy_query_arg('include_image')
+    listings = (
+        MarketListing.query
+        .filter_by(seller_id=user_id)
+        .order_by(MarketListing.created_at.desc())
+        .all()
+    )
+    seller = User.query.get(user_id)
+
+    return _no_store_json([
+        _serialize_listing(listing, seller, include_image=include_images)
+        for listing in listings
+    ])
+
 @market_bp.route('/listings/<int:id>', methods=['GET'])
 def get_listing(id):
     from models import MarketListing, User

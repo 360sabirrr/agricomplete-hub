@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>PM-KISAN Helper - AgriComplete Hub</title>
+ <meta name="description" content="PM-KISAN eligibility, eKYC, checklist, official links, and farmer readiness tracker.">
+ <link rel="stylesheet" href="css/style.css?v=pm-kisan-font-20260622">
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+ <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+</head>
+<body>
+ <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+ <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+ <aside class="sidebar" id="sidebar">
+ <div class="sidebar-brand"><h2><span class="brand-icon"><i class="fas fa-seedling"></i></span> AgriComplete</h2><p>Smart Farming Platform</p></div>
+ <nav class="sidebar-nav">
+ <div class="nav-section-title">Main Menu</div>
+ <a href="dashboard.html" class="nav-item"><i class="fas fa-th-large"></i><span data-i18n="nav_dashboard">Dashboard</span></a>
+ <a href="disease-detection.html" class="nav-item"><i class="fas fa-leaf"></i><span data-i18n="nav_disease">Disease Detection</span></a>
+ <a href="market-prices.html" class="nav-item"><i class="fas fa-chart-bar"></i><span data-i18n="nav_market">Market Prices</span><span class="nav-badge">Live</span></a>
+ <a href="marketplace.html" class="nav-item"><i class="fas fa-store"></i><span data-i18n="nav_marketplace">Marketplace</span></a>
+ <div class="nav-section-title">Tools</div>
+ <a href="resource-management.html" class="nav-item"><i class="fas fa-recycle"></i><span data-i18n="nav_resources">Resource Management</span></a>
+ <a href="cropshield.html" class="nav-item"><i class="fas fa-shield-halved"></i><span>CropShield</span><span class="nav-badge">New</span></a>
+ <a href="pm-kisan.html" class="nav-item active"><i class="fas fa-landmark"></i><span data-i18n="nav_pm_kisan">PM-KISAN Helper</span><span class="nav-badge">Govt</span></a>
+ <div class="nav-section-title">Account</div>
+ <a href="profile.html" class="nav-item"><i class="fas fa-user-circle"></i><span data-i18n="nav_profile">My Profile</span></a>
+ <a href="#" class="nav-item"><i class="fas fa-cog"></i><span data-i18n="nav_settings">Settings</span></a>
+ <a href="#" class="nav-item" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i><span data-i18n="nav_logout">Logout</span></a>
+ </nav>
+ <div class="sidebar-footer"><div class="user-profile"><div class="user-avatar">SS</div><div class="user-info"><h4>Sabir Shaikh</h4></div></div></div>
+ </aside>
+
+ <div class="main-content">
+ <div class="topbar">
+ <div class="topbar-left">
+ <div>
+ <h3><i class="fas fa-landmark" style="color:var(--color-primary);margin-right:8px;"></i> <span data-pmk-i18n="page_title">PM-KISAN Helper</span></h3>
+ <p data-pmk-i18n="page_subtitle">Eligibility guidance, eKYC checklist, and official PM-KISAN links</p>
+ </div>
+ </div>
+ <div class="topbar-right">
+ <div class="lang-selector">
+ <i class="fas fa-globe"></i>
+ <select onchange="changeLanguage(this.value)">
+ <option value="en">EN</option><option value="hi">HI</option><option value="mr">MR</option><option value="pa">PA</option><option value="ta">TA</option><option value="te">TE</option>
+ </select>
+ </div>
+ <button class="btn-icon notification-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></button>
+ </div>
+ </div>
+
+ <main class="page-content pmk-page">
+ <section class="pmk-hero fade-in">
+ <div>
+ <span class="pmk-kicker"><i class="fas fa-indian-rupee-sign"></i> <span data-pmk-i18n="hero_kicker">Government scheme assistance</span></span>
+ <h1 data-pmk-i18n="hero_title">PM-KISAN readiness and guidance for farmers.</h1>
+ <p data-pmk-i18n="hero_desc">Check likely eligibility, prepare documents, track eKYC readiness, and open the official PM-KISAN portal from one simple page.</p>
+ <div class="pmk-trust-strip" aria-label="PM-KISAN helper safeguards">
+ <span><i class="fas fa-shield-halved"></i> <span data-pmk-i18n="trust_official">Official links only</span></span>
+ <span><i class="fas fa-lock"></i> <span data-pmk-i18n="trust_private">No Aadhaar number stored</span></span>
+ <span><i class="fas fa-list-check"></i> <span data-pmk-i18n="trust_ready">Readiness tracking</span></span>
+ </div>
+ <div class="pmk-hero-actions">
+ <a class="btn btn-primary" href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square"></i> <span data-pmk-i18n="official_portal">Official PM-KISAN Portal</span></a>
+ <a class="btn btn-secondary" href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-circle-info"></i> <span data-pmk-i18n="know_status">Know Your Status</span></a>
+ </div>
+ </div>
+ <aside class="pmk-amount-card">
+ <span data-pmk-i18n="income_support">Income support</span>
+ <strong data-pmk-i18n="income_amount">Rs.6,000/year</strong>
+ <p data-pmk-i18n="income_desc">Paid in 3 equal installments to eligible landholding farmer families through DBT.</p>
+ <div class="pmk-installments">
+ <div><b>3</b><span data-pmk-i18n="installments">installments</span></div>
+ <div><b>DBT</b><span data-pmk-i18n="direct_transfer">direct transfer</span></div>
+ <div><b>eKYC</b><span data-pmk-i18n="required_check">required check</span></div>
+ </div>
+ </aside>
+ </section>
+
+ <section class="pmk-official-notice fade-in delay-1">
+ <i class="fas fa-circle-info"></i>
+ <div>
+ <strong data-pmk-i18n="official_notice_title">Farmer guidance, not government approval</strong>
+ <p data-pmk-i18n="official_notice_desc">This page helps you prepare and track PM-KISAN readiness. Final registration, eKYC, correction, and beneficiary status must be completed only through official government channels.</p>
+ </div>
+ </section>
+
+ <section class="pmk-process-strip fade-in delay-1" aria-label="PM-KISAN readiness workflow">
+ <div class="pmk-process-item">
+ <span>01</span>
+ <i class="fas fa-clipboard-check"></i>
+ <strong data-pmk-i18n="process_eligibility">Check eligibility</strong>
+ <p data-pmk-i18n="process_eligibility_desc">Confirm landholding and exclusion conditions.</p>
+ </div>
+ <div class="pmk-process-item">
+ <span>02</span>
+ <i class="fas fa-id-card"></i>
+ <strong data-pmk-i18n="process_documents">Prepare documents</strong>
+ <p data-pmk-i18n="process_documents_desc">Keep Aadhaar, land record, bank, and mobile ready.</p>
+ </div>
+ <div class="pmk-process-item">
+ <span>03</span>
+ <i class="fas fa-fingerprint"></i>
+ <strong data-pmk-i18n="process_ekyc">Complete eKYC</strong>
+ <p data-pmk-i18n="process_ekyc_desc">Finish eKYC only through official channels.</p>
+ </div>
+ <div class="pmk-process-item">
+ <span>04</span>
+ <i class="fas fa-indian-rupee-sign"></i>
+ <strong data-pmk-i18n="process_status">Track status</strong>
+ <p data-pmk-i18n="process_status_desc">Save follow-up status and next reminder.</p>
+ </div>
+ </section>
+
+ <section class="pmk-grid fade-in delay-1">
+ <article class="pmk-card">
+ <div class="pmk-card-head">
+ <div><span class="pmk-kicker" data-pmk-i18n="eligibility_kicker">01 Eligibility checker</span><h2 data-pmk-i18n="eligibility_title">Quick farmer eligibility check</h2></div>
+ <span class="pmk-score" id="pmkEligibilityScore">0/100</span>
+ </div>
+ <div class="pmk-question-list" id="pmkEligibilityForm">
+ <label><input type="checkbox" data-pmk-eligible="positive" value="25"> <span data-pmk-i18n="q_land">Farmer family owns cultivable agricultural land</span></label>
+ <label><input type="checkbox" data-pmk-eligible="positive" value="15"> <span data-pmk-i18n="q_aadhaar">Aadhaar is available and mobile number is active</span></label>
+ <label><input type="checkbox" data-pmk-eligible="positive" value="15"> <span data-pmk-i18n="q_bank">Bank account is available for DBT transfer</span></label>
+ <label><input type="checkbox" data-pmk-eligible="positive" value="15"> <span data-pmk-i18n="q_ekyc">eKYC is completed or can be completed</span></label>
+ <label><input type="checkbox" data-pmk-eligible="negative" value="25"> <span data-pmk-i18n="q_tax">Any family member paid income tax in the last assessment year</span></label>
+ <label><input type="checkbox" data-pmk-eligible="negative" value="20"> <span data-pmk-i18n="q_excluded">Institutional landholder or excluded government/professional category</span></label>
+ </div>
+ <div class="pmk-result" id="pmkEligibilityResult">
+ <strong data-pmk-i18n="result_initial_title">Answer the questions to estimate readiness.</strong>
+ <p data-pmk-i18n="result_initial_desc">This is only guidance. Final eligibility is decided by government records and PM-KISAN rules.</p>
+ </div>
+ </article>
+
+ <article class="pmk-card">
+ <div class="pmk-card-head">
+ <div><span class="pmk-kicker" data-pmk-i18n="checklist_kicker">02 Document checklist</span><h2 data-pmk-i18n="checklist_title">PM-KISAN readiness checklist</h2></div>
+ <span class="pmk-score" id="pmkChecklistScore">0/6 ready</span>
+ </div>
+ <div class="pmk-checklist" id="pmkChecklist">
+ <label><input type="checkbox" data-pmk-check="aadhaar"> <span data-pmk-i18n="check_aadhaar">Aadhaar available</span> <small data-pmk-i18n="check_aadhaar_small">No Aadhaar number is stored.</small></label>
+ <label><input type="checkbox" data-pmk-check="land"> <span data-pmk-i18n="check_land">Land record / 7-12 / khasra available</span></label>
+ <label><input type="checkbox" data-pmk-check="bank"> <span data-pmk-i18n="check_bank">Bank account available and active</span></label>
+ <label><input type="checkbox" data-pmk-check="mobile"> <span data-pmk-i18n="check_mobile">Mobile number linked and reachable</span></label>
+ <label><input type="checkbox" data-pmk-check="ekyc"> <span data-pmk-i18n="check_ekyc">eKYC completed or planned</span></label>
+ <label><input type="checkbox" data-pmk-check="status"> <span data-pmk-i18n="check_status">Beneficiary status checked on official portal</span></label>
+ </div>
+ </article>
+ </section>
+
+ <section class="pmk-grid fade-in delay-2">
+ <article class="pmk-card">
+ <span class="pmk-kicker" data-pmk-i18n="actions_kicker">03 Official actions</span>
+ <h2 data-pmk-i18n="actions_title">Open official PM-KISAN services</h2>
+ <div class="pmk-link-grid">
+ <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-user-plus"></i><span data-pmk-i18n="new_registration">New Farmer Registration</span></a>
+ <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-magnifying-glass"></i><span data-pmk-i18n="know_status">Know Your Status</span></a>
+ <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fingerprint"></i><span data-pmk-i18n="ekyc_process">eKYC Process</span></a>
+ <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-list-check"></i><span data-pmk-i18n="beneficiary_list">Beneficiary List</span></a>
+ <a href="https://pmkisan.gov.in/" target="_blank" rel="noopener noreferrer"><i class="fas fa-headset"></i><span data-pmk-i18n="helpdesk">Helpdesk</span></a>
+ <a href="https://play.google.com/store/apps/details?id=com.nic.project.pmkisan" target="_blank" rel="noopener noreferrer"><i class="fas fa-mobile-screen"></i><span data-pmk-i18n="mobile_app">PM-KISAN Mobile App</span></a>
+ </div>
+ </article>
+
+ <article class="pmk-card">
+ <span class="pmk-kicker" data-pmk-i18n="tracker_kicker">04 Status tracker</span>
+ <h2 data-pmk-i18n="tracker_title">Save your PM-KISAN follow-up</h2>
+ <div class="pmk-status-form">
+ <label><span data-pmk-i18n="reference_label">Registration / application reference</span> <input class="input-field" id="pmkReference" type="text" placeholder="Optional reference number" data-pmk-placeholder="reference_placeholder"></label>
+ <label><span data-pmk-i18n="status_label">Current status</span>
+ <select class="input-field" id="pmkStatus">
+ <option value="Not checked" data-pmk-i18n="status_not_checked">Not checked</option>
+ <option value="Registration pending" data-pmk-i18n="status_registration_pending">Registration pending</option>
+ <option value="eKYC pending" data-pmk-i18n="status_ekyc_pending">eKYC pending</option>
+ <option value="Under verification" data-pmk-i18n="status_under_verification">Under verification</option>
+ <option value="Beneficiary active" data-pmk-i18n="status_beneficiary_active">Beneficiary active</option>
+ <option value="Issue found" data-pmk-i18n="status_issue_found">Issue found</option>
+ </select>
+ </label>
+ <label><span data-pmk-i18n="reminder_label">Next reminder date</span> <input class="input-field" id="pmkReminder" type="date"></label>
+ <button class="btn btn-primary" type="button" onclick="savePmkisanStatus()"><i class="fas fa-save"></i> <span data-pmk-i18n="save_status">Save PM-KISAN Status</span></button>
+ </div>
+ <div class="pmk-saved-status" id="pmkSavedStatus" data-pmk-i18n="saved_empty">No saved PM-KISAN status yet.</div>
+ </article>
+ </section>
+
+ <section class="pmk-card pmk-note fade-in delay-2">
+ <span class="pmk-kicker" data-pmk-i18n="safety_kicker">Important safety note</span>
+ <h2 data-pmk-i18n="safety_title">Use official portal for final action</h2>
+ <p data-pmk-i18n="safety_desc">AgriComplete Hub provides readiness guidance only. Do not share Aadhaar OTP, bank OTP, or sensitive identity numbers with any unofficial person. Complete registration, eKYC, beneficiary status, and corrections only through the official PM-KISAN website, CSC, or authorized government channels.</p>
+ </section>
+ </main>
+ </div>
+
+ <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()"><i class="fas fa-comment-dots"></i></button>
+ <div class="chatbot-panel" id="chatbotPanel">
+ <div class="chatbot-header">
+ <div style="display:flex;align-items:center;gap:10px;"><i class="fas fa-robot" style="font-size:1.2rem;"></i><div><h4>AgriMate</h4><span style="font-size:.72rem;opacity:.8;" data-pmk-i18n="chat_subtitle">PM-KISAN help</span></div></div>
+ <button class="close-chat" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+ </div>
+ <div class="chatbot-body" id="chatbotBody"><div class="chat-msg bot" data-pmk-welcome="true">Namaste! Ask me about PM-KISAN eligibility, eKYC, documents, or status checking.</div></div>
+ <div class="chatbot-input">
+ <input type="text" id="chatInput" placeholder="Ask about PM-KISAN..." data-pmk-placeholder="chat_placeholder" onkeydown="if(event.key==='Enter')sendChat()">
+ <button onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+ </div>
+ </div>
+
+<script>
+ window.AGRICOMPLETE_API_URL = 'https://agricomplete-backend.onrender.com/api';
+</script>
+<script src="js/main.js?v=pm-kisan-pro-20260622"></script>
+</body>
+</html>
