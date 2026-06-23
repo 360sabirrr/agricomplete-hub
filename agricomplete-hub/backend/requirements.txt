@@ -11,3 +11,4 @@ numpy
 Pillow
 reportlab
 qrcode[pil]
+requests

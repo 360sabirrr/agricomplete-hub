@@ -331,6 +331,7 @@ from routes.weather import weather_bp
 from routes.disease import disease_bp
 from routes.assistant import assistant_bp
 from routes.cropshield import cropshield_bp
+from routes.market_prices import market_prices_bp
 from user_dates import backfill_missing_user_created_at
 
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -341,6 +342,7 @@ app.register_blueprint(weather_bp, url_prefix='/api/weather')
 app.register_blueprint(disease_bp, url_prefix='/api/disease')
 app.register_blueprint(assistant_bp, url_prefix='/api/assistant')
 app.register_blueprint(cropshield_bp, url_prefix='/api/cropshield')
+app.register_blueprint(market_prices_bp, url_prefix='/api')
 
 
 with app.app_context():

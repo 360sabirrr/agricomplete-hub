@@ -1330,6 +1330,22 @@ def _case_report_pdf(case, user, language='en'):
         borderWidth=0.4,
         borderPadding=6,
     ))
+    styles.add(ParagraphStyle(
+        name='ReportTableLabel',
+        parent=styles['Normal'],
+        fontName=bold_font,
+        fontSize=7.8,
+        leading=10,
+        textColor=colors.HexColor('#1C3522'),
+    ))
+    styles.add(ParagraphStyle(
+        name='ReportTableValue',
+        parent=styles['Normal'],
+        fontName=normal_font,
+        fontSize=8.1,
+        leading=10.5,
+        textColor=colors.HexColor('#253C2A'),
+    ))
 
     styles['Normal'].fontName = normal_font
     styles['Heading1'].fontName = bold_font
@@ -1339,6 +1355,20 @@ def _case_report_pdf(case, user, language='en'):
         fallback = fallback or text['not_recorded']
         text_value = _clean_text(value) or fallback
         return Paragraph(escape(text_value), styles['Normal'])
+
+    def report_cell(value, is_label=False, fallback=None):
+        fallback = fallback or text['not_recorded']
+        text_value = _clean_text(value) or fallback
+        style = styles['ReportTableLabel'] if is_label else styles['ReportTableValue']
+        return Paragraph(escape(text_value), style)
+
+    def report_row(left_label, left_value, right_label, right_value):
+        return [
+            report_cell(left_label, True),
+            report_cell(left_value),
+            report_cell(right_label, True),
+            report_cell(right_value),
+        ]
 
     def report_datetime(value):
         if not value:
@@ -1485,22 +1515,24 @@ def _case_report_pdf(case, user, language='en'):
     ]
 
     basic_data = [
-        ['Season & year', f'{case.season or "Not recorded"} {case.season_year or ""}'.strip(),
-         'Farmer', farmer_name],
-        ['Policy / application', case.policy_number or 'Not recorded',
-         'Contact', case.contact_number or 'Not recorded'],
-        ['State', case.state or 'Not recorded', 'District', case.district or 'Not recorded'],
-        ['Tehsil', case.tehsil or 'Not recorded', 'Block', case.block or 'Not recorded'],
-        ['Gram Panchayat', case.gram_panchayat or 'Not recorded',
-         'Village', case.village or 'Not recorded'],
-        ['GPS coordinates',
-         (
-             f'{case.gps_latitude:.6f}, {case.gps_longitude:.6f}'
-             if case.gps_latitude is not None and case.gps_longitude is not None
-             else text['not_recorded']
-         ),
-         'Date of survey',
-         case.survey_date.isoformat() if case.survey_date else text['not_recorded']],
+        report_row('Season & year', f'{case.season or "Not recorded"} {case.season_year or ""}'.strip(),
+                   'Farmer', farmer_name),
+        report_row('Policy / application', case.policy_number or 'Not recorded',
+                   'Contact', case.contact_number or 'Not recorded'),
+        report_row('State', case.state or 'Not recorded', 'District', case.district or 'Not recorded'),
+        report_row('Tehsil', case.tehsil or 'Not recorded', 'Block', case.block or 'Not recorded'),
+        report_row('Gram Panchayat', case.gram_panchayat or 'Not recorded',
+                   'Village', case.village or 'Not recorded'),
+        report_row(
+            'GPS coordinates',
+            (
+                f'{case.gps_latitude:.6f}, {case.gps_longitude:.6f}'
+                if case.gps_latitude is not None and case.gps_longitude is not None
+                else text['not_recorded']
+            ),
+            'Date of survey',
+            case.survey_date.isoformat() if case.survey_date else text['not_recorded'],
+        ),
     ]
     story.append(section_title('01', text['basic']))
     basic_table = Table(basic_data, colWidths=[31 * mm, 54 * mm, 31 * mm, 54 * mm])
@@ -1522,14 +1554,14 @@ def _case_report_pdf(case, user, language='en'):
     story.extend([basic_table, Spacer(1, 5 * mm)])
 
     plot_data = [
-        ['Survey / Khasra no.', case.survey_number or 'Not recorded',
-         'Crop pattern', case.crop_pattern or 'Not recorded'],
-        ['Crop name', case.crop_name, 'Insured area', f'{case.field_area_acres:.3f} acres'],
-        ['Sowing date', case.sowing_date.isoformat() if case.sowing_date else 'Not recorded',
-         'Expected harvest',
-         case.expected_harvest_date.isoformat() if case.expected_harvest_date else text['not_recorded']],
-        ['Expected yield', f'{case.expected_yield_per_acre_kg:,.0f} kg / acre',
-         'Market price', f'INR {case.market_price_per_kg:,.2f} / kg'],
+        report_row('Survey / Khasra no.', case.survey_number or 'Not recorded',
+                   'Crop pattern', case.crop_pattern or 'Not recorded'),
+        report_row('Crop name', case.crop_name, 'Insured area', f'{case.field_area_acres:.3f} acres'),
+        report_row('Sowing date', case.sowing_date.isoformat() if case.sowing_date else 'Not recorded',
+                   'Expected harvest',
+                   case.expected_harvest_date.isoformat() if case.expected_harvest_date else text['not_recorded']),
+        report_row('Expected yield', f'{case.expected_yield_per_acre_kg:,.0f} kg / acre',
+                   'Market price', f'INR {case.market_price_per_kg:,.2f} / kg'),
     ]
     story.append(section_title('02', text['crop']))
     plot_table = Table(plot_data, colWidths=[31 * mm, 54 * mm, 31 * mm, 54 * mm])
@@ -1556,16 +1588,16 @@ def _case_report_pdf(case, user, language='en'):
         else 'Not recorded'
     )
     verification_data = [
-        ['Affected crop', case.crop_name, 'Damage cause', case.damage_type],
-        ['Reported damage', f'{case.reported_damage_percent:.1f}%',
-         'Detection date', case.damage_date.isoformat() if case.damage_date else text['not_recorded']],
-        ['Estimated yield loss', f'{case.estimated_yield_loss_kg:,.0f} kg',
-         'Damage occurred', report_datetime(case.damage_occurred_at)],
-        ['Loss intimated', report_datetime(case.loss_intimated_at),
-         'Intimation compliance', intimation_status],
-        ['Elapsed time', f'{case.intimation_hours:.1f} hours' if case.intimation_hours is not None else 'Not recorded',
-         'Evidence source', 'Farmer submitted'],
-        ['Assessment type', 'Data-assisted estimate', 'Report scope', 'Claim support evidence'],
+        report_row('Affected crop', case.crop_name, 'Damage cause', case.damage_type),
+        report_row('Reported damage', f'{case.reported_damage_percent:.1f}%',
+                   'Detection date', case.damage_date.isoformat() if case.damage_date else text['not_recorded']),
+        report_row('Estimated yield loss', f'{case.estimated_yield_loss_kg:,.0f} kg',
+                   'Damage occurred', report_datetime(case.damage_occurred_at)),
+        report_row('Loss intimated', report_datetime(case.loss_intimated_at),
+                   'Intimation compliance', intimation_status),
+        report_row('Elapsed time', f'{case.intimation_hours:.1f} hours' if case.intimation_hours is not None else 'Not recorded',
+                   'Evidence source', 'Farmer submitted'),
+        report_row('Assessment type', 'Data-assisted estimate', 'Report scope', 'Claim support evidence'),
     ]
     story.append(section_title('03', text['damage']))
     verification_table = Table(

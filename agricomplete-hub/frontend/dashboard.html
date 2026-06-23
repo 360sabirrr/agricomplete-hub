@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Dashboard - AgriComplete Hub</title>
  <meta name="description" content="Your personalized smart farming dashboard with weather, crop recommendations, and alerts.">
- <link rel="stylesheet" href="css/style.css?v=mobile-shell-20260614">
+ <link rel="stylesheet" href="css/style.css?v=deployment-polish-20260623">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
@@ -180,14 +180,14 @@
  </div>
  </div>
 
- <!-- Chart + Alerts -->
- <div class="grid-sidebar dashboard-insights-grid fade-in delay-2" style="margin-bottom:var(--space-xl);">
+ <!-- Price Trend Chart -->
+ <div class="fade-in delay-2" style="margin-bottom:var(--space-xl);">
  <!-- Price Trend Chart -->
  <div class="chart-container price-trend-card">
  <div class="chart-header">
  <div class="chart-title-group">
  <h4><i class="fas fa-chart-line" style="color:var(--color-primary);margin-right:8px;"></i> <span data-i18n="price_trend">Crop Price Trends (Rs./quintal)</span></h4>
- <p data-i18n="chart_market_note">Pune APMC indicative mandi rates</p>
+ <p id="priceTrendSourceNote" data-i18n="chart_market_note">Loading official Data.gov.in mandi records</p>
  </div>
  <div class="chart-controls">
  <label class="chart-crop-select">
@@ -240,112 +240,6 @@
  <div class="chart-insight" id="priceTrendInsight"></div>
  </div>
 
- <!-- Alerts -->
- <div class="card" style="display:flex;flex-direction:column;gap:var(--space-md);">
- <h4><i class="fas fa-bell" style="color:var(--color-secondary);margin-right:8px;"></i> <span data-i18n="recent_alerts">Recent Alerts</span></h4>
- <div style="padding:12px;background:#FFF8E1;border-radius:var(--radius-sm);border-left:4px solid #F57F17;">
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
- <span class="badge badge-warning"><i class="fas fa-cloud-showers-heavy"></i> Weather</span>
- <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">2h ago</span>
- </div>
- <p style="font-size:.85rem;color:var(--text-primary);">Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.</p>
- </div>
- <div style="padding:12px;background:#FFEBEE;border-radius:var(--radius-sm);border-left:4px solid #C62828;">
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
- <span class="badge badge-danger"><i class="fas fa-bug"></i> Disease</span>
- <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">5h ago</span>
- </div>
- <p style="font-size:.85rem;color:var(--text-primary);">Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.</p>
- </div>
- <div style="padding:12px;background:#E8F5E9;border-radius:var(--radius-sm);border-left:4px solid var(--color-primary);">
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
- <span class="badge"><i class="fas fa-chart-line"></i> Market</span>
- <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">1d ago</span>
- </div>
- <p style="font-size:.85rem;color:var(--text-primary);">Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.</p>
- </div>
- <div style="padding:12px;background:#E3F2FD;border-radius:var(--radius-sm);border-left:4px solid #1565C0;">
- <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
- <span class="badge badge-info"><i class="fas fa-tint"></i> Water</span>
- <span style="font-size:.72rem;color:var(--text-muted);margin-left:auto;">1d ago</span>
- </div>
- <p style="font-size:.85rem;color:var(--text-primary);">Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.</p>
- </div>
- </div>
- </div>
-
- <!-- Water & Fertilizer Management -->
- <div class="grid-2 fade-in delay-3 water-fertilizer-section" style="margin-bottom:var(--space-xl);">
- <!-- Water Usage -->
- <div class="card">
- <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-tint" style="color:#1565C0;margin-right:8px;"></i> <span data-i18n="water_mgmt">Water Management</span></h4>
- <div style="display:flex;flex-direction:column;gap:var(--space-md);">
- <div>
- <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;">
- <span>Field A - Wheat</span>
- <span style="font-weight:600;color:var(--color-primary);">78%</span>
- </div>
- <div class="confidence-bar"><div class="confidence-fill" style="width:78%;"></div></div>
- <p style="font-size:.75rem;margin-top:4px;color:var(--text-primary);">Soil moisture: Optimal level</p>
- </div>
- <div>
- <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;">
- <span>Field B - Chickpea</span>
- <span style="font-weight:600;color:#E65100;">42%</span>
- </div>
- <div class="confidence-bar"><div class="confidence-fill" style="width:42%;background:linear-gradient(90deg,#E65100,#FF8F00);"></div></div>
- <p style="font-size:.75rem;margin-top:4px;color:var(--text-primary);">Warning Needs irrigation within 24h</p>
- </div>
- <div>
- <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:6px;">
- <span>Field C - Potato</span>
- <span style="font-weight:600;color:var(--color-primary);">65%</span>
- </div>
- <div class="confidence-bar"><div class="confidence-fill" style="width:65%;"></div></div>
- <p style="font-size:.75rem;margin-top:4px;color:var(--text-primary);">Adequate level. Next irrigation: 3 days</p>
- </div>
- </div>
- </div>
- <!-- Fertilizer Planner -->
- <div class="card">
- <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-flask" style="color:#6A1B9A;margin-right:8px;"></i> <span data-i18n="fert_plan">Fertilizer Schedule</span></h4>
- <table class="data-table" style="font-size:.88rem;">
- <thead>
- <tr>
- <th>Crop</th>
- <th>Fertilizer</th>
- <th>Qty</th>
- <th>Due</th>
- </tr>
- </thead>
- <tbody>
- <tr>
- <td><i class="fas fa-wheat-awn crop-row-icon"></i>Wheat</td>
- <td>Urea (N)</td>
- <td>50 kg/acre</td>
- <td><span class="badge badge-warning">Tomorrow</span></td>
- </tr>
- <tr>
- <td><i class="fas fa-seedling crop-row-icon"></i>Chickpea</td>
- <td>DAP (P)</td>
- <td>30 kg/acre</td>
- <td><span class="badge badge-info">In 5 days</span></td>
- </tr>
- <tr>
- <td><i class="fas fa-carrot crop-row-icon"></i>Potato</td>
- <td>MOP (K)</td>
- <td>25 kg/acre</td>
- <td><span class="badge">In 10 days</span></td>
- </tr>
- <tr>
- <td><i class="fas fa-sun crop-row-icon"></i>Mustard</td>
- <td>Sulphur</td>
- <td>15 kg/acre</td>
- <td><span class="badge">In 14 days</span></td>
- </tr>
- </tbody>
- </table>
- </div>
  </div>
 
  <!-- Quick Links -->
@@ -404,6 +298,7 @@
  </div>
 
 <script src="js/main.js?v=session-scope-20260622"></script>
+<script src="js/dashboard-market-trends.js?v=live-mandi-dashboard-20260623"></script>
  <script>
  // Set date
  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });

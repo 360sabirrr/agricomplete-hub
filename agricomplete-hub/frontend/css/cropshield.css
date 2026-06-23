@@ -6,3 +6,46 @@
 @media(max-width:540px){.cropshield-evidence-single .cropshield-upload img,.cropshield-comparison img{height:200px}}
 /* Case history delete action */
 .cropshield-case-card footer .cropshield-delete-btn{flex:0 0 38px;padding:8px;border:1px solid #E4B8B8;background:#FFF6F6;color:#B42323;box-shadow:none}.cropshield-case-card footer .cropshield-delete-btn:hover{border-color:#B42323;background:#B42323;color:#FFF;transform:translateY(-1px)}
+
+/* CropShield mobile polish */
+@media(max-width:768px){
+ .cropshield-page{gap:16px}
+ .cropshield-hero{gap:16px;padding:0}
+ .cropshield-hero h1{font-size:1.6rem;line-height:1.14}
+ .cropshield-hero p{font-size:.88rem}
+ .cropshield-disclaimer{border-radius:8px;padding:12px}
+ .cropshield-form-panel,.cropshield-estimate-panel,.cropshield-result{padding:16px;border-radius:12px}
+ .cropshield-panel-heading{align-items:stretch;flex-direction:column}
+ .cropshield-completion{width:100%}
+ .cropshield-form-grid,.cropshield-evidence-grid,.cropshield-result-layout,.cropshield-comparison{grid-template-columns:1fr!important}
+ .cropshield-form-grid input,.cropshield-form-grid select,.cropshield-form-grid textarea,.cropshield-notes textarea{min-height:46px;font-size:16px}
+ .cropshield-upload{min-height:176px}
+ .cropshield-upload img,.cropshield-evidence-single .cropshield-upload img,.cropshield-comparison img{height:210px}
+ .cropshield-loss-total strong{font-size:1.45rem;overflow-wrap:anywhere}
+ .cropshield-live-metrics div{align-items:flex-start;flex-direction:column;gap:2px}
+ .cropshield-live-metrics dd{text-align:left}
+ .cropshield-weather-impact-grid{grid-template-columns:1fr!important}
+ .cropshield-result-head,.cropshield-section-head{align-items:stretch;flex-direction:column}
+ .cropshield-result-actions{display:grid;grid-template-columns:1fr;gap:8px}
+ .cropshield-result-actions .btn,.cropshield-result-actions select{width:100%;justify-content:center}
+ .cropshield-result-metrics{grid-template-columns:1fr!important}
+ .cropshield-verification dl div{align-items:flex-start;flex-direction:column}
+ .cropshield-verification dd{text-align:left}
+ .cropshield-timeline{padding-bottom:8px}
+ .cropshield-history-tools{display:grid;grid-template-columns:1fr auto;gap:8px}
+ .cropshield-history-tools label{grid-column:1/-1;width:100%;min-width:0}
+ .cropshield-history-tools select{width:100%}
+ .cropshield-case-list{grid-template-columns:1fr!important}
+ .cropshield-case-card footer{display:grid;grid-template-columns:1fr 1fr 44px}
+ .cropshield-case-card footer .btn{min-width:0;padding-inline:10px}
+ .cropshield-case-card footer .cropshield-delete-btn{flex-basis:auto}
+}
+
+@media(max-width:420px){
+ .cropshield-hero-stats{grid-template-columns:1fr!important}
+ .cropshield-form-panel,.cropshield-estimate-panel,.cropshield-result{padding:14px}
+ .cropshield-form-panel legend{font-size:.78rem}
+ .cropshield-upload img,.cropshield-evidence-single .cropshield-upload img,.cropshield-comparison img{height:180px}
+ .cropshield-case-card footer{grid-template-columns:1fr}
+ .cropshield-case-card footer .cropshield-delete-btn{width:100%}
+}
