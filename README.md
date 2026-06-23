@@ -1,64 +1,65 @@
-# AgriComplete Hub 🌿
+# AgriComplete Hub
 
-AgriComplete Hub is a smart agriculture platform built to help farmers make better farming decisions in one simple place.  
-It provides crop recommendation, weather forecasting, plant disease detection, mandi price tracking, direct farmer-to-buyer connections, water and fertilizer guidance, login/profile support, AI chatbot help, and multilingual support.
+AgriComplete Hub is an AI-powered smart agriculture web application built to support Indian farmers with crop guidance, disease detection, weather-based recommendations, market price awareness, insurance report generation, and voice-enabled chatbot assistance.
 
-## Table of Contents
-- [About](#about)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Setup Instructions](#setup-instructions)
-- [Environment Variables](#environment-variables)
-- [Weather API](#weather-api)
-- [Backend](#backend)
-- [Database](#database)
-- [Future Improvements](#future-improvements)
-- [License](#license)
+Live Project: [AgriComplete Hub](https://agricomplete-frontend.onrender.com)
 
-## About
+---
 
-AgriComplete Hub is a hackathon-ready smart farming web application designed for real farmers.  
-The UI is simple, modern, and mobile-friendly so that farmers can use it easily on both desktop and mobile devices.
+## About The Project
 
-This project focuses on practical agricultural support:
-- Better crop planning
-- Weather-based alerts
-- Disease detection assistance
-- Market price visibility
-- Direct buyer connections
-- Resource-saving advice
-- Verifiable crop-loss evidence reports
+Farmers face many challenges such as unpredictable weather, crop diseases, lack of market price awareness, middleman dependency, difficulty in insurance claim documentation, and limited access to digital farming guidance.
 
-## Features
+AgriComplete Hub solves these problems by providing multiple smart farming tools in one platform.
 
-### Frontend
-- Modern landing page
-- Farmer login and profile pages
-- Personalized dashboard
-- Crop recommendation page
-- Weather forecast page
-- Disease detection page
-- Mandi price page
-- Marketplace page
-- Water and fertilizer guidance
-- AI chatbot interface
-- Multi-language support
-- CropShield crop-insurance evidence reports with 72-hour loss-intimation checks,
-  claim-readiness checklists, 7/15/30-day weather impact analysis, photographic
-  evidence, farmer signatures/thumb impressions, and QR verification
+---
 
-### Smart Agriculture Features
-- Crop recommendation based on inputs like location, season, irrigation type, and crop history
-- Weather alerts through the Flask backend weather route
-- Plant disease prediction flow prepared for future ML model integration
-- Live mandi price display
-- Direct farmer-to-buyer marketplace
-- Water and fertilizer usage guidance
-- Simple chatbot for farming help
-- Before/after crop evidence, transparent loss estimates, case status tracking, and public report verification
+## Key Features
 
-## Tech Stack
+- AI-based crop disease detection using leaf images
+- Disease prediction report download as PDF
+- Crop recommendation based on season and weather conditions
+- Weather updates and farming guidance
+- Mandi/market price trend comparison
+- Direct farmer marketplace for buying and selling crops
+- Reduces middleman dependency by connecting farmers and buyers directly
+- CropShield crop loss and insurance claim report generation
+- CropShield report download as PDF
+- PM-Kisan Helper for farmer scheme-related guidance
+- Resource management for water, fertilizer, and pesticide planning
+- Live AI chatbot support for farmers
+- Multilingual voice input support in chatbot
+- Speaker button support so farmers can listen to chatbot responses
+
+---
+
+## Voice-Based Farmer Support
+
+The AI chatbot is designed to make the platform easy for every farmer.
+
+Farmers can ask questions in any language using voice or text input. The chatbot provides helpful farming-related answers, and with the speaker button, farmers can listen to the response instead of reading long text.
+
+This feature is useful for farmers who face language or literacy barriers.
+
+---
+
+## Marketplace
+
+AgriComplete Hub includes a farmer marketplace where farmers can list crops, buy products, sell crops, and directly connect with buyers or other farmers.
+
+This helps farmers save money by reducing dependency on middlemen and improves profit through direct communication.
+
+---
+
+## CropShield
+
+CropShield helps farmers generate a crop loss report for insurance claim support.
+
+It collects important crop damage details and creates a structured report that can be downloaded as a PDF.
+
+---
+
+## Technology Stack
 
 ### Frontend
 - HTML
@@ -66,197 +67,70 @@ This project focuses on practical agricultural support:
 - JavaScript
 
 ### Backend
+- Python
 - Flask
 
 ### Database
 - PostgreSQL
+- SQLAlchemy
 
-### APIs
-- OpenRouter API for AI chatbot responses when `OPENROUTER_API_KEY` is configured
-- WeatherAPI.com for weather pages when `WEATHERAPI_KEY` is configured
-- OpenWeatherMap for weather page AQI/weather fallback when `OPENWEATHER_API_KEY` is configured
-- Open-Meteo as a no-key weather page fallback without AQI
+### AI/ML
+- TensorFlow
+- Keras
+- MobileNetV2 model for crop disease detection
 
-### Planned ML Module
-- Crop disease prediction model using a real-world dataset
+### APIs & Integrations
+- Weather API
+- Market/Mandi data integration
+- PDF report generation
+- Voice input support
+- Text-to-speech support
 
+### Deployment & Tools
+- Render
+- GitHub
+- JWT Authentication
+- Responsive Web Design
 
+---
 
-## Setup Instructions
+## How It Works
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/agricomplete-hub.git
-cd agricomplete-hub
-```
+1. Farmer registers or logs in to the platform.
+2. Farmer selects a feature such as disease detection, crop recommendation, marketplace, CropShield, or chatbot.
+3. Farmer provides required input such as crop details, image, location, voice query, or marketplace listing.
+4. The system processes the data using AI models, APIs, and backend logic.
+5. Farmer receives prediction, recommendation, report, chatbot response, or marketplace connection.
+6. Reports can be downloaded as PDF where available.
 
-### 2. Open frontend
-Open the `frontend/index.html` file in your browser.
+---
 
-If you are using a local server, you can use:
-```bash
-cd frontend
-python -m http.server 5500
-```
+## Project Impact
 
-Then open:
-```bash
-http://localhost:5500
-```
+- Helps farmers make smarter farming decisions
+- Supports early crop disease detection
+- Reduces crop loss
+- Improves market price awareness
+- Helps farmers sell directly without middlemen
+- Supports insurance claim documentation
+- Provides PM-Kisan scheme guidance
+- Makes digital farming more accessible through voice support
+- Promotes smart and inclusive agriculture in India
 
-### 3. Install backend dependencies
-```bash
-cd backend
-python -m venv venv
-```
+---
 
-Activate the virtual environment:
+## Future Scope
 
-**Windows**
-```bash
-venv\Scripts\activate
-```
+- Mobile application
+- WhatsApp/SMS farming alerts
+- More crop disease classes
+- More regional language support
+- Online payment and order tracking
 
-**Mac/Linux**
-```bash
-source venv/bin/activate
-```
+---
 
-Install packages:
-```bash
-pip install -r requirements.txt
-```
+## Project Domain
 
-### 4. Run Flask backend
-```bash
-python app.py
-```
+AI/ML, Smart Agriculture, Farmer Support System, Digital Farming
 
-## Environment Variables
-
-Create a `.env` file in the root or backend folder.
-
-```env
-# Generate with: python -c "import secrets; print(secrets.token_urlsafe(48))"
-JWT_SECRET_KEY=replace_with_a_unique_random_value_of_at_least_32_characters
-JWT_ACCESS_TOKEN_MINUTES=60
-DATABASE_URL=postgresql+psycopg2://username:password@localhost:5432/agricompletehub
-OPENROUTER_API_KEY=your_openrouter_api_key
-OPENROUTER_MODEL=openrouter/auto
-OPENROUTER_FALLBACK_MODELS=
-OPENROUTER_TIMEOUT_SECONDS=24
-WEATHERAPI_KEY=your_weatherapi_key
-OPENWEATHER_API_KEY=your_openweathermap_key
-EMAIL_DELIVERY_PROVIDER=gmail_api
-GMAIL_API_CLIENT_ID=your_google_oauth_client_id
-GMAIL_API_CLIENT_SECRET=your_google_oauth_client_secret
-GMAIL_API_REFRESH_TOKEN=your_google_oauth_refresh_token
-GMAIL_API_FROM=your_gmail_address
-GMAIL_API_FROM_NAME=AgriComplete Hub
-GMAIL_API_TIMEOUT_SECONDS=15
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USERNAME=your_email@example.com
-SMTP_PASSWORD=your_email_app_password
-SMTP_FROM=your_email@example.com
-SMTP_FROM_NAME=AgriComplete Hub
-SMTP_USE_TLS=false
-SMTP_USE_SSL=true
-PASSWORD_RESET_TOKEN_MINUTES=15
-CROPSHIELD_VERIFY_BASE_URL=https://agricomplete-frontend.onrender.com
-FLASK_ENV=development
-FLASK_DEBUG=True
-```
-
-## Weather API
-
-This project uses the backend weather route for dashboard weather data. The frontend should call the backend, not a weather provider directly.
-
-Provider order:
-- WeatherAPI.com when `WEATHERAPI_KEY` is valid
-- OpenWeatherMap when `OPENWEATHER_API_KEY` is valid, including AQI
-- Open-Meteo fallback when no key works, but AQI may be unavailable
-
-Example endpoint:
-```bash
-http://localhost:5000/api/weather/current?city=Pune
-```
-
-Weather data is used for:
-- current forecast
-- rain alerts
-- temperature updates
-- humidity details
-- wind warnings
-- AQI labels: Good, Fair, Bad, Dangerous
-
-## Deployment Notes
-
-This repo includes a `render.yaml` Blueprint for deploying the Flask backend, static frontend, and a Render Postgres database together.
-
-Render start command:
-```bash
-cd agricomplete-hub/backend && gunicorn --workers 1 --timeout 300 app:app
-```
-
-When creating the Blueprint, Render provisions the Postgres database and injects `DATABASE_URL` automatically. Enter values for the secrets Render prompts for:
-```env
-OPENROUTER_API_KEY=your_openrouter_api_key
-WEATHERAPI_KEY=optional_weatherapi_key
-OPENWEATHER_API_KEY=optional_openweathermap_key_for_aqi
-EMAIL_DELIVERY_PROVIDER=gmail_api
-GMAIL_API_CLIENT_ID=your_google_oauth_client_id
-GMAIL_API_CLIENT_SECRET=your_google_oauth_client_secret
-GMAIL_API_REFRESH_TOKEN=your_google_oauth_refresh_token
-GMAIL_API_FROM=your_gmail_address
-GMAIL_API_FROM_NAME=AgriComplete Hub
-GMAIL_API_TIMEOUT_SECONDS=15
-CROPSHIELD_VERIFY_BASE_URL=https://agricomplete-frontend.onrender.com
-```
-
-The frontend API URL is deployment-aware in `frontend/js/main.js`:
-- local browser uses `http://localhost:5000/api`
-- deployed frontend uses the current service origin plus `/api`
-- you can override it with `window.AGRICOMPLETE_API_URL` or a `<meta name="api-url">` tag
-
-For password reset email on Render, use the Gmail API provider. It sends over HTTPS and does not depend on SMTP ports. Enable the Gmail API, create a Google OAuth desktop client, set `GMAIL_API_CLIENT_ID` and `GMAIL_API_CLIENT_SECRET` locally, then run:
-
-```bash
-cd agricomplete-hub/backend
-python gmail_oauth_setup.py
-```
-
-Authorize the same mailbox used by `GMAIL_API_FROM`, then store the generated refresh token only in Render.
-For long-running deployment, publish the OAuth consent configuration to Production; Google refresh tokens for external apps left in Testing expire after seven days.
-
-## Backend
-
-The backend is built with Flask and handles:
-- weather data requests
-- crop recommendation logic
-- disease prediction API integration placeholder
-- login and profile data
-- marketplace listings
-- CropShield insurance evidence cases, public verification, and formal PDF reports
-- chatbot responses
-- PostgreSQL database operations
-
-## Database
-
-PostgreSQL will be used to store:
-- user details
-- profiles
-- crop recommendations
-- weather logs
-- marketplace listings
-- buyer inquiries
-- disease reports
-- chatbot history
-
-## Future Improvements
-
-- Train and deploy the crop disease prediction model
-- Better chatbot with AI responses
-- Buyer and farmer chat system
-- Map-based nearby buyer discovery
-- Dashboard analytics charts
+---
