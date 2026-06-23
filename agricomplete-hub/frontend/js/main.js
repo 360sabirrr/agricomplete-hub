@@ -74,7 +74,7 @@ const translations = {
  water_mgmt: "Water Management",
  fert_plan: "Fertilizer Schedule",
  stat_active_crops: "Active Crops",
- stat_water: "Water Usage",
+ stat_water: "Est. Water Need",
  stat_revenue: "Est. Revenue",
  stat_alerts: "Active Alerts"
  },
@@ -148,7 +148,7 @@ const translations = {
  water_mgmt: "जल प्रबंधन",
  fert_plan: "खाद कार्यक्रम",
  stat_active_crops: "सक्रिय फसलें",
- stat_water: "जल उपयोग",
+ stat_water: "अनु. जल आवश्यकता",
  stat_revenue: "अनु. राजस्व",
  stat_alerts: "सक्रिय अलर्ट"
  },
@@ -222,7 +222,7 @@ const translations = {
  water_mgmt: "जल व्यवस्थापन",
  fert_plan: "खत वेळापत्रक",
  stat_active_crops: "सक्रिय पिके",
- stat_water: "जल वापर",
+ stat_water: "अंदाजे पाणी गरज",
  stat_revenue: "अंदाजे उत्पन्न",
  stat_alerts: "सक्रिय सूचना"
  },
@@ -869,7 +869,7 @@ const translationOverrides = {
  water_mgmt: "ਪਾਣੀ ਪ੍ਰਬੰਧਨ",
  fert_plan: "ਖਾਦ ਸਮਾਂ-ਸਾਰਣੀ",
  stat_active_crops: "ਸਕਿਰਿਆ ਫ਼ਸਲਾਂ",
- stat_water: "ਪਾਣੀ ਵਰਤੋਂ",
+ stat_water: "ਅੰਦਾਜ਼ਿਤ ਪਾਣੀ ਲੋੜ",
  stat_revenue: "ਅੰਦਾਜ਼ਿਤ ਆਮਦਨ",
  stat_alerts: "ਸਕਿਰਿਆ ਅਲਰਟ",
  hero_stat_tools_text: "ਇੱਕ ਡੈਸ਼ਬੋਰਡ ਵਿੱਚ ਖੇਤੀ ਟੂਲ",
@@ -936,7 +936,7 @@ const translationOverrides = {
  water_mgmt: "நீர் மேலாண்மை",
  fert_plan: "உர அட்டவணை",
  stat_active_crops: "செயலில் உள்ள பயிர்கள்",
- stat_water: "நீர் பயன்பாடு",
+ stat_water: "மதிப்பிடப்பட்ட நீர் தேவை",
  stat_revenue: "மதிப்பிடப்பட்ட வருவாய்",
  stat_alerts: "செயலில் உள்ள எச்சரிக்கைகள்",
  stat_accuracy: "நோய் கண்டறிதல் துல்லியம்",
@@ -1004,7 +1004,7 @@ const translationOverrides = {
  water_mgmt: "నీటి నిర్వహణ",
  fert_plan: "ఎరువు షెడ్యూల్",
  stat_active_crops: "చురుకైన పంటలు",
- stat_water: "నీటి వినియోగం",
+ stat_water: "అంచనా నీటి అవసరం",
  stat_revenue: "అంచనా ఆదాయం",
  stat_alerts: "చురుకైన హెచ్చరికలు",
  f1_desc: "మీ మట్టి, ప్రదేశం మరియు సీజన్ ఆధారంగా సరైన పంట సిఫారసులను పొందండి.",
@@ -1082,9 +1082,9 @@ const staticUiTranslations = {
  "Water": "पानी",
  "Water Management": "जल प्रबंधन",
  "Fertilizer Schedule": "खाद कार्यक्रम",
- "Field A - Wheat": "खेत A - गेहूं",
- "Field B - Chickpea": "खेत B - चना",
- "Field C - Potato": "खेत C - आलू",
+ "North Plot - Wheat": "उत्तर प्लॉट - गेहूं",
+ "Central Plot - Chickpea": "मध्य प्लॉट - चना",
+ "South Plot - Potato": "दक्षिण प्लॉट - आलू",
  "Soil moisture: Optimal level": "मिट्टी की नमी: सही स्तर",
  "Warning Needs irrigation within 24h": "चेतावनी 24 घंटे में सिंचाई चाहिए",
  "Adequate level. Next irrigation: 3 days": "पर्याप्त स्तर। अगली सिंचाई: 3 दिन",
@@ -1093,7 +1093,7 @@ const staticUiTranslations = {
  "Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.": "अगले 48 घंटों में पुणे जिले में भारी बारिश की संभावना है। कटी फसल सुरक्षित रखें।",
  "Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.": "पास के खेतों में पत्ती झुलसा रोग मिला है। गेहूं के लिए रोकथाम छिड़काव पर विचार करें।",
  "Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.": "पुणे मंडी में गेहूं के भाव 5% बढ़े। बेचने पर विचार करने का अच्छा समय है।",
- "Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.": "मिट्टी की नमी कम है। खेत B में 24 घंटे के भीतर सिंचाई करें।",
+ "Soil moisture is below optimal. Schedule irrigation for Central Plot within 24 hours.": "मिट्टी की नमी कम है। मध्य प्लॉट में 24 घंटे के भीतर सिंचाई करें।",
  "Disease Detection": "रोग पहचान",
  "Scan your crop leaves now": "अभी अपनी फसल की पत्तियां स्कैन करें",
  "Live mandi rates": "लाइव मंडी भाव",
@@ -1165,9 +1165,9 @@ const staticUiTranslations = {
  "Water": "पाणी",
  "Water Management": "जल व्यवस्थापन",
  "Fertilizer Schedule": "खत वेळापत्रक",
- "Field A - Wheat": "शेत A - गहू",
- "Field B - Chickpea": "शेत B - हरभरा",
- "Field C - Potato": "शेत C - बटाटा",
+ "North Plot - Wheat": "उत्तर प्लॉट - गहू",
+ "Central Plot - Chickpea": "मध्य प्लॉट - हरभरा",
+ "South Plot - Potato": "दक्षिण प्लॉट - बटाटा",
  "Soil moisture: Optimal level": "मातीतील ओलावा: योग्य स्तर",
  "Warning Needs irrigation within 24h": "इशारा 24 तासांत सिंचन आवश्यक",
  "Adequate level. Next irrigation: 3 days": "पुरेसा स्तर. पुढील सिंचन: 3 दिवस",
@@ -1176,7 +1176,7 @@ const staticUiTranslations = {
  "Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.": "पुढील 48 तासांत पुणे जिल्ह्यात मुसळधार पावसाची शक्यता. कापलेली पिके सुरक्षित ठेवा.",
  "Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.": "जवळच्या शेतात पान करपा आढळला. गव्हासाठी प्रतिबंधक फवारणीचा विचार करा.",
  "Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.": "पुणे मंडीत गव्हाचे भाव 5% वाढले. विक्रीचा विचार करण्यासाठी चांगला वेळ.",
- "Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.": "मातीतील ओलावा कमी आहे. शेत B साठी 24 तासांत सिंचन करा.",
+ "Soil moisture is below optimal. Schedule irrigation for Central Plot within 24 hours.": "मातीतील ओलावा कमी आहे. मध्य प्लॉटसाठी 24 तासांत सिंचन करा.",
  "Scan your crop leaves now": "आता पिकांची पाने स्कॅन करा",
  "Live mandi rates": "लाईव्ह बाजारभाव",
  "Sell your produce": "तुमचे उत्पादन विका",
@@ -1247,9 +1247,9 @@ const staticUiTranslations = {
  "Water": "ਪਾਣੀ",
  "Water Management": "ਪਾਣੀ ਪ੍ਰਬੰਧਨ",
  "Fertilizer Schedule": "ਖਾਦ ਸਮਾਂ-ਸਾਰਣੀ",
- "Field A - Wheat": "ਖੇਤ A - ਗੇਂਹੂ",
- "Field B - Chickpea": "ਖੇਤ B - ਚਣਾ",
- "Field C - Potato": "ਖੇਤ C - ਆਲੂ",
+ "North Plot - Wheat": "ਉੱਤਰੀ ਪਲਾਟ - ਗੇਂਹੂ",
+ "Central Plot - Chickpea": "ਮੱਧ ਪਲਾਟ - ਚਣਾ",
+ "South Plot - Potato": "ਦੱਖਣੀ ਪਲਾਟ - ਆਲੂ",
  "Soil moisture: Optimal level": "ਮਿੱਟੀ ਨਮੀ: ਠੀਕ ਪੱਧਰ",
  "Warning Needs irrigation within 24h": "ਚੇਤਾਵਨੀ 24 ਘੰਟਿਆਂ ਵਿੱਚ ਸਿੰਚਾਈ ਚਾਹੀਦੀ ਹੈ",
  "Adequate level. Next irrigation: 3 days": "ਕਾਫੀ ਪੱਧਰ। ਅਗਲੀ ਸਿੰਚਾਈ: 3 ਦਿਨ",
@@ -1258,7 +1258,7 @@ const staticUiTranslations = {
  "Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.": "ਅਗਲੇ 48 ਘੰਟਿਆਂ ਵਿੱਚ ਪੁਨੇ ਜ਼ਿਲ੍ਹੇ ਵਿੱਚ ਭਾਰੀ ਮੀਂਹ ਦੀ ਸੰਭਾਵਨਾ। ਕੱਟੀ ਫ਼ਸਲ ਸੁਰੱਖਿਅਤ ਰੱਖੋ।",
  "Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.": "ਨੇੜਲੇ ਖੇਤਾਂ ਵਿੱਚ ਪੱਤਾ ਝੁਲਸਾ ਮਿਲਿਆ। ਗੇਂਹੂ ਲਈ ਰੋਕਥਾਮ ਛਿੜਕਾਅ ਸੋਚੋ।",
  "Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.": "ਪੁਨੇ ਮੰਡੀ ਵਿੱਚ ਗੇਂਹੂ ਭਾਅ 5% ਵਧੇ। ਵੇਚਣ ਲਈ ਚੰਗਾ ਸਮਾਂ।",
- "Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.": "ਮਿੱਟੀ ਨਮੀ ਘੱਟ ਹੈ। ਖੇਤ B ਲਈ 24 ਘੰਟਿਆਂ ਵਿੱਚ ਸਿੰਚਾਈ ਕਰੋ।",
+ "Soil moisture is below optimal. Schedule irrigation for Central Plot within 24 hours.": "ਮਿੱਟੀ ਨਮੀ ਘੱਟ ਹੈ। ਮੱਧ ਪਲਾਟ ਲਈ 24 ਘੰਟਿਆਂ ਵਿੱਚ ਸਿੰਚਾਈ ਕਰੋ।",
  "Scan your crop leaves now": "ਹੁਣ ਆਪਣੀ ਫ਼ਸਲ ਦੇ ਪੱਤੇ ਸਕੈਨ ਕਰੋ",
  "Live mandi rates": "ਲਾਈਵ ਮੰਡੀ ਭਾਅ",
  "Sell your produce": "ਆਪਣੀ ਉਪਜ ਵੇਚੋ",
@@ -1329,9 +1329,9 @@ const staticUiTranslations = {
  "Water": "நீர்",
  "Water Management": "நீர் மேலாண்மை",
  "Fertilizer Schedule": "உர அட்டவணை",
- "Field A - Wheat": "வயல் A - கோதுமை",
- "Field B - Chickpea": "வயல் B - கொண்டைக்கடலை",
- "Field C - Potato": "வயல் C - உருளைக்கிழங்கு",
+ "North Plot - Wheat": "வடக்கு பகுதி - கோதுமை",
+ "Central Plot - Chickpea": "மத்திய பகுதி - கொண்டைக்கடலை",
+ "South Plot - Potato": "தெற்கு பகுதி - உருளைக்கிழங்கு",
  "Soil moisture: Optimal level": "மண் ஈரப்பதம்: சரியான நிலை",
  "Warning Needs irrigation within 24h": "எச்சரிக்கை 24 மணி நேரத்தில் பாசனம் தேவை",
  "Adequate level. Next irrigation: 3 days": "போதுமான நிலை. அடுத்த பாசனம்: 3 நாட்கள்",
@@ -1340,7 +1340,7 @@ const staticUiTranslations = {
  "Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.": "அடுத்த 48 மணி நேரத்தில் புனே மாவட்டத்தில் கனமழை எதிர்பார்க்கப்படுகிறது. அறுவடை பயிர்களை பாதுகாக்கவும்.",
  "Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.": "அருகிலுள்ள வயல்களில் இலை கருகல் கண்டறியப்பட்டது. கோதுமைக்கு தடுப்பு தெளிப்பை பரிசீலிக்கவும்.",
  "Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.": "புனே சந்தையில் கோதுமை விலை 5% உயர்ந்தது. விற்பனைக்கு நல்ல நேரம்.",
- "Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.": "மண் ஈரப்பதம் குறைவாக உள்ளது. வயல் Bக்கு 24 மணி நேரத்தில் பாசனம் செய்யவும்.",
+ "Soil moisture is below optimal. Schedule irrigation for Central Plot within 24 hours.": "மண் ஈரப்பதம் குறைவாக உள்ளது. மத்திய பகுதிக்கு 24 மணி நேரத்தில் பாசனம் செய்யவும்.",
  "Scan your crop leaves now": "இப்போது உங்கள் பயிர் இலைகளை ஸ்கேன் செய்யுங்கள்",
  "Live mandi rates": "நேரடி சந்தை விலைகள்",
  "Sell your produce": "உங்கள் விளைபொருளை விற்கவும்",
@@ -1411,9 +1411,9 @@ const staticUiTranslations = {
  "Water": "నీరు",
  "Water Management": "నీటి నిర్వహణ",
  "Fertilizer Schedule": "ఎరువు షెడ్యూల్",
- "Field A - Wheat": "పొలం A - గోధుమ",
- "Field B - Chickpea": "పొలం B - శనగ",
- "Field C - Potato": "పొలం C - బంగాళాదుంప",
+ "North Plot - Wheat": "ఉత్తర ప్లాట్ - గోధుమ",
+ "Central Plot - Chickpea": "మధ్య ప్లాట్ - శనగ",
+ "South Plot - Potato": "దక్షిణ ప్లాట్ - బంగాళాదుంప",
  "Soil moisture: Optimal level": "నేల తేమ: సరైన స్థాయి",
  "Warning Needs irrigation within 24h": "హెచ్చరిక 24 గంటల్లో నీరు అవసరం",
  "Adequate level. Next irrigation: 3 days": "తగిన స్థాయి. తదుపరి నీరు: 3 రోజులు",
@@ -1422,7 +1422,7 @@ const staticUiTranslations = {
  "Heavy rain expected in Pune district for the next 48 hours. Secure harvested crops.": "తదుపరి 48 గంటల్లో పుణే జిల్లాలో భారీ వర్షం అవకాశం. కోసిన పంటలను రక్షించండి.",
  "Leaf blight detected in nearby farms. Consider preventive spraying for your wheat crop.": "దగ్గరలోని పొలాల్లో ఆకుమచ్చ వ్యాధి గుర్తించారు. గోధుమకు నివారణ పిచికారీ పరిగణించండి.",
  "Wheat prices rose by 5% at Pune Mandi. Good time to consider selling.": "పుణే మార్కెట్లో గోధుమ ధరలు 5% పెరిగాయి. అమ్మడానికి మంచి సమయం.",
- "Soil moisture is below optimal. Schedule irrigation for Field B within 24 hours.": "నేల తేమ తక్కువగా ఉంది. పొలం Bకి 24 గంటల్లో నీరు పెట్టండి.",
+ "Soil moisture is below optimal. Schedule irrigation for Central Plot within 24 hours.": "నేల తేమ తక్కువగా ఉంది. మధ్య ప్లాట్‌కు 24 గంటల్లో నీరు పెట్టండి.",
  "Scan your crop leaves now": "ఇప్పుడే మీ పంట ఆకులను స్కాన్ చేయండి",
  "Live mandi rates": "లైవ్ మార్కెట్ ధరలు",
  "Sell your produce": "మీ ఉత్పత్తిని అమ్మండి",
@@ -3481,6 +3481,15 @@ function getStoredUser() {
  }
 }
 
+function preserveStoredProfileImage(user) {
+ if (!user) return user;
+ const storedUser = getStoredUser() || {};
+ return {
+ ...user,
+ profile_image_data: user.profile_image_data || user.profileImageData || storedUser.profile_image_data || storedUser.profileImageData || ''
+ };
+}
+
 function syncStoredUserUI() {
  const user = getStoredUser();
  if (!user) return;
@@ -3559,9 +3568,18 @@ function updateProfileDisplay(user) {
  const initials = (firstName?.[0] || user.username?.[0] || 'F').toUpperCase() +
  (lastName?.[0] || '').toUpperCase();
  const avatarText = initials || 'F';
+ const profileImage = user.profile_image_data || user.profileImageData || '';
 
  document.querySelectorAll('.profile-avatar,.sidebar-footer .user-avatar').forEach(el => {
+ if (profileImage) {
+ el.textContent = '';
+ el.style.backgroundImage = `url("${profileImage}")`;
+ el.classList.add('has-profile-image');
+ } else {
  el.textContent = avatarText;
+ el.style.backgroundImage = '';
+ el.classList.remove('has-profile-image');
+ }
  });
 
  const joinedDate = document.getElementById('profileJoinedDate');
@@ -3763,8 +3781,9 @@ async function loadProfileData() {
  try {
  const data = await apiFetch('/user/profile');
  if (data?.user) {
- fillProfileForm(data.user);
- localStorage.setItem('agri_user', JSON.stringify(data.user));
+ const mergedUser = preserveStoredProfileImage(data.user);
+ fillProfileForm(mergedUser);
+ localStorage.setItem('agri_user', JSON.stringify(mergedUser));
  }
  } catch (err) {
  console.warn('Failed to load profile from API:', err);
@@ -3784,6 +3803,86 @@ async function loadProfileData() {
 function showPersonalInfoSave() {
  const btn = document.getElementById('personalInfoSaveBtn');
  if (btn) btn.style.display = 'flex';
+}
+
+function resizeProfileImage(file) {
+ return new Promise((resolve, reject) => {
+ const reader = new FileReader();
+ reader.onerror = () => reject(new Error('Could not read the selected image'));
+ reader.onload = () => {
+ const image = new Image();
+ image.onerror = () => reject(new Error('Please select a valid image'));
+ image.onload = () => {
+ const size = 512;
+ const canvas = document.createElement('canvas');
+ canvas.width = size;
+ canvas.height = size;
+ const context = canvas.getContext('2d');
+ if (!context) {
+ reject(new Error('Image processing is unavailable'));
+ return;
+ }
+ const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+ const sourceX = Math.max(0, (image.naturalWidth - sourceSize) / 2);
+ const sourceY = Math.max(0, (image.naturalHeight - sourceSize) / 2);
+ context.fillStyle = '#ffffff';
+ context.fillRect(0, 0, size, size);
+ context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
+ resolve(canvas.toDataURL('image/jpeg', 0.82));
+ };
+ image.src = String(reader.result || '');
+ };
+ reader.readAsDataURL(file);
+ });
+}
+
+async function handleProfileImageUpload(event) {
+ const input = event?.target;
+ const file = input?.files?.[0];
+ if (!file) return;
+ if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+ showToast('Choose a JPG, PNG, or WEBP profile picture', 'error');
+ input.value = '';
+ return;
+ }
+ if (file.size > 8 * 1024 * 1024) {
+ showToast('Choose an image smaller than 8 MB', 'error');
+ input.value = '';
+ return;
+ }
+
+ try {
+ const profileImageData = await resizeProfileImage(file);
+ const currentUser = getStoredUser() || {};
+ updateProfileDisplay({ ...currentUser, profile_image_data: profileImageData });
+ showToast('Saving profile picture...', 'info');
+ const data = await apiFetch('/user/profile', {
+ method: 'PUT',
+ body: JSON.stringify({ profileImageData })
+ });
+ if (data?.user) {
+ // Keep the freshly uploaded image when an older running backend response
+ // has not yet included the new profile_image_data field.
+ const updatedUser = {
+ ...currentUser,
+ ...data.user,
+ profile_image_data: data.user.profile_image_data || profileImageData
+ };
+ localStorage.setItem('agri_user', JSON.stringify(updatedUser));
+ updateProfileDisplay(updatedUser);
+ } else {
+ const updatedUser = { ...currentUser, profile_image_data: profileImageData };
+ localStorage.setItem('agri_user', JSON.stringify(updatedUser));
+ updateProfileDisplay(updatedUser);
+ }
+ showToast('Profile picture updated successfully!');
+ } catch (error) {
+ const currentUser = getStoredUser();
+ if (currentUser) updateProfileDisplay(currentUser);
+ showToast(error.msg || error.message || 'Could not update profile picture', 'error');
+ } finally {
+ input.value = '';
+ }
 }
 
 function saveProfile(options = {}) {
@@ -3836,9 +3935,10 @@ function saveProfile(options = {}) {
  showToast('Profile updated successfully!');
  }
  if (data?.user) {
- fillProfileForm(data.user);
- updateFarmDetailsSummary(data.user);
- localStorage.setItem('agri_user', JSON.stringify(data.user));
+ const mergedUser = preserveStoredProfileImage(data.user);
+ fillProfileForm(mergedUser);
+ updateFarmDetailsSummary(mergedUser);
+ localStorage.setItem('agri_user', JSON.stringify(mergedUser));
  }
  // Hide save button after success
  const btn = document.getElementById('personalInfoSaveBtn');
@@ -4857,7 +4957,7 @@ function initMarketplaceListingFlow() {
 const defaultNotifications = [
  { id: 'n1', title: 'Weather alert', message: 'Heavy rain expected in next 24 hours.', time: '2h ago' },
  { id: 'n2', title: 'Market update', message: 'Wheat price increased by 5.2% in Pune mandi.', time: '5h ago' },
- { id: 'n3', title: 'Irrigation reminder', message: 'Field B moisture is low. Check irrigation schedule.', time: '1d ago' }
+ { id: 'n3', title: 'Irrigation reminder', message: 'Central Plot moisture is low. Check irrigation schedule.', time: '1d ago' }
 ];
 
 function normalizeNotification(alert) {
@@ -7363,7 +7463,7 @@ const chatResponses = {
  'market price': "Current prices at Pune APMC: Wheat Rs.2,450/q (up5.2%), Rice Rs.3,800/q (up2.1%), Soybean Rs.4,200/q (up12.5%). Visit the Market Prices page for detailed information.",
  'marketplace': "You can list your crops on the Marketplace page. Click 'List Your Crop' to create a listing with crop name, quantity, price, and location. Buyers can contact you directly!",
  'fertilizer': "Based on your crops, here's your fertilizer schedule: Wheat - Urea 50 kg/acre (due tomorrow), Chickpea - DAP 30 kg/acre (in 5 days), Potato - MOP 25 kg/acre (in 10 days).",
- 'water': "Field B (Chickpea) needs irrigation within 24 hours! Soil moisture is at 42%. Field A (Wheat) is optimal at 78%. Schedule irrigation accordingly.",
+ 'water': "Central Plot (Chickpea) needs irrigation within 24 hours! Soil moisture is at 42%. North Plot (Wheat) is optimal at 78%. Schedule irrigation accordingly.",
  'hello': "Namaste! Welcome to AgriComplete Hub. How can I assist you today? You can ask about crop recommendations, weather, disease detection, market prices, or fertilizer planning.",
  'namaste': "Namaste! Welcome to AgriComplete Hub. How can I assist you today?",
  'help': "I can help you with:\n Crop recommendations\n Weather forecasts\n Disease detection\n Market prices\n Marketplace\n Water management\n Fertilizer planning\n\nJust type your question!",

@@ -124,6 +124,7 @@ def ensure_sqlite_schema():
         'irrigation_source': 'VARCHAR(100)',
         'primary_crops': 'VARCHAR(150)',
         'farming_type': 'VARCHAR(100)',
+        'profile_image_data': 'TEXT',
         'subscription': "VARCHAR(20) DEFAULT 'Basic'",
         'created_at': 'DATETIME',
     }
@@ -250,6 +251,7 @@ def ensure_postgres_schema():
         'irrigation_source': 'VARCHAR(100)',
         'primary_crops': 'VARCHAR(150)',
         'farming_type': 'VARCHAR(100)',
+        'profile_image_data': 'TEXT',
         'subscription': "VARCHAR(20) DEFAULT 'Basic'",
         'created_at': 'TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()',
     }

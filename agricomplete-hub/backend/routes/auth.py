@@ -577,6 +577,7 @@ def _serialize_user(user):
         "irrigation_source": user.irrigation_source or '',
         "primary_crops": user.primary_crops or '',
         "farming_type": user.farming_type or '',
+        "profile_image_data": getattr(user, 'profile_image_data', '') or '',
         "created_at": user_created_at_utc(user)
     }
 

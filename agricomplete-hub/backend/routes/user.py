@@ -11,6 +11,8 @@ import re
 user_bp = Blueprint('user', __name__)
 logger = logging.getLogger(__name__)
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+PROFILE_IMAGE_RE = re.compile(r'^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$')
+MAX_PROFILE_IMAGE_LENGTH = 650000
 
 def _get_current_user_id():
     try:
@@ -71,6 +73,7 @@ def _serialize_user(user):
         "irrigation_source": getattr(user, 'irrigation_source', '') or '',
         "primary_crops": getattr(user, 'primary_crops', '') or '',
         "farming_type": getattr(user, 'farming_type', '') or '',
+        "profile_image_data": getattr(user, 'profile_image_data', '') or '',
         "created_at": user_created_at_utc(user)
     }
 
@@ -154,6 +157,14 @@ def update_profile():
             user.primary_crops = _clean_text(data['primaryCrops'], 150)
         if 'farmingType' in data:
             user.farming_type = _clean_text(data['farmingType'], 100)
+        if 'profileImageData' in data:
+            profile_image_data = _clean_text(data['profileImageData'])
+            if profile_image_data:
+                if len(profile_image_data) > MAX_PROFILE_IMAGE_LENGTH:
+                    return jsonify({"msg": "Profile picture is too large"}), 400
+                if not PROFILE_IMAGE_RE.fullmatch(profile_image_data):
+                    return jsonify({"msg": "Profile picture must be a JPG, PNG, or WEBP image"}), 400
+            user.profile_image_data = profile_image_data or None
 
         db.session.commit()
 

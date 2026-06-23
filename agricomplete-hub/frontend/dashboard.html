@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Dashboard - AgriComplete Hub</title>
  <meta name="description" content="Your personalized smart farming dashboard with weather, crop recommendations, and alerts.">
- <link rel="stylesheet" href="css/style.css?v=deployment-polish-20260623">
+ <link rel="stylesheet" href="css/style.css?v=dashboard-profile-live-20260624">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
@@ -107,37 +107,37 @@
  <div class="page-content">
 
  <!-- Stat Cards -->
- <div class="grid-4 mobile-summary-grid fade-in" style="margin-bottom:var(--space-xl);">
- <div class="stat-card">
+ <div class="grid-4 mobile-summary-grid dashboard-summary-grid fade-in" style="margin-bottom:var(--space-xl);" aria-label="Live farm summary">
+ <div class="stat-card dashboard-summary-card">
  <div class="stat-icon green"><i class="fas fa-seedling"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label" data-i18n="stat_active_crops">Active Crops</div>
- <div class="stat-value">12</div>
- <div class="stat-change up">up 3 new this season</div>
+ <div class="stat-value dashboard-stat-loading" id="dashboardActiveCrops">--</div>
+ <div class="stat-change" id="dashboardActiveCropsNote">Loading crop records...</div>
  </div>
  </div>
- <div class="stat-card">
+ <div class="stat-card dashboard-summary-card">
  <div class="stat-icon blue"><i class="fas fa-tint"></i></div>
- <div>
- <div class="stat-label" data-i18n="stat_water">Water Usage</div>
- <div class="stat-value">2,450L</div>
- <div class="stat-change down">down 12% vs last week</div>
+ <div class="stat-content">
+ <div class="stat-label" data-i18n="stat_water">Est. Water Need</div>
+ <div class="stat-value dashboard-stat-loading" id="dashboardWaterUsage">--</div>
+ <div class="stat-change" id="dashboardWaterUsageNote">Checking irrigation guidance...</div>
  </div>
  </div>
- <div class="stat-card">
+ <div class="stat-card dashboard-summary-card">
  <div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label" data-i18n="stat_revenue">Est. Revenue</div>
- <div class="stat-value">Rs.1.8L</div>
- <div class="stat-change up">up 8% growth</div>
+ <div class="stat-value dashboard-stat-loading" id="dashboardEstimatedRevenue">--</div>
+ <div class="stat-change" id="dashboardEstimatedRevenueNote">Loading your listings...</div>
  </div>
  </div>
- <div class="stat-card">
+ <div class="stat-card dashboard-summary-card">
  <div class="stat-icon purple"><i class="fas fa-exclamation-triangle"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label" data-i18n="stat_alerts">Active Alerts</div>
- <div class="stat-value">3</div>
- <div class="stat-change" style="color:var(--color-secondary);">Warning 1 urgent</div>
+ <div class="stat-value dashboard-stat-loading" id="dashboardActiveAlerts">--</div>
+ <div class="stat-change" id="dashboardActiveAlertsNote">Checking live conditions...</div>
  </div>
  </div>
  </div>
@@ -180,8 +180,8 @@
  </div>
  </div>
 
- <!-- Price Trend Chart -->
- <div class="fade-in delay-2" style="margin-bottom:var(--space-xl);">
+ <!-- Chart + Alerts -->
+ <div class="grid-sidebar dashboard-insights-grid dashboard-insights-spacing fade-in delay-2">
  <!-- Price Trend Chart -->
  <div class="chart-container price-trend-card">
  <div class="chart-header">
@@ -240,6 +240,45 @@
  <div class="chart-insight" id="priceTrendInsight"></div>
  </div>
 
+ <!-- Alerts -->
+ <div class="card dashboard-live-alerts-card">
+ <div class="dashboard-live-alerts-head">
+ <h4><i class="fas fa-bell"></i> <span data-i18n="recent_alerts">Recent Alerts</span></h4>
+ <button type="button" class="dashboard-live-alerts-refresh" id="dashboardLiveAlertsRefresh" aria-label="Refresh dashboard alerts"><i class="fas fa-rotate-right"></i></button>
+ </div>
+ <div class="dashboard-live-alerts-list" id="dashboardLiveAlertsList">
+ <div class="dashboard-live-alerts-loading"><i class="fas fa-spinner fa-spin"></i> Loading live alerts...</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Water & Fertilizer Management -->
+ <div class="grid-2 fade-in delay-3 water-fertilizer-section" style="margin-bottom:var(--space-xl);">
+ <!-- Water Usage -->
+ <div class="card">
+ <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-tint" style="color:#1565C0;margin-right:8px;"></i> <span data-i18n="water_mgmt">Water Management</span></h4>
+ <div class="dashboard-water-list" id="dashboardWaterList">
+ <div class="dashboard-live-alerts-loading"><i class="fas fa-spinner fa-spin"></i> Loading water guidance...</div>
+ </div>
+ </div>
+
+ <!-- Fertilizer Planner -->
+ <div class="card">
+ <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-flask" style="color:#6A1B9A;margin-right:8px;"></i> <span data-i18n="fert_plan">Fertilizer Schedule</span></h4>
+ <table class="data-table" style="font-size:.88rem;">
+ <thead>
+ <tr>
+ <th data-i18n="Crop">Crop</th>
+ <th data-i18n="Fertilizer">Fertilizer</th>
+ <th data-i18n="Qty">Qty</th>
+ <th data-i18n="Due">Due</th>
+ </tr>
+ </thead>
+ <tbody id="dashboardFertilizerBody">
+ <tr><td colspan="4" data-i18n-skip>Loading live fertilizer guidance...</td></tr>
+ </tbody>
+ </table>
+ </div>
  </div>
 
  <!-- Quick Links -->
@@ -299,6 +338,9 @@
 
 <script src="js/main.js?v=session-scope-20260622"></script>
 <script src="js/dashboard-market-trends.js?v=live-mandi-dashboard-20260623"></script>
+<script src="js/dashboard-alerts.js?v=live-alerts-20260624"></script>
+<script src="js/dashboard-resource-guidance.js?v=live-resource-guidance-i18n-20260624"></script>
+<script src="js/dashboard-summary.js?v=live-summary-20260624"></script>
  <script>
  // Set date
  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });

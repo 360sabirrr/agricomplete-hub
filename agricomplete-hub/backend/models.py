@@ -17,6 +17,7 @@ class User(db.Model):
     irrigation_source = db.Column(db.String(100))
     primary_crops = db.Column(db.String(150))
     farming_type = db.Column(db.String(100))
+    profile_image_data = db.Column(db.Text)
     subscription = db.Column(db.String(20), default='Basic')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 

@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>My Profile - AgriComplete Hub</title>
  <meta name="description" content="Manage your farmer profile and farm details on AgriComplete Hub.">
- <link rel="stylesheet" href="css/style.css?v=deployment-polish-20260623">
+ <link rel="stylesheet" href="css/style.css?v=profile-photo-20260624">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
@@ -47,7 +47,13 @@
  <div class="page-content">
  <!-- Profile Header -->
  <div class="profile-header fade-in" style="margin-bottom:var(--space-xl);">
- <div class="profile-avatar">RS</div>
+ <div class="profile-avatar-wrap">
+ <div class="profile-avatar" id="profileAvatar">RS</div>
+ <button class="profile-avatar-upload" type="button" onclick="document.getElementById('profileImageInput').click()" aria-label="Upload profile picture" title="Upload profile picture">
+ <i class="fas fa-camera"></i>
+ </button>
+ <input id="profileImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="handleProfileImageUpload(event)">
+ </div>
  <div class="profile-details" style="flex:1;">
  <h2>Rajesh Singh</h2>
  <p style="color:var(--text-secondary);">Wheat & Vegetable Farmer - Pune, Maharashtra</p>
@@ -59,27 +65,7 @@
  <button class="btn btn-primary btn-sm" onclick="showPersonalInfoSave(); document.getElementById('profileFirstName').focus(); document.getElementById('profileFirstName').scrollIntoView({behavior: 'smooth', block: 'center'})"><i class="fas fa-edit"></i> Edit Profile</button>
  </div>
 
- <!-- Profile Stats -->
- <div class="grid-4 mobile-summary-grid fade-in delay-1" style="margin-bottom:var(--space-xl);">
- <div class="stat-card">
- <div class="stat-icon green"><i class="fas fa-seedling"></i></div>
- <div><div class="stat-label">Active Crops</div><div class="stat-value">12</div></div>
- </div>
- <div class="stat-card">
- <div class="stat-icon blue"><i class="fas fa-exchange-alt"></i></div>
- <div><div class="stat-label">Total Trades</div><div class="stat-value">47</div></div>
- </div>
- <div class="stat-card">
- <div class="stat-icon orange"><i class="fas fa-rupee-sign"></i></div>
- <div><div class="stat-label">Revenue</div><div class="stat-value">Rs.4.2L</div></div>
- </div>
- <div class="stat-card">
- <div class="stat-icon purple"><i class="fas fa-star"></i></div>
- <div><div class="stat-label">Rating</div><div class="stat-value">4.8 </div></div>
- </div>
- </div>
-
- <div class="grid-sidebar fade-in delay-2" style="margin-bottom:var(--space-xl);">
+ <div class="grid-sidebar fade-in delay-1" style="margin-bottom:var(--space-xl);">
  <!-- Personal Info -->
  <div class="card">
  <h4 style="margin-bottom:var(--space-lg);"><i class="fas fa-user" style="color:var(--color-primary);margin-right:8px;"></i> Personal Information</h4>
@@ -147,29 +133,15 @@
 
 
  <!-- Recent Activity -->
- <div class="card">
- <h4 style="margin-bottom:var(--space-md);"><i class="fas fa-history" style="color:var(--color-secondary);margin-right:8px;"></i> Recent Activity</h4>
- <div style="display:flex;flex-direction:column;gap:var(--space-sm);">
- <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border-light);">
- <i class="fas fa-leaf" style="color:var(--color-primary);width:20px;"></i>
- <span>Disease scan - Tomato leaf</span>
- <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">2 days ago</span>
+ <div class="card profile-activity-card">
+ <div class="profile-activity-header">
+ <h4><i class="fas fa-history"></i> <span>Recent Activity</span></h4>
+ <button class="profile-activity-refresh" id="profileActivityRefresh" type="button" aria-label="Refresh recent activity" title="Refresh recent activity">
+ <i class="fas fa-rotate-right"></i>
+ </button>
  </div>
- <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border-light);">
- <i class="fas fa-store" style="color:var(--color-accent);width:20px;"></i>
- <span>Listed 50 qtl Wheat on Marketplace</span>
- <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">3 days ago</span>
- </div>
- <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;border-bottom:1px solid var(--border-light);">
- <i class="fas fa-chart-bar" style="color:var(--color-secondary);width:20px;"></i>
- <span>Checked wheat prices at Pune mandi</span>
- <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">4 days ago</span>
- </div>
- <div style="display:flex;align-items:center;gap:10px;font-size:.85rem;padding:8px 0;">
- <i class="fas fa-phone" style="color:#1565C0;width:20px;"></i>
- <span>Contacted buyer - Anand Traders</span>
- <span style="margin-left:auto;color:var(--text-muted);font-size:.75rem;">1 week ago</span>
- </div>
+ <div class="profile-activity-list" id="profileActivityList" aria-live="polite">
+ <div class="profile-activity-state"><i class="fas fa-spinner fa-spin"></i><span>Loading your latest activity...</span></div>
  </div>
  </div>
  </div>
@@ -237,6 +209,7 @@
  </div>
  </div>
 
-<script src="js/main.js?v=session-scope-20260622"></script>
+<script src="js/main.js?v=profile-photo-display-fix-20260624"></script>
+<script src="js/profile-activity.js?v=live-profile-activity-20260624"></script>
 </body>
 </html>
