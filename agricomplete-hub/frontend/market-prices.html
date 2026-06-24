@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Market Prices - AgriComplete Hub</title>
  <meta name="description" content="Track live mandi prices, crop trends, and find nearby buyers on AgriComplete Hub.">
- <link rel="stylesheet" href="css/style.css?v=market-page-polish-20260623">
+ <link rel="stylesheet" href="css/style.css?v=app-wide-layout-20260624">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
@@ -56,37 +56,37 @@
 
  <div class="page-content">
  <!-- Summary Cards -->
- <div class="grid-4 mobile-summary-grid fade-in" style="margin-bottom:var(--space-xl);">
- <div class="stat-card">
+ <div class="grid-4 mobile-summary-grid market-live-summary fade-in" style="margin-bottom:var(--space-xl);" aria-label="Live mandi summary">
+ <div class="stat-card market-live-stat">
  <div class="stat-icon green"><i class="fas fa-arrow-up"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label">Most Gained</div>
- <div class="stat-value" style="font-size:1.2rem;">Soybean</div>
- <div class="stat-change up">up 12.5% this week</div>
+ <div class="stat-value market-stat-value dashboard-stat-loading" id="marketMostGained">--</div>
+ <div class="stat-change" id="marketMostGainedNote">Loading live records...</div>
  </div>
  </div>
- <div class="stat-card">
+ <div class="stat-card market-live-stat">
  <div class="stat-icon orange"><i class="fas fa-arrow-down"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label">Most Declined</div>
- <div class="stat-value" style="font-size:1.2rem;">Onion</div>
- <div class="stat-change down">down 8.3% this week</div>
+ <div class="stat-value market-stat-value dashboard-stat-loading" id="marketMostDeclined">--</div>
+ <div class="stat-change" id="marketMostDeclinedNote">Loading live records...</div>
  </div>
  </div>
- <div class="stat-card">
+ <div class="stat-card market-live-stat">
  <div class="stat-icon blue"><i class="fas fa-exchange-alt"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label">Total Mandis</div>
- <div class="stat-value">547</div>
- <div class="stat-change" style="color:var(--text-muted);">Tracked live</div>
+ <div class="stat-value dashboard-stat-loading" id="marketTotalMandis">--</div>
+ <div class="stat-change" id="marketTotalMandisNote">Loading current search...</div>
  </div>
  </div>
- <div class="stat-card">
+ <div class="stat-card market-live-stat">
  <div class="stat-icon purple"><i class="fas fa-broadcast-tower"></i></div>
- <div>
+ <div class="stat-content">
  <div class="stat-label">Last Updated</div>
- <div class="stat-value" style="font-size:1rem;" id="marketUpdateTime">--</div>
- <div class="stat-change" style="color:var(--color-primary);">Auto-refresh</div>
+ <div class="stat-value market-update-value dashboard-stat-loading" id="marketUpdateTime">--</div>
+ <div class="stat-change up" id="marketUpdateNote">Refreshes every 5 min</div>
  </div>
  </div>
  </div>
@@ -203,7 +203,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/main.js?v=session-scope-20260622"></script>
-<script src="js/market-prices.js?v=mandi-i18n-20260623"></script>
- <script>document.getElementById('marketUpdateTime').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});</script>
+<script src="js/market-prices.js?v=chart-label-fix-20260624"></script>
 </body>
 </html>
