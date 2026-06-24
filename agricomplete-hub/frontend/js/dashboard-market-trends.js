@@ -61,8 +61,20 @@
   }
 
   function shortLabel(record, index) {
-    const label = record.market || record.arrival_date || `Mandi ${index + 1}`;
-    return label.length > 14 ? `${label.slice(0, 13)}...` : label;
+    const label = String(record.market || record.arrival_date || `Mandi ${index + 1}`)
+      .replace(/\s+APMC\b/gi, '')
+      .replace(/\([^)]*\)/g, '')
+      .trim();
+    return label.length > 10 ? `${label.slice(0, 9)}...` : label;
+  }
+
+  function sampleForChart(records) {
+    const maxBars = window.matchMedia('(max-width: 768px)').matches ? 6 : 10;
+    if (records.length <= maxBars) return records;
+    return Array.from({ length: maxBars }, (_, index) => {
+      const sourceIndex = Math.round(index * (records.length - 1) / (maxBars - 1));
+      return records[sourceIndex];
+    });
   }
 
   function updateNote(text) {
@@ -162,7 +174,9 @@
     const change = first ? ((last - first) / first) * 100 : 0;
     const avgPosition = 28 + ((avg - min) / range) * 64;
 
-    chartGroup.innerHTML = records.map((record, index) => {
+    const chartRecords = sampleForChart(records);
+    chartGroup.dataset.visibleBars = String(chartRecords.length);
+    chartGroup.innerHTML = chartRecords.map((record, index) => {
       const height = 32 + ((record._value - min) / range) * 66;
       const stateClass = record._value === max ? ' is-high' : record._value === min ? ' is-low' : '';
       const title = `${commodity} | ${record.market || 'Market'} | ${record.arrival_date || 'Latest'}: ${formatPrice(record._value)}`;
@@ -198,7 +212,7 @@
     if (insightEl) {
       const direction = change > 0.3 ? 'up' : change < -0.3 ? 'down' : 'stable';
       const bestRecord = records.find(record => record._value === max);
-      insightEl.textContent = `${commodity} live mandi trend is ${direction} ${Math.abs(change).toFixed(1)}% across ${records.length} official records. Highest modal price: ${formatPrice(max)}/q at ${bestRecord?.market || 'available market'}.`;
+      insightEl.textContent = `${commodity} live mandi trend is ${direction} ${Math.abs(change).toFixed(1)}% across ${records.length} official records. Chart shows ${chartRecords.length} representative mandis. Highest modal price: ${formatPrice(max)}/q at ${bestRecord?.market || 'available market'}.`;
     }
 
     chartGroup.closest('.chart-container')?.querySelectorAll('.chart-filter').forEach(button => {

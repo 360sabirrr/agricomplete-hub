@@ -9,6 +9,7 @@
   let currentMandiRecords = [];
   let activeTrendPeriod = '1W';
   let activeTrendCommodity = DEFAULT_QUERY.commodity;
+  let mandiAutoRefreshTimer = null;
 
   function element(id) {
     return document.getElementById(id);
@@ -81,8 +82,20 @@
   }
 
   function shortTrendLabel(record, index) {
-    const label = record.market || record.arrival_date || `Mandi ${index + 1}`;
-    return label.length > 14 ? `${label.slice(0, 13)}...` : label;
+    const label = String(record.market || record.arrival_date || `Mandi ${index + 1}`)
+      .replace(/\s+APMC\b/gi, '')
+      .replace(/\([^)]*\)/g, '')
+      .trim();
+    return label.length > 10 ? `${label.slice(0, 9)}...` : label;
+  }
+
+  function sampleTrendRecords(records) {
+    const maxBars = window.matchMedia('(max-width: 768px)').matches ? 6 : 10;
+    if (records.length <= maxBars) return records;
+    return Array.from({ length: maxBars }, (_, index) => {
+      const sourceIndex = Math.round(index * (records.length - 1) / (maxBars - 1));
+      return records[sourceIndex];
+    });
   }
 
   function parseMandiDate(value) {
@@ -116,6 +129,84 @@
   function average(values) {
     if (!values.length) return null;
     return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+
+  function setSummaryMetric(valueId, noteId, value, note, tone = '') {
+    const valueElement = element(valueId);
+    const noteElement = element(noteId);
+    if (valueElement) {
+      valueElement.textContent = value;
+      valueElement.classList.remove('dashboard-stat-loading');
+      valueElement.title = value;
+    }
+    if (noteElement) {
+      noteElement.textContent = note;
+      noteElement.className = `stat-change${tone ? ` ${tone}` : ''}`;
+    }
+  }
+
+  function resetLiveSummary(message = 'No live records available') {
+    setSummaryMetric('marketMostGained', 'marketMostGainedNote', '--', message);
+    setSummaryMetric('marketMostDeclined', 'marketMostDeclinedNote', '--', message);
+    setSummaryMetric('marketTotalMandis', 'marketTotalMandisNote', '0', 'No mandis in current search');
+  }
+
+  function marketIdentity(record) {
+    return record?.market || record?.district || 'Unknown mandi';
+  }
+
+  function updateLiveSummary(records, refreshedAt = new Date()) {
+    const priced = records.filter(record => Number.isFinite(Number(record.modal_price)));
+    if (!priced.length) {
+      resetLiveSummary();
+    } else {
+      const modalAverage = average(priced.map(record => Number(record.modal_price)));
+      const highest = priced.reduce((best, record) => Number(record.modal_price) > Number(best.modal_price) ? record : best, priced[0]);
+      const lowest = priced.reduce((best, record) => Number(record.modal_price) < Number(best.modal_price) ? record : best, priced[0]);
+      const highestChange = modalAverage ? ((Number(highest.modal_price) - modalAverage) / modalAverage) * 100 : 0;
+      const lowestChange = modalAverage ? ((Number(lowest.modal_price) - modalAverage) / modalAverage) * 100 : 0;
+      const commodity = highest.commodity || element('mandiCommodityInput')?.value || 'Commodity';
+
+      setSummaryMetric(
+        'marketMostGained',
+        'marketMostGainedNote',
+        marketIdentity(highest),
+        `${commodity}: +${Math.max(0, highestChange).toFixed(1)}% vs search average`,
+        'up'
+      );
+      setSummaryMetric(
+        'marketMostDeclined',
+        'marketMostDeclinedNote',
+        marketIdentity(lowest),
+        `${commodity}: ${Math.min(0, lowestChange).toFixed(1)}% vs search average`,
+        'down'
+      );
+
+      const mandiKeys = new Set(records.map(record => [
+        record.market,
+        record.district,
+        record.state,
+      ].map(value => String(value || '').trim().toLowerCase()).join('|')).filter(key => key !== '||'));
+      setSummaryMetric(
+        'marketTotalMandis',
+        'marketTotalMandisNote',
+        String(mandiKeys.size),
+        `${records.length} official record${records.length === 1 ? '' : 's'} in current search`,
+        mandiKeys.size ? 'up' : ''
+      );
+    }
+
+    const updateTime = element('marketUpdateTime');
+    const updateNote = element('marketUpdateNote');
+    if (updateTime) {
+      updateTime.textContent = refreshedAt.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      updateTime.classList.remove('dashboard-stat-loading');
+      updateTime.title = refreshedAt.toLocaleString('en-IN');
+    }
+    if (updateNote) {
+      updateNote.textContent = 'Live API success - refreshes every 5 min';
+      updateNote.className = 'stat-change up';
+    }
   }
 
   function updateChartSummary(records) {
@@ -423,7 +514,9 @@
     const change = first ? ((last - first) / first) * 100 : 0;
     const commodity = records[0]?.commodity || selectedCommodity || 'Selected crop';
 
-    chartGroup.innerHTML = records.map((record, idx) => {
+    const chartRecords = sampleTrendRecords(records);
+    chartGroup.dataset.visibleBars = String(chartRecords.length);
+    chartGroup.innerHTML = chartRecords.map((record, idx) => {
       const height = 32 + ((record._value - min) / range) * 66;
       const stateClass = record._value === max ? ' is-high' : record._value === min ? ' is-low' : '';
       const label = shortTrendLabel(record, idx);
@@ -461,7 +554,7 @@
     if (insightEl) {
       const direction = change > 0.3 ? 'up' : change < -0.3 ? 'down' : 'stable';
       const bestRecord = records.find(record => record._value === max);
-      insightEl.textContent = `${commodity} live trend is ${direction} ${Math.abs(change).toFixed(1)}% across ${records.length} mandi records. Highest modal price: ${formatTrendPrice(max)}/q at ${bestRecord?.market || 'available market'}.`;
+      insightEl.textContent = `${commodity} live trend is ${direction} ${Math.abs(change).toFixed(1)}% across ${records.length} mandi records. Chart shows ${chartRecords.length} representative mandis. Highest modal price: ${formatTrendPrice(max)}/q at ${bestRecord?.market || 'available market'}.`;
     }
     if (noteEl) {
       const location = [element('mandiDistrictInput')?.value, element('mandiStateInput')?.value].filter(Boolean).join(', ');
@@ -512,9 +605,11 @@
       renderTable(records);
       renderChart(records);
       if (!records.length) {
+        updateLiveSummary([], new Date());
         setStatus('No data', 'warning');
         showMessage(data.message || t('mandi_no_records_long', 'No records found. Try changing commodity, district, or market.'), 'warning');
       } else {
+        updateLiveSummary(records, new Date());
         setStatus(`${records.length} records`, 'info');
         showMessage('', 'info');
       }
@@ -523,6 +618,12 @@
       renderTable([]);
       renderChart([]);
       currentMandiRecords = [];
+      resetLiveSummary('Live API request failed');
+      const updateNote = element('marketUpdateNote');
+      if (updateNote) {
+        updateNote.textContent = 'Refresh paused until API responds';
+        updateNote.className = 'stat-change down';
+      }
       setStatus('Error', 'danger');
       showMessage(error?.msg || t('mandi_load_error', 'Could not load official mandi prices.'), 'error');
     } finally {
@@ -553,5 +654,11 @@
       renderChart(currentMandiRecords);
     });
     loadMandiPrices();
+    mandiAutoRefreshTimer = window.setInterval(() => {
+      if (document.visibilityState === 'visible') loadMandiPrices();
+    }, 5 * 60 * 1000);
+    window.addEventListener('beforeunload', () => {
+      if (mandiAutoRefreshTimer) window.clearInterval(mandiAutoRefreshTimer);
+    });
   });
 }());

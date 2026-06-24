@@ -3582,6 +3582,12 @@ function updateProfileDisplay(user) {
  }
  });
 
+ const deletePhotoButton = document.getElementById('profilePhotoDeleteBtn');
+ if (deletePhotoButton) {
+ deletePhotoButton.disabled = !profileImage;
+ deletePhotoButton.title = profileImage ? 'Delete profile picture' : 'No profile picture saved';
+ }
+
  const joinedDate = document.getElementById('profileJoinedDate');
  if (joinedDate) {
  joinedDate.textContent = formatProfileJoinedDate(user.created_at || user.createdAt);
@@ -3805,6 +3811,23 @@ function showPersonalInfoSave() {
  if (btn) btn.style.display = 'flex';
 }
 
+function enterProfileEditMode() {
+ showPersonalInfoSave();
+ const photoActions = document.getElementById('profilePhotoActions');
+ const cameraButton = document.getElementById('profileAvatarCamera');
+ if (photoActions) photoActions.hidden = false;
+ if (cameraButton) cameraButton.hidden = false;
+}
+
+function exitProfileEditMode() {
+ const photoActions = document.getElementById('profilePhotoActions');
+ const cameraButton = document.getElementById('profileAvatarCamera');
+ const saveButton = document.getElementById('personalInfoSaveBtn');
+ if (photoActions) photoActions.hidden = true;
+ if (cameraButton) cameraButton.hidden = true;
+ if (saveButton) saveButton.style.display = 'none';
+}
+
 function resizeProfileImage(file) {
  return new Promise((resolve, reject) => {
  const reader = new FileReader();
@@ -3885,6 +3908,45 @@ async function handleProfileImageUpload(event) {
  }
 }
 
+async function deleteProfileImage() {
+ const currentUser = getStoredUser() || {};
+ const existingImage = currentUser.profile_image_data || currentUser.profileImageData || '';
+ if (!existingImage) {
+ showToast('No profile picture is currently saved', 'info');
+ return;
+ }
+ if (!window.confirm('Delete your profile picture?')) return;
+
+ const button = document.getElementById('profilePhotoDeleteBtn');
+ const originalContent = button?.innerHTML;
+ if (button) {
+ button.disabled = true;
+ button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+ }
+
+ try {
+ const data = await apiFetch('/user/profile', {
+ method: 'PUT',
+ body: JSON.stringify({ profileImageData: '' })
+ });
+ const updatedUser = {
+ ...currentUser,
+ ...(data?.user || {}),
+ profile_image_data: ''
+ };
+ localStorage.setItem('agri_user', JSON.stringify(updatedUser));
+ updateProfileDisplay(updatedUser);
+ showToast('Profile picture deleted successfully!');
+ } catch (error) {
+ showToast(error.msg || error.message || 'Could not delete profile picture', 'error');
+ } finally {
+ if (button) {
+ button.disabled = false;
+ button.innerHTML = originalContent;
+ }
+ }
+}
+
 function saveProfile(options = {}) {
  const token = localStorage.getItem('agri_token');
 
@@ -3932,7 +3994,7 @@ function saveProfile(options = {}) {
  body: JSON.stringify(profileData)
  }).then(data => {
  if (!options._skipAlert) {
- showToast('Profile updated successfully!');
+ showToast('Your personal and farm information has been saved.', 'success', 'Profile updated');
  }
  if (data?.user) {
  const mergedUser = preserveStoredProfileImage(data.user);
@@ -3941,8 +4003,7 @@ function saveProfile(options = {}) {
  localStorage.setItem('agri_user', JSON.stringify(mergedUser));
  }
  // Hide save button after success
- const btn = document.getElementById('personalInfoSaveBtn');
- if (btn) btn.style.display = 'none';
+ exitProfileEditMode();
  }).catch(err => {
  if (!options._skipAlert) {
  showToast('Error updating profile: ' + (err.msg || err.message || 'Unknown error'), 'error');

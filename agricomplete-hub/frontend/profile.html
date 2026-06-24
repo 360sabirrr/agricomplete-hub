@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>My Profile - AgriComplete Hub</title>
  <meta name="description" content="Manage your farmer profile and farm details on AgriComplete Hub.">
- <link rel="stylesheet" href="css/style.css?v=profile-photo-20260624">
+ <link rel="stylesheet" href="css/style.css?v=app-wide-layout-20260624">
  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
 </head>
@@ -49,7 +49,7 @@
  <div class="profile-header fade-in" style="margin-bottom:var(--space-xl);">
  <div class="profile-avatar-wrap">
  <div class="profile-avatar" id="profileAvatar">RS</div>
- <button class="profile-avatar-upload" type="button" onclick="document.getElementById('profileImageInput').click()" aria-label="Upload profile picture" title="Upload profile picture">
+ <button class="profile-avatar-upload" id="profileAvatarCamera" type="button" onclick="document.getElementById('profileImageInput').click()" aria-label="Upload profile picture" title="Upload profile picture" hidden>
  <i class="fas fa-camera"></i>
  </button>
  <input id="profileImageInput" type="file" accept="image/jpeg,image/png,image/webp" hidden onchange="handleProfileImageUpload(event)">
@@ -62,7 +62,7 @@
  <span class="badge badge-info"><i class="fas fa-calendar"></i> <span id="profileJoinedDate" data-i18n-skip>Joined date loading...</span></span>
  </div>
  </div>
- <button class="btn btn-primary btn-sm" onclick="showPersonalInfoSave(); document.getElementById('profileFirstName').focus(); document.getElementById('profileFirstName').scrollIntoView({behavior: 'smooth', block: 'center'})"><i class="fas fa-edit"></i> Edit Profile</button>
+ <button class="btn btn-primary btn-sm" onclick="enterProfileEditMode()"><i class="fas fa-edit"></i> Edit Profile</button>
  </div>
 
  <div class="grid-sidebar fade-in delay-1" style="margin-bottom:var(--space-xl);">
@@ -70,6 +70,23 @@
  <div class="card">
  <h4 style="margin-bottom:var(--space-lg);"><i class="fas fa-user" style="color:var(--color-primary);margin-right:8px;"></i> Personal Information</h4>
  <form class="auth-form">
+ <div class="profile-photo-editor" id="profilePhotoActions" hidden>
+ <div class="profile-photo-editor-copy">
+ <i class="fas fa-camera"></i>
+ <div>
+ <strong>Profile Picture</strong>
+ <span>Upload a clear JPG, PNG, or WEBP image.</span>
+ </div>
+ </div>
+ <div class="profile-photo-actions">
+ <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('profileImageInput').click()">
+ <i class="fas fa-image"></i> Upload Photo
+ </button>
+ <button class="btn btn-danger btn-sm" id="profilePhotoDeleteBtn" type="button" onclick="deleteProfileImage()">
+ <i class="fas fa-trash"></i> Delete Photo
+ </button>
+ </div>
+ </div>
  <div class="input-row">
  <div class="input-group"><label>First Name</label><input class="input-field" id="profileFirstName" type="text" value="Rajesh"></div>
  <div class="input-group"><label>Last Name</label><input class="input-field" id="profileLastName" type="text" value="Singh"></div>
@@ -149,52 +166,6 @@
  </div>
  </div>
 
- <!-- Toast Notification -->
- <div id="toastNotification" class="toast-notification" style="display:none;">
- <div class="toast-content">
- <i class="toast-icon fas fa-check-circle"></i>
- <span class="toast-message">Saved successfully!</span>
- </div>
- </div>
-
- <style>.toast-notification {
- position: fixed;
- top: 24px;
- right: 24px;
- z-index: 9999;
- min-width: 300px;
- max-width: 420px;
- animation: toastSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
- }.toast-notification.toast-hide {
- animation: toastSlideOut 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
- }.toast-content {
- display: flex;
- align-items: center;
- gap: 12px;
- padding: 16px 22px;
- background: linear-gradient(135deg, #1B5E20, #2E7D32);
- color: #fff;
- border-radius: 12px;
- box-shadow: 0 8px 32px rgba(27, 94, 32, 0.35);
- font-size: 0.92rem;
- font-weight: 500;
- }.toast-notification.toast-error.toast-content {
- background: linear-gradient(135deg, #B71C1C, #C62828);
- box-shadow: 0 8px 32px rgba(183, 28, 28, 0.35);
- }.toast-icon {
- font-size: 1.3rem;
- flex-shrink: 0;
- }
- @keyframes toastSlideIn {
- from { opacity: 0; transform: translateX(80px) scale(0.9); }
- to { opacity: 1; transform: translateX(0) scale(1); }
- }
- @keyframes toastSlideOut {
- from { opacity: 1; transform: translateX(0) scale(1); }
- to { opacity: 0; transform: translateX(80px) scale(0.9); }
- }
- </style>
-
  <!-- Chatbot -->
  <button class="chatbot-fab" id="chatbotFab" onclick="toggleChatbot()"><i class="fas fa-comment-dots"></i></button>
  <div class="chatbot-panel" id="chatbotPanel">
@@ -209,7 +180,7 @@
  </div>
  </div>
 
-<script src="js/main.js?v=profile-photo-display-fix-20260624"></script>
+<script src="js/main.js?v=profile-edit-close-20260624"></script>
 <script src="js/profile-activity.js?v=live-profile-activity-20260624"></script>
 </body>
 </html>

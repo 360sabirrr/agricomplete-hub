@@ -49,3 +49,38 @@
  .cropshield-case-card footer{grid-template-columns:1fr}
  .cropshield-case-card footer .cropshield-delete-btn{width:100%}
 }
+
+/* Final CropShield phone layout */
+@media(max-width:768px){
+ .cropshield-page{width:100%;min-width:0}
+ .cropshield-hero,.cropshield-workspace,.cropshield-result-layout{width:100%;min-width:0}
+ .cropshield-hero{align-items:stretch}
+ .cropshield-hero h1{font-size:1.45rem;overflow-wrap:anywhere}
+ .cropshield-form-panel fieldset,.cropshield-form-grid label,.cropshield-notes{min-width:0}
+ .cropshield-form-grid input,.cropshield-form-grid select,.cropshield-form-grid textarea,.cropshield-notes textarea{font-size:16px!important}
+ .cropshield-evidence-single .cropshield-upload{min-height:190px}
+ .cropshield-upload-empty{padding:16px 12px}
+ .cropshield-upload-meta{max-width:72%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .cropshield-generate-btn{min-height:50px;white-space:normal;text-align:center}
+ .cropshield-estimate-panel{position:static;top:auto}
+ .cropshield-weather-windows{grid-template-columns:1fr!important}
+ .cropshield-score-result{min-width:0}
+ .cropshield-score-result dl{grid-template-columns:1fr!important}
+ .cropshield-result-actions .btn,.cropshield-result-actions select{min-height:44px}
+ .cropshield-timeline{scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+ .cropshield-history-tools{align-items:stretch}
+ .cropshield-case-card{min-width:0}
+ .cropshield-case-card header,.cropshield-case-card dl div{min-width:0}
+ .cropshield-case-card dd{overflow-wrap:anywhere}
+}
+
+@media(max-width:480px){
+ .cropshield-hero-stats article{min-height:62px}
+ .cropshield-form-panel,.cropshield-estimate-panel,.cropshield-result{padding:13px}
+ .cropshield-form-panel legend{align-items:flex-start;line-height:1.35}
+ .cropshield-declaration{padding:12px}
+ .cropshield-loss-total{padding:14px}
+ .cropshield-loss-total strong{font-size:1.3rem}
+ .cropshield-history-tools{grid-template-columns:1fr}
+ .cropshield-history-tools label,.cropshield-history-tools select,.cropshield-history-tools button{grid-column:auto;width:100%}
+}
